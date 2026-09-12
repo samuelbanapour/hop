@@ -4,7 +4,6 @@ services:
     runtime: static
     staticPublishPath: site
     buildCommand: echo "static site, no build step"
-    plan: free
     pullRequestPreviewsEnabled: false
     routes:
       - type: rewrite
