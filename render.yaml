@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: hopcli-site
+    runtime: static
+    staticPublishPath: site
+    buildCommand: echo "static site, no build step"
+    pullRequestPreviewsEnabled: false
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
+    headers:
+      - path: /*
+        name: Cache-Control
+        value: public, max-age=300
