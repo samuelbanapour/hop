@@ -1,0 +1,119 @@
+name: Release
+
+# Push a tag like v0.2.0 to build and publish binaries for every supported
+# platform, or run this manually against an existing tag.
+on:
+  push:
+    tags:
+      - "v*.*.*"
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: "Existing tag to build and release, e.g. v0.2.0"
+        required: true
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+      - run: go vet ./...
+      - run: gofmt -l . | (! grep .)
+      - run: go build ./...
+      - run: go test ./...
+
+  build:
+    needs: test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      # CGO is off, so every target cross-compiles cleanly from one Linux
+      # runner — no need to pay for macOS minutes just to produce a darwin
+      # binary.
+      matrix:
+        include:
+          - goos: darwin
+            goarch: amd64
+          - goos: darwin
+            goarch: arm64
+          - goos: linux
+            goarch: amd64
+          - goos: linux
+            goarch: arm64
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Resolve version
+        id: version
+        run: |
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "version=${TAG#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Build
+        env:
+          GOOS: ${{ matrix.goos }}
+          GOARCH: ${{ matrix.goarch }}
+          CGO_ENABLED: 0
+        run: |
+          mkdir -p dist
+          go build -trimpath \
+            -ldflags "-s -w \
+              -X github.com/samuelbanapour/hop/internal/core.Version=${{ steps.version.outputs.version }} \
+              -X github.com/samuelbanapour/hop/internal/core.Revision=${{ github.sha }}" \
+            -o dist/hop ./cmd/hop
+
+      - name: Package
+        id: package
+        run: |
+          NAME="hop-${{ steps.version.outputs.tag }}-${{ matrix.goos }}-${{ matrix.goarch }}"
+          mkdir -p "pkg/$NAME"
+          cp dist/hop "pkg/$NAME/hop"
+          cp LICENSE README.md "pkg/$NAME/"
+          tar -C pkg -czf "$NAME.tar.gz" "$NAME"
+          sha256sum "$NAME.tar.gz" > "$NAME.tar.gz.sha256"
+          echo "archive=$NAME.tar.gz" >> "$GITHUB_OUTPUT"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hop-${{ matrix.goos }}-${{ matrix.goarch }}
+          path: |
+            ${{ steps.package.outputs.archive }}
+            ${{ steps.package.outputs.archive }}.sha256
+          if-no-files-found: error
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          merge-multiple: true
+
+      - name: Combine checksums
+        run: cat artifacts/*.sha256 > artifacts/SHA256SUMS
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          TAG="${{ github.event.inputs.tag || github.ref_name }}"
+          PRERELEASE=()
+          if [[ "$TAG" == *-* ]]; then PRERELEASE=(--prerelease); fi
+
+          gh release create "$TAG" \
+            --repo "${{ github.repository }}" \
+            --title "hop $TAG" \
+            --generate-notes \
+            "${PRERELEASE[@]}" \
+            artifacts/*.tar.gz artifacts/SHA256SUMS
