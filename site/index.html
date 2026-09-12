@@ -521,7 +521,7 @@
     </div>
 
     <div class="catalog-meta">
-      <span class="catalog-count">32 recipes · 125 verified artifacts · darwin-arm64, darwin-amd64, linux-amd64, linux-arm64</span>
+      <span class="catalog-count">62 recipes · 236 verified artifacts · darwin-arm64, darwin-amd64, linux-amd64, linux-arm64</span>
       <a href="#install" class="btn btn-ghost" style="padding:7px 14px; font-size:12.5px;">hop search &lt;name&gt;</a>
     </div>
 
@@ -622,7 +622,7 @@
     ["just","1.58.0","A handy command runner for project-specific tasks",4],
     ["dust","1.2.5","A more intuitive version of du, in Rust",4],
     ["sd","1.1.0","Intuitive find and replace, a friendlier sed",4],
-    ["bottom","0.14.9","A customisable cross-platform process and system monitor",4],
+    ["bottom","0.14.9","A customisable cross-platform graphical process and system monitor",4],
     ["xh","0.26.2","A friendly and fast tool for sending HTTP requests",4],
     ["difftastic","0.70.0","A structural diff that understands syntax",4],
     ["procs","0.14.12","A modern replacement for ps, written in Rust",4],
@@ -632,17 +632,47 @@
     ["yq","4.53.6","A portable command-line YAML, JSON and XML processor",4],
     ["gh","2.100.0","GitHub on the command line: pull requests, issues and releases",4],
     ["shellcheck","0.11.0","A static analysis tool for shell scripts",4],
-    ["grpcurl","1.9.4","Like curl, but for gRPC servers",4],
-    ["mkcert","1.4.4","Make locally trusted development certificates with one command",4],
-    ["websocat","1.14.1","Netcat for WebSockets: connect, serve and pipe ws:// endpoints",4],
-    ["subfinder","2.16.0","Fast passive subdomain enumeration tool",4],
+    ["k9s","0.51.0","A terminal UI to interact with your Kubernetes clusters",4],
+    ["trivy","0.74.0","A comprehensive scanner for vulnerabilities, misconfigurations and secrets",2],
+    ["gitleaks","8.30.1","Detect hardcoded secrets in git repos and files",4],
+    ["age","1.3.2","A simple, modern and secure file encryption tool",4],
+    ["eza","0.23.5","A modern, maintained replacement for ls",2],
+    ["tealdeer","1.9.0","A very fast implementation of tldr in Rust",4],
+    ["bandwhich","0.23.1","Terminal bandwidth utilization tool, by process and connection",4],
+    ["choose","1.3.7","A human-friendly and fast alternative to cut and awk",3],
+    ["cosign","3.1.3","Container signing, verification and storage in an OCI registry",4],
+    ["croc","11.5.2","Send files securely between computers, no relay account needed",3],
+    ["curlie","1.8.2","The power of curl, the ease of use of httpie",4],
+    ["dasel","3.11.2","Query and update data structures across JSON, YAML, TOML, XML and CSV",4],
+    ["dua","2.45.0","A tool to conveniently learn about disk usage, interactively",4],
+    ["duf","0.9.1","A better df alternative with colourful, readable output",4],
+    ["eget","1.3.4","Easily install pre-built binaries from GitHub releases",4],
     ["flyctl","0.4.102","Command-line tool for deploying apps to Fly.io",4],
-    ["hexyl","0.17.0","A colourful command-line hex viewer",4],
+    ["fx","39.2.0","An interactive, functional JSON viewer for the terminal",4],
+    ["git-cliff","2.14.1","A highly customizable changelog generator that follows conventional commits",4],
+    ["glow","3.0.0","Render markdown on the command line with style",4],
+    ["gping","1.21.0","Ping, but with a graph",4],
+    ["gron","0.7.1","Make JSON greppable by flattening it into discrete assignments",4],
+    ["grpcurl","1.9.4","Like curl, but for gRPC servers",4],
+    ["grype","0.118.0","A vulnerability scanner for container images and filesystems",4],
     ["gum","2.0.1","A tool for glamorous shell scripts: prompts, spinners and pickers",4],
-    ["glow","3.0.0","Render markdown on the command line with style",4]
+    ["hexyl","0.17.0","A colourful command-line hex viewer",4],
+    ["kubectx","0.11.0","Fast ways to switch between Kubernetes contexts and namespaces",4],
+    ["kubens","0.11.0","Fast way to switch between Kubernetes namespaces",4],
+    ["lf","42","A terminal file manager inspired by ranger",4],
+    ["micro","2.0.15","A modern and intuitive terminal-based text editor",3],
+    ["mkcert","1.4.4","Make locally trusted development certificates with one command",4],
+    ["navi","2.24.0","An interactive cheatsheet tool for the command line",2],
+    ["skate","1.0.1","A personal key-value store for the command line",4],
+    ["stern","1.34.0","Multi pod and container log tailing for Kubernetes",4],
+    ["subfinder","2.16.0","Fast passive subdomain enumeration tool",4],
+    ["syft","1.51.1","Generate a software bill of materials (SBOM) from container images and filesystems",4],
+    ["typos","1.50.1","Source code spell checker, fast enough to run on every commit",4],
+    ["vhs","0.12.0","Write terminal GIFs and demos as code",4],
+    ["websocat","1.14.1","Netcat for WebSockets: connect, serve and pipe ws:// endpoints",4]
   ];
 
-  var SHOWN = 20;
+  var SHOWN = 24;
   var el = document.getElementById('catalog');
   var html = '';
   pkgs.slice(0, SHOWN).forEach(function(p){

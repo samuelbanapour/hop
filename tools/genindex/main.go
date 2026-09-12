@@ -230,7 +230,7 @@ func build(client *http.Client, token string, s spec, plats []string, noHash boo
 	}
 
 	for _, plat := range plats {
-		asset, ok := pickAsset(rel, plat)
+		asset, ok := pickAsset(rel, plat, s.Name)
 		if !ok {
 			continue
 		}
@@ -300,8 +300,12 @@ func normaliseTag(tag, pkg string) string {
 	}
 	v = strings.TrimPrefix(v, "v")
 	v = strings.TrimPrefix(v, "V")
-	// Anything left must start with a digit to be a version.
+	// Anything left must start with a digit to be a version. A lone "r"
+	// prefix before digits is accepted too (lf tags releases "r42").
 	if v == "" || v[0] < '0' || v[0] > '9' {
+		if len(v) > 1 && (v[0] == 'r' || v[0] == 'R') && v[1] >= '0' && v[1] <= '9' {
+			return v[1:]
+		}
 		return ""
 	}
 	return v
@@ -339,8 +343,11 @@ type pickedAsset struct {
 }
 
 // pickAsset selects the best asset for a platform, preferring tarballs and,
-// on Linux, statically linked musl builds for portability.
-func pickAsset(rel *ghRelease, plat string) (pickedAsset, bool) {
+// on Linux, statically linked musl builds for portability. pkg disambiguates
+// repos that publish one archive per binary (kubectx/kubens both live in
+// ahmetb/kubectx): an asset naming a *different* package in the same repo
+// is rejected outright rather than merely scored lower.
+func pickAsset(rel *ghRelease, plat, pkg string) (pickedAsset, bool) {
 	parts := strings.SplitN(plat, "-", 2)
 	if len(parts) != 2 {
 		return pickedAsset{}, false
@@ -371,8 +378,14 @@ func pickAsset(rel *ghRelease, plat string) (pickedAsset, bool) {
 		if containsAny(lower, rejectTokens) {
 			continue
 		}
+		if other, ok := siblingBinaryName(lower, pkg); ok && other != strings.ToLower(pkg) {
+			continue // named for a sibling tool published from the same release
+		}
 
 		score := 0
+		if strings.Contains(lower, strings.ToLower(pkg)) {
+			score += 15 // filename explicitly names this package
+		}
 		switch {
 		case strings.HasSuffix(lower, ".tar.gz"), strings.HasSuffix(lower, ".tgz"):
 			score += 100
@@ -673,6 +686,18 @@ func loadIndex(p string) (*index, error) {
 		return nil, err
 	}
 	return &ix, nil
+}
+
+// siblingBinaryName reports the leading identifier of a release filename
+// (kubectx_v0.11.0_darwin_arm64.tar.gz -> "kubectx"), used to tell whether an
+// asset belongs to pkg or to another tool published from the same release.
+func siblingBinaryName(filename, pkg string) (string, bool) {
+	for _, sep := range []string{"_", "-"} {
+		if i := strings.Index(filename, sep); i > 0 {
+			return filename[:i], true
+		}
+	}
+	return "", false
 }
 
 func containsAny(s string, toks []string) bool {

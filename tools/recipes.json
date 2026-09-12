@@ -2,6 +2,35 @@
   "comment": "Source-of-truth spec for the built-in index. `go run ./tools/genindex` resolves each repo's latest release, inspects the real archives, and writes internal/core/data/index.json with exact digests, strip depths and binary paths.",
   "packages": [
     {
+      "name": "age",
+      "repo": "FiloSottile/age",
+      "bin": [
+        "age",
+        "age-keygen"
+      ],
+      "license": "BSD-3-Clause",
+      "keywords": [
+        "encryption",
+        "crypto",
+        "secure"
+      ],
+      "description": "A simple, modern and secure file encryption tool"
+    },
+    {
+      "name": "bandwhich",
+      "repo": "imsnif/bandwhich",
+      "bin": [
+        "bandwhich"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "network",
+        "bandwidth",
+        "monitor"
+      ],
+      "description": "Terminal bandwidth utilization tool, by process and connection"
+    },
+    {
       "name": "bat",
       "repo": "sharkdp/bat",
       "bin": [
@@ -31,6 +60,76 @@
       "aliases": [
         "btm"
       ]
+    },
+    {
+      "name": "choose",
+      "repo": "theryangeary/choose",
+      "bin": [
+        "choose"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "cut",
+        "awk",
+        "fields"
+      ],
+      "description": "A human-friendly and fast alternative to cut and awk"
+    },
+    {
+      "name": "cosign",
+      "repo": "sigstore/cosign",
+      "bin": [
+        "cosign"
+      ],
+      "license": "Apache-2.0",
+      "keywords": [
+        "sign",
+        "security",
+        "containers"
+      ],
+      "description": "Container signing, verification and storage in an OCI registry"
+    },
+    {
+      "name": "croc",
+      "repo": "schollz/croc",
+      "bin": [
+        "croc"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "transfer",
+        "send",
+        "file"
+      ],
+      "description": "Send files securely between computers, no relay account needed"
+    },
+    {
+      "name": "curlie",
+      "repo": "rs/curlie",
+      "bin": [
+        "curlie"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "http",
+        "curl",
+        "httpie"
+      ],
+      "description": "The power of curl, the ease of use of httpie"
+    },
+    {
+      "name": "dasel",
+      "repo": "TomWright/dasel",
+      "bin": [
+        "dasel"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "json",
+        "yaml",
+        "toml"
+      ],
+      "description": "Query and update data structures across JSON, YAML, TOML, XML and CSV"
     },
     {
       "name": "delta",
@@ -67,6 +166,34 @@
       ]
     },
     {
+      "name": "dua",
+      "repo": "Byron/dua-cli",
+      "bin": [
+        "dua"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "disk",
+        "usage",
+        "interactive"
+      ],
+      "description": "A tool to conveniently learn about disk usage, interactively"
+    },
+    {
+      "name": "duf",
+      "repo": "muesli/duf",
+      "bin": [
+        "duf"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "disk",
+        "df",
+        "usage"
+      ],
+      "description": "A better df alternative with colourful, readable output"
+    },
+    {
       "name": "dust",
       "repo": "bootandy/dust",
       "bin": [
@@ -79,6 +206,34 @@
         "usage"
       ],
       "description": "A more intuitive version of du, in Rust"
+    },
+    {
+      "name": "eget",
+      "repo": "zyedidia/eget",
+      "bin": [
+        "eget"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "download",
+        "github",
+        "install"
+      ],
+      "description": "Easily install pre-built binaries from GitHub releases"
+    },
+    {
+      "name": "eza",
+      "repo": "eza-community/eza",
+      "bin": [
+        "eza"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "ls",
+        "list",
+        "files"
+      ],
+      "description": "A modern, maintained replacement for ls"
     },
     {
       "name": "fd",
@@ -115,6 +270,20 @@
       "description": "Command-line tool for deploying apps to Fly.io"
     },
     {
+      "name": "fx",
+      "repo": "antonmedv/fx",
+      "bin": [
+        "fx"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "json",
+        "viewer",
+        "interactive"
+      ],
+      "description": "An interactive, functional JSON viewer for the terminal"
+    },
+    {
       "name": "fzf",
       "repo": "junegunn/fzf",
       "bin": [
@@ -141,6 +310,34 @@
         "pr"
       ],
       "description": "GitHub on the command line: pull requests, issues and releases"
+    },
+    {
+      "name": "git-cliff",
+      "repo": "orhun/git-cliff",
+      "bin": [
+        "git-cliff"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "changelog",
+        "git",
+        "release"
+      ],
+      "description": "A highly customizable changelog generator that follows conventional commits"
+    },
+    {
+      "name": "gitleaks",
+      "repo": "gitleaks/gitleaks",
+      "bin": [
+        "gitleaks"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "secrets",
+        "scanner",
+        "git"
+      ],
+      "description": "Detect hardcoded secrets in git repos and files"
     },
     {
       "name": "gitui",
@@ -170,6 +367,34 @@
       "description": "Render markdown on the command line with style"
     },
     {
+      "name": "gping",
+      "repo": "orf/gping",
+      "bin": [
+        "gping"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "ping",
+        "graph",
+        "network"
+      ],
+      "description": "Ping, but with a graph"
+    },
+    {
+      "name": "gron",
+      "repo": "tomnomnom/gron",
+      "bin": [
+        "gron"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "json",
+        "grep",
+        "transform"
+      ],
+      "description": "Make JSON greppable by flattening it into discrete assignments"
+    },
+    {
       "name": "grpcurl",
       "repo": "fullstorydev/grpcurl",
       "bin": [
@@ -182,6 +407,20 @@
         "rpc"
       ],
       "description": "Like curl, but for gRPC servers"
+    },
+    {
+      "name": "grype",
+      "repo": "anchore/grype",
+      "bin": [
+        "grype"
+      ],
+      "license": "Apache-2.0",
+      "keywords": [
+        "vulnerability",
+        "scanner",
+        "security"
+      ],
+      "description": "A vulnerability scanner for container images and filesystems"
     },
     {
       "name": "gum",
@@ -253,6 +492,48 @@
       "description": "A handy command runner for project-specific tasks"
     },
     {
+      "name": "k9s",
+      "repo": "derailed/k9s",
+      "bin": [
+        "k9s"
+      ],
+      "license": "Apache-2.0",
+      "keywords": [
+        "kubernetes",
+        "tui",
+        "cluster"
+      ],
+      "description": "A terminal UI to interact with your Kubernetes clusters"
+    },
+    {
+      "name": "kubectx",
+      "repo": "ahmetb/kubectx",
+      "bin": [
+        "kubectx"
+      ],
+      "license": "Apache-2.0",
+      "keywords": [
+        "kubernetes",
+        "context",
+        "namespace"
+      ],
+      "description": "Fast ways to switch between Kubernetes contexts and namespaces"
+    },
+    {
+      "name": "kubens",
+      "repo": "ahmetb/kubectx",
+      "bin": [
+        "kubens"
+      ],
+      "license": "Apache-2.0",
+      "keywords": [
+        "kubernetes",
+        "namespace",
+        "context"
+      ],
+      "description": "Fast way to switch between Kubernetes namespaces"
+    },
+    {
       "name": "lazygit",
       "repo": "jesseduffield/lazygit",
       "bin": [
@@ -264,6 +545,34 @@
         "tui"
       ],
       "description": "A simple terminal UI for git commands"
+    },
+    {
+      "name": "lf",
+      "repo": "gokcehan/lf",
+      "bin": [
+        "lf"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "file",
+        "manager",
+        "terminal"
+      ],
+      "description": "A terminal file manager inspired by ranger"
+    },
+    {
+      "name": "micro",
+      "repo": "zyedidia/micro",
+      "bin": [
+        "micro"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "editor",
+        "terminal",
+        "text"
+      ],
+      "description": "A modern and intuitive terminal-based text editor"
     },
     {
       "name": "mkcert",
@@ -278,6 +587,20 @@
         "certificate"
       ],
       "description": "Make locally trusted development certificates with one command"
+    },
+    {
+      "name": "navi",
+      "repo": "denisidoro/navi",
+      "bin": [
+        "navi"
+      ],
+      "license": "Unlicense",
+      "keywords": [
+        "cheatsheet",
+        "interactive",
+        "shell"
+      ],
+      "description": "An interactive cheatsheet tool for the command line"
     },
     {
       "name": "ouch",
@@ -352,6 +675,20 @@
       "description": "A static analysis tool for shell scripts"
     },
     {
+      "name": "skate",
+      "repo": "charmbracelet/skate",
+      "bin": [
+        "skate"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "key-value",
+        "store",
+        "notes"
+      ],
+      "description": "A personal key-value store for the command line"
+    },
+    {
       "name": "starship",
       "repo": "starship/starship",
       "bin": [
@@ -366,6 +703,20 @@
       "caveats": "Add the prompt initialiser to the end of your profile:\n\n    eval \"$(starship init zsh)\"    # or bash, fish"
     },
     {
+      "name": "stern",
+      "repo": "stern/stern",
+      "bin": [
+        "stern"
+      ],
+      "license": "Apache-2.0",
+      "keywords": [
+        "kubernetes",
+        "logs",
+        "tail"
+      ],
+      "description": "Multi pod and container log tailing for Kubernetes"
+    },
+    {
       "name": "subfinder",
       "repo": "projectdiscovery/subfinder",
       "bin": [
@@ -378,6 +729,79 @@
         "recon"
       ],
       "description": "Fast passive subdomain enumeration tool"
+    },
+    {
+      "name": "syft",
+      "repo": "anchore/syft",
+      "bin": [
+        "syft"
+      ],
+      "license": "Apache-2.0",
+      "keywords": [
+        "sbom",
+        "security",
+        "containers"
+      ],
+      "description": "Generate a software bill of materials (SBOM) from container images and filesystems"
+    },
+    {
+      "name": "tealdeer",
+      "repo": "dbrgn/tealdeer",
+      "bin": [
+        "tldr"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "tldr",
+        "docs",
+        "cheatsheet"
+      ],
+      "aliases": [
+        "tldr"
+      ],
+      "description": "A very fast implementation of tldr in Rust"
+    },
+    {
+      "name": "trivy",
+      "repo": "aquasecurity/trivy",
+      "bin": [
+        "trivy"
+      ],
+      "license": "Apache-2.0",
+      "keywords": [
+        "vulnerability",
+        "scanner",
+        "security"
+      ],
+      "description": "A comprehensive scanner for vulnerabilities, misconfigurations and secrets"
+    },
+    {
+      "name": "typos",
+      "repo": "crate-ci/typos",
+      "bin": [
+        "typos"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "spellcheck",
+        "lint",
+        "code"
+      ],
+      "description": "Source code spell checker, fast enough to run on every commit"
+    },
+    {
+      "name": "vhs",
+      "repo": "charmbracelet/vhs",
+      "bin": [
+        "vhs"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "terminal",
+        "record",
+        "gif"
+      ],
+      "description": "Write terminal GIFs and demos as code"
     },
     {
       "name": "watchexec",
