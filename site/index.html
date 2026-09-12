@@ -1,0 +1,622 @@
+<title>hop</title>
+<meta name="description" content="A fast, atomic package manager for the terminal — parallel installs, instant rollback, nothing executed from a recipe but data.">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+
+<style>
+  /* ============================== TOKENS ============================== */
+  :root{
+    --bg:        #EDEBE0;
+    --bg-raise:  #F5F3E9;
+    --bg-sunken: #E2DFD0;
+    --ink:       #1D2118;
+    --ink-soft:  #4B5044;
+    --line:      #CFCABA;
+    --line-soft: #DDD8C8;
+    --accent:    #A9631E;
+    --accent-ink:#5C3812;
+    --accent-bg: #F0DEC2;
+    --green:     #4B6B3C;
+    --green-bg:  #DCE5D1;
+    --red:       #9A3324;
+    --red-bg:    #EAD9D2;
+    --shadow:    0 1px 0 rgba(29,33,24,0.06);
+    --radius:    3px;
+    --mono-display: 'Space Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    --mono-code:    'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+    --serif:        'Source Serif 4', Georgia, 'Times New Roman', serif;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --bg:        #181B15;
+      --bg-raise:  #1F231B;
+      --bg-sunken: #121510;
+      --ink:       #EAE7D9;
+      --ink-soft:  #ACA894;
+      --line:      #383C30;
+      --line-soft: #2B2F25;
+      --accent:    #DDA355;
+      --accent-ink:#F3D9AE;
+      --accent-bg: #33291A;
+      --green:     #8FAE78;
+      --green-bg:  #263021;
+      --red:       #C97A63;
+      --red-bg:    #3A241E;
+      --shadow:    0 1px 0 rgba(0,0,0,0.4);
+    }
+  }
+  :root[data-theme="dark"]{
+    --bg:        #181B15;
+    --bg-raise:  #1F231B;
+    --bg-sunken: #121510;
+    --ink:       #EAE7D9;
+    --ink-soft:  #ACA894;
+    --line:      #383C30;
+    --line-soft: #2B2F25;
+    --accent:    #DDA355;
+    --accent-ink:#F3D9AE;
+    --accent-bg: #33291A;
+    --green:     #8FAE78;
+    --green-bg:  #263021;
+    --red:       #C97A63;
+    --red-bg:    #3A241E;
+    --shadow:    0 1px 0 rgba(0,0,0,0.4);
+  }
+
+  *{box-sizing:border-box;}
+  html{-webkit-text-size-adjust:100%;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:var(--serif); font-size:17px; line-height:1.6;
+    -webkit-font-smoothing:antialiased;
+  }
+  h1,h2,h3,.mono-display{ font-family:var(--mono-display); text-wrap:balance; }
+  code,pre,.mono-code,kbd{ font-family:var(--mono-code); }
+  a{ color:inherit; }
+  ::selection{ background:var(--accent); color:var(--bg-raise); }
+
+  .wrap{ max-width:920px; margin:0 auto; padding:0 28px; }
+  .wrap-wide{ max-width:1080px; margin:0 auto; padding:0 28px; }
+
+  /* ============================== NAV ============================== */
+  nav{
+    position:sticky; top:0; z-index:20;
+    background:color-mix(in srgb, var(--bg) 88%, transparent);
+    backdrop-filter:blur(6px);
+    border-bottom:1px solid var(--line);
+  }
+  .nav-row{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:16px 28px; max-width:1080px; margin:0 auto;
+  }
+  .brand{
+    font-family:var(--mono-display); font-weight:700; font-size:19px;
+    display:flex; align-items:center; gap:9px; text-decoration:none;
+    letter-spacing:-0.02em;
+  }
+  .brand .dot{
+    width:9px;height:9px;border-radius:50%;
+    background:var(--accent);
+    box-shadow:0 0 0 3px var(--accent-bg);
+  }
+  .nav-links{ display:flex; gap:26px; font-family:var(--mono-code); font-size:13.5px; }
+  .nav-links a{ text-decoration:none; color:var(--ink-soft); border-bottom:1px solid transparent; padding-bottom:2px; transition:border-color .15s, color .15s; }
+  .nav-links a:hover{ color:var(--ink); border-color:var(--accent); }
+  .nav-links .gh{ display:flex; align-items:center; gap:6px; }
+  @media (max-width:640px){ .nav-links{ display:none; } }
+
+  /* ============================== HERO ============================== */
+  .hero{ padding:64px 0 52px; }
+  .eyebrow{
+    font-family:var(--mono-code); font-size:12.5px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--accent-ink); background:var(--accent-bg); display:inline-block;
+    padding:4px 9px; border-radius:2px; margin-bottom:22px;
+  }
+  h1.title{
+    font-size:clamp(34px, 5.4vw, 56px); font-weight:700; line-height:1.04;
+    margin:0 0 20px; letter-spacing:-0.01em;
+  }
+  h1.title em{ font-style:normal; color:var(--accent); }
+  .sub{
+    font-size:19px; color:var(--ink-soft); max-width:540px; margin:0 0 34px; line-height:1.55;
+  }
+  .hero-actions{ display:flex; gap:14px; flex-wrap:wrap; margin-bottom:14px; }
+  .btn{
+    font-family:var(--mono-code); font-size:14px; font-weight:500;
+    padding:11px 20px; border-radius:var(--radius); text-decoration:none;
+    display:inline-flex; align-items:center; gap:8px; border:1px solid transparent;
+    cursor:pointer;
+  }
+  .btn-primary{ background:var(--ink); color:var(--bg-raise); }
+  .btn-primary:hover{ background:var(--accent-ink); }
+  .btn-ghost{ border-color:var(--line); color:var(--ink); }
+  .btn-ghost:hover{ border-color:var(--ink-soft); }
+
+  .hero-grid{
+    display:grid; grid-template-columns:1.05fr 1fr; gap:56px; align-items:start;
+  }
+  @media (max-width:860px){ .hero-grid{ grid-template-columns:1fr; } }
+
+  /* ============================== TERMINAL ============================== */
+  .term{
+    background:var(--bg-sunken); border:1px solid var(--line); border-radius:6px;
+    overflow:hidden; box-shadow:0 10px 30px -18px rgba(0,0,0,0.35);
+  }
+  .term-bar{
+    display:flex; align-items:center; gap:7px; padding:10px 14px;
+    border-bottom:1px solid var(--line); background:var(--bg-raise);
+  }
+  .term-bar span{ width:10px;height:10px;border-radius:50%; background:var(--line); }
+  .term-bar .lbl{
+    margin-left:8px; font-family:var(--mono-code); font-size:12px; color:var(--ink-soft);
+  }
+  .term-body{
+    font-family:var(--mono-code); font-size:13px; line-height:1.72;
+    padding:18px 18px 20px; white-space:pre; overflow-x:auto;
+  }
+  .t-dim{ color:var(--ink-soft); }
+  .t-prompt{ color:var(--accent); }
+  .t-ok{ color:var(--green); }
+  .t-bar-fill{ color:var(--accent); }
+  .t-bar-track{ color:var(--line); }
+  .t-bold{ font-weight:600; color:var(--ink); }
+
+  .hero-stats{ display:flex; gap:0; margin-top:16px; border:1px solid var(--line); border-radius:var(--radius); overflow:hidden; }
+  .hero-stats div{ flex:1; padding:12px 14px; border-right:1px solid var(--line); }
+  .hero-stats div:last-child{ border-right:none; }
+  .hero-stats .n{ font-family:var(--mono-display); font-weight:700; font-size:18px; display:block; }
+  .hero-stats .l{ font-family:var(--mono-code); font-size:11px; color:var(--ink-soft); text-transform:uppercase; letter-spacing:.04em; }
+
+  /* ============================== install line ============================== */
+  .install-line{
+    display:flex; align-items:center; gap:0; margin-top:10px;
+    background:var(--ink); border-radius:var(--radius); overflow:hidden;
+  }
+  .install-line code{
+    flex:1; padding:12px 14px; font-size:13.5px; color:var(--bg-raise); overflow-x:auto;
+  }
+  .install-line code .t-prompt{ color:var(--accent); }
+  .copy-btn{
+    background:transparent; border:none; border-left:1px solid rgba(255,255,255,0.15);
+    color:var(--bg-raise); font-family:var(--mono-code); font-size:12px;
+    padding:0 16px; cursor:pointer; align-self:stretch; white-space:nowrap;
+  }
+  .copy-btn:hover{ background:rgba(255,255,255,0.08); }
+
+  /* ============================== SECTION SCAFFOLD ============================== */
+  section{ padding:64px 0; border-top:1px solid var(--line); }
+  .section-head{ margin-bottom:38px; max-width:620px; }
+  .kicker{
+    font-family:var(--mono-code); font-size:12.5px; letter-spacing:.08em; text-transform:uppercase;
+    color:var(--accent); margin-bottom:10px; display:block;
+  }
+  h2{ font-size:clamp(24px,3.4vw,32px); margin:0 0 12px; letter-spacing:-0.01em; }
+  .section-head p{ color:var(--ink-soft); font-size:16.5px; margin:0; }
+
+  /* ============================== SPEC TABLE (comparison) ============================== */
+  .spec{ width:100%; border-collapse:collapse; font-size:15px; }
+  .spec thead th{
+    text-align:left; font-family:var(--mono-code); font-size:11.5px; text-transform:uppercase;
+    letter-spacing:.04em; color:var(--ink-soft); font-weight:500;
+    padding:0 16px 12px; border-bottom:1px solid var(--line);
+  }
+  .spec thead th:first-child{ padding-left:0; }
+  .spec tbody th{
+    text-align:left; font-weight:600; padding:15px 16px 15px 0; vertical-align:top;
+    width:30%; font-size:15.5px;
+  }
+  .spec tbody td{
+    padding:15px 16px; vertical-align:top; border-bottom:1px solid var(--line-soft);
+    color:var(--ink-soft); font-size:14.5px; line-height:1.5;
+  }
+  .spec tbody tr:last-child td, .spec tbody tr:last-child th{ border-bottom:none; }
+  .spec td.win{ color:var(--ink); font-weight:500; }
+  .tag{
+    display:inline-block; font-family:var(--mono-code); font-size:11px;
+    padding:2px 7px; border-radius:2px; margin-bottom:6px; letter-spacing:.02em;
+  }
+  .tag-brew{ background:var(--red-bg); color:var(--red); }
+  .tag-hop{ background:var(--green-bg); color:var(--green); }
+  .spec-scroll{ overflow-x:auto; }
+
+  /* ============================== GENERATIONS DIAGRAM ============================== */
+  .mech{ display:grid; grid-template-columns:1fr 1fr; gap:50px; align-items:center; }
+  @media (max-width:860px){ .mech{ grid-template-columns:1fr; } }
+  .mech-copy p{ color:var(--ink-soft); margin:0 0 16px; font-size:16px; }
+  .mech-copy strong{ color:var(--ink); font-weight:600; }
+  .diagram{ background:var(--bg-raise); border:1px solid var(--line); border-radius:6px; padding:26px 22px; }
+  .diagram svg{ display:block; width:100%; height:auto; }
+  .diagram-cap{ font-family:var(--mono-code); font-size:12px; color:var(--ink-soft); margin-top:14px; text-align:center; }
+
+  /* ============================== PACKAGE INDEX (card catalog) ============================== */
+  .catalog-meta{
+    display:flex; justify-content:space-between; align-items:baseline; margin-bottom:20px;
+    flex-wrap:wrap; gap:10px;
+  }
+  .catalog-count{ font-family:var(--mono-code); font-size:13px; color:var(--ink-soft); }
+  .catalog{
+    display:grid; grid-template-columns:repeat(auto-fill, minmax(230px,1fr)); gap:1px;
+    background:var(--line); border:1px solid var(--line); border-radius:6px; overflow:hidden;
+  }
+  .card{
+    background:var(--bg-raise); padding:16px 16px 14px; display:flex; flex-direction:column; gap:6px;
+    min-height:118px;
+  }
+  .card-top{ display:flex; justify-content:space-between; align-items:baseline; gap:8px; }
+  .card-name{ font-family:var(--mono-display); font-weight:700; font-size:15px; }
+  .card-ver{ font-family:var(--mono-code); font-size:11.5px; color:var(--accent); white-space:nowrap; }
+  .card-desc{ font-size:13.5px; color:var(--ink-soft); line-height:1.45; flex:1; }
+  .card-plats{ font-family:var(--mono-code); font-size:10.5px; color:var(--ink-soft); opacity:.7; letter-spacing:.03em; }
+  .catalog-more{
+    background:var(--bg-sunken); display:flex; align-items:center; justify-content:center;
+    font-family:var(--mono-code); font-size:13px; color:var(--ink-soft); min-height:118px;
+  }
+
+  /* ============================== MIGRATE CALLOUT ============================== */
+  .callout{
+    display:grid; grid-template-columns:auto 1fr; gap:22px; align-items:start;
+    background:var(--accent-bg); border:1px solid var(--accent); border-radius:6px;
+    padding:24px 26px; margin-top:8px;
+  }
+  .callout-mark{ font-family:var(--mono-display); font-weight:700; font-size:22px; color:var(--accent-ink); line-height:1; padding-top:2px; }
+  .callout h3{ margin:0 0 8px; font-size:17px; color:var(--accent-ink); }
+  .callout p{ margin:0; color:var(--accent-ink); font-size:14.5px; line-height:1.55; opacity:.92; }
+  .callout code{ background:rgba(0,0,0,0.06); padding:1px 5px; border-radius:2px; font-size:.92em; }
+
+  /* ============================== FOOTER ============================== */
+  footer{ border-top:1px solid var(--line); padding:40px 0 50px; }
+  .foot-row{ display:flex; justify-content:space-between; flex-wrap:wrap; gap:20px; align-items:center; }
+  .foot-links{ display:flex; gap:22px; font-family:var(--mono-code); font-size:13px; }
+  .foot-links a{ text-decoration:none; color:var(--ink-soft); }
+  .foot-links a:hover{ color:var(--ink); }
+  .foot-note{ font-family:var(--mono-code); font-size:12px; color:var(--ink-soft); }
+
+  @media (prefers-reduced-motion: reduce){ *{ transition:none !important; animation:none !important; } }
+</style>
+
+<nav>
+  <div class="nav-row">
+    <a class="brand" href="#top"><span class="dot"></span>hop</a>
+    <div class="nav-links">
+      <a href="#compare">Why not brew</a>
+      <a href="#mechanism">How it works</a>
+      <a href="#packages">Packages</a>
+      <a href="#migrate">Migrate</a>
+      <a class="gh" href="https://github.com/sammybanapour/hop">on GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+
+<div id="top" class="wrap-wide">
+  <section class="hero" style="border-top:none;">
+    <div class="hero-grid">
+      <div>
+        <span class="eyebrow">v0.1 · darwin &amp; linux · zero dependencies</span>
+        <h1 class="title">Install things.<br>Undo things.<br><em>Instantly.</em></h1>
+        <p class="sub">hop is a package manager for the terminal. Every install runs as one transaction — downloaded, verified and linked in parallel — and every change is one command away from undone, with no re-download.</p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#install">Install hop</a>
+          <a class="btn btn-ghost" href="#compare">Why not just use Homebrew?</a>
+        </div>
+      </div>
+
+      <div>
+        <div class="term">
+          <div class="term-bar"><span></span><span></span><span></span><span class="lbl">zsh</span></div>
+          <div class="term-body"><span class="t-prompt">$</span> hop install ripgrep fd bat jq
+<span class="t-dim">  install  ripgrep  15.2.0  1.7 MB</span>
+<span class="t-dim">  install  fd       10.5.0  1.3 MB</span>
+<span class="t-dim">  install  bat      0.26.1  3.1 MB</span>
+<span class="t-dim">  install  jq       1.8.2   822 KB</span>
+
+<span class="t-dim">  4 to install  ·  6.8 MB to download</span>
+
+==&gt; Downloading 4 packages
+<span class="t-bar-fill">████████████████████</span><span class="t-bar-track">░░░░</span> <span class="t-ok">✓</span> jq
+<span class="t-bar-fill">████████████████████</span><span class="t-bar-track">░░░░</span> <span class="t-ok">✓</span> fd
+<span class="t-bar-fill">████████████████████</span><span class="t-bar-track">░░░░</span> <span class="t-ok">✓</span> ripgrep
+<span class="t-bar-fill">████████████████████</span><span class="t-bar-track">░░░░</span> <span class="t-ok">✓</span> bat
+
+<span class="t-ok">✓ installed 4 in 0.82s</span><span class="t-dim">  ·  6.8 MB downloaded</span>
+
+<span class="t-prompt">$</span> hop rollback
+<span class="t-ok">✓ rolled back to generation 2</span><span class="t-dim">  (0.012s, no download)</span></div>
+        </div>
+        <div class="hero-stats">
+          <div><span class="n">0.82s</span><span class="l">4 tools, parallel</span></div>
+          <div><span class="n">12ms</span><span class="l">full rollback</span></div>
+          <div><span class="n">0</span><span class="l">deps to build hop</span></div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<div class="wrap">
+  <section id="compare">
+    <div class="section-head">
+      <span class="kicker">The pitch</span>
+      <h2>Homebrew taught everyone what a friendly package manager feels like. hop keeps the feeling and fixes the mechanics.</h2>
+      <p>Nothing here is a knock on Homebrew — it's the reason a whole generation of developers expects installing a CLI tool to be one line. hop is what that idea looks like designed around a transaction log instead of a mutable prefix.</p>
+    </div>
+
+    <div class="spec-scroll">
+      <table class="spec">
+        <thead>
+          <tr><th></th><th><span class="tag tag-brew">Homebrew</span></th><th><span class="tag tag-hop">hop</span></th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <th>Refreshing the index</th>
+            <td>clones or pulls a large git repository of formula files</td>
+            <td class="win">one conditional HTTP request — usually a 304, done in milliseconds</td>
+          </tr>
+          <tr>
+            <th>Installing</th>
+            <td>downloads and links serially, mutating the prefix as it goes</td>
+            <td class="win">every artifact downloads in parallel, verified before anything touches disk</td>
+          </tr>
+          <tr>
+            <th>A failed install</th>
+            <td>can leave a half-linked formula behind</td>
+            <td class="win">changes nothing — the previous generation stays live until the very last step</td>
+          </tr>
+          <tr>
+            <th>Undoing a change</th>
+            <td>not really a supported operation</td>
+            <td class="win"><code>hop rollback</code> — a symlink swap, ~10ms, no network</td>
+          </tr>
+          <tr>
+            <th>What a recipe can do</th>
+            <td>arbitrary Ruby, executed on your machine at install time</td>
+            <td class="win">a JSON document. hop never executes a recipe — only downloads and unpacks what it names</td>
+          </tr>
+          <tr>
+            <th>Checksums</th>
+            <td>present on many formulae, absent on others</td>
+            <td class="win">every built-in recipe is SHA-256 pinned against bytes hop actually downloaded and tested</td>
+          </tr>
+          <tr>
+            <th>Project reproducibility</th>
+            <td>a Brewfile, with no lockfile</td>
+            <td class="win"><code>hopfile.toml</code> + <code>hop.lock</code> — the second machine gets the same bytes as the first</td>
+          </tr>
+          <tr>
+            <th>Startup cost</th>
+            <td>a Ruby interpreter boots on every invocation</td>
+            <td class="win">a static binary — single-digit milliseconds</td>
+          </tr>
+          <tr>
+            <th>Leftover dependencies</th>
+            <td>accumulate; <code>brew autoremove</code> is a separate step you have to remember</td>
+            <td class="win">swept automatically the moment nothing needs them anymore</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section id="mechanism">
+    <div class="section-head">
+      <span class="kicker">How it works</span>
+      <h2>Nothing is ever edited in place</h2>
+      <p>hop never modifies an installed package. It builds a new, complete snapshot — a <strong style="color:var(--ink)">generation</strong> — and switches to it with one filesystem rename.</p>
+    </div>
+
+    <div class="mech">
+      <div class="mech-copy">
+        <p>Every package hop installs lands in a <strong>content-addressed store</strong>, named by its own hash: <code>ripgrep-15.2.0-3750b2e9…</code>. That directory is never touched again — not by an upgrade, not by a removal.</p>
+        <p>An install, upgrade or removal computes an entirely new <strong>generation</strong>: the full list of what should be on your PATH. Once every artifact is downloaded and verified, hop does the only thing that actually changes your environment — it repoints one symlink, <code>current → profiles/7</code>.</p>
+        <p>That rename is atomic at the filesystem level. It can't half-happen. Every earlier generation is still sitting on disk, which is the entire mechanism behind <code>hop rollback</code>: pointing the same symlink at an older number.</p>
+      </div>
+
+      <div class="diagram">
+        <svg viewBox="0 0 480 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram: the current symlink pointing at generation 7, with generations 5 and 6 kept on disk below it and reachable by rollback">
+          <defs>
+            <marker id="arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"></path>
+            </marker>
+          </defs>
+          <style>
+            .gen-box{ fill:var(--bg-sunken); stroke:var(--line); stroke-width:1; }
+            .gen-box.active{ fill:var(--accent-bg); stroke:var(--accent); stroke-width:1.5; }
+            .gen-label{ font-family:'IBM Plex Mono',monospace; font-size:12px; fill:var(--ink); }
+            .gen-sub{ font-family:'IBM Plex Mono',monospace; font-size:10px; fill:var(--ink-soft); }
+            .cur-label{ font-family:'IBM Plex Mono',monospace; font-size:11px; fill:var(--accent-ink); font-weight:600; }
+            .flow-line{ stroke:var(--line); stroke-width:1.5; fill:none; }
+          </style>
+
+          <!-- stacked generations -->
+          <rect x="40" y="210" width="150" height="40" rx="3" class="gen-box"></rect>
+          <text x="56" y="228" class="gen-label">generation 5</text>
+          <text x="56" y="242" class="gen-sub">rg 14.1 · fd 9.0</text>
+
+          <rect x="40" y="160" width="150" height="40" rx="3" class="gen-box"></rect>
+          <text x="56" y="178" class="gen-label">generation 6</text>
+          <text x="56" y="192" class="gen-sub">rg 15.2 · fd 9.0</text>
+
+          <rect x="40" y="60" width="150" height="46" rx="3" class="gen-box active"></rect>
+          <text x="56" y="80" class="gen-label" style="font-weight:700;">generation 7</text>
+          <text x="56" y="96" class="gen-sub">rg 15.2 · fd 10.5 · jq 1.8</text>
+
+          <!-- store paths, content addressed -->
+          <rect x="280" y="40" width="160" height="220" rx="4" fill="var(--bg-raise)" stroke="var(--line)"></rect>
+          <text x="296" y="62" class="gen-sub" style="letter-spacing:.04em;">STORE (by hash)</text>
+          <text x="296" y="90" class="gen-label" style="font-size:11px;">ripgrep-15.2.0-3750…</text>
+          <text x="296" y="114" class="gen-label" style="font-size:11px;">fd-10.5.0-b67e18…</text>
+          <text x="296" y="138" class="gen-label" style="font-size:11px;">fd-9.0.0-a12f90…</text>
+          <text x="296" y="162" class="gen-label" style="font-size:11px;">jq-1.8.2-2d7534…</text>
+          <text x="296" y="186" class="gen-label" style="font-size:11px;color:var(--ink-soft);">rg-14.1.0-9c0021…</text>
+
+          <!-- current pointer -->
+          <line x1="200" y1="83" x2="270" y2="83" class="flow-line" marker-end="url(#arrow)" stroke="var(--accent)"></line>
+          <text x="200" y="70" class="cur-label">current →</text>
+
+          <!-- rollback arrow, dashed, from 7 down to 6 -->
+          <path d="M 30 83 C 8 83, 8 180, 30 180" class="flow-line" stroke-dasharray="3 3" marker-end="url(#arrow)"></path>
+          <text x="4" y="130" class="gen-sub" transform="rotate(-90 14 130)">hop rollback</text>
+        </svg>
+        <p class="diagram-cap">generation 7 is a symlink target — generations 5 and 6 sit untouched, one rename away</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="packages">
+    <div class="section-head">
+      <span class="kicker">The index</span>
+      <h2>Every recipe, checksum-verified by inspection</h2>
+      <p>The built-in index isn't hand-typed. A generator resolves each package's latest GitHub release, downloads the real artifact, and derives its checksum, its archive layout and its exact binary path by opening it — nothing here is guessed.</p>
+    </div>
+
+    <div class="catalog-meta">
+      <span class="catalog-count">32 recipes · 125 verified artifacts · darwin-arm64, darwin-amd64, linux-amd64, linux-arm64</span>
+      <a href="#install" class="btn btn-ghost" style="padding:7px 14px; font-size:12.5px;">hop search &lt;name&gt;</a>
+    </div>
+
+    <div class="catalog" id="catalog"><!-- populated by script below from real index data --></div>
+  </section>
+
+  <section id="migrate">
+    <div class="section-head">
+      <span class="kicker">Coming from Homebrew</span>
+      <h2>Bring what you already have</h2>
+      <p><code>hop migrate</code> reads Homebrew's Cellar directly — brew doesn't need to be running, and nothing about your Homebrew installation is touched.</p>
+    </div>
+
+    <div class="term" style="margin-bottom:22px;">
+      <div class="term-bar"><span></span><span></span><span></span><span class="lbl">zsh</span></div>
+      <div class="term-body"><span class="t-prompt">$</span> hop migrate --dry-run
+==&gt; Homebrew at /opt/homebrew
+
+  284 formulae installed  ·  68 you asked for yourself
+  11 casks <span class="t-dim">(GUI apps — hop manages command-line tools, so these stay with brew)</span>
+
+<span class="t-bold">hop can take these over</span>
+  <span class="t-ok">+</span>  flyctl      0.4.101 → <span class="t-bold">0.4.102</span>
+  <span class="t-ok">+</span>  gh          2.100.0
+  <span class="t-ok">+</span>  grpcurl     1.9.4
+  <span class="t-ok">+</span>  mkcert      1.4.4
+  <span class="t-ok">+</span>  shellcheck  0.11.0
+
+<span class="t-dim">61 formulae have no hop recipe yet — these stay with brew; the two coexist fine.</span></div>
+    </div>
+
+    <div class="callout">
+      <div class="callout-mark">→</div>
+      <div>
+        <h3>Nothing gets uninstalled without you typing it</h3>
+        <p>hop installs the overlap under its own store and tells you exactly what to run to retire the Homebrew copies — it never calls <code>brew uninstall</code> for you. Removing software installed by another tool is your decision, not a package manager's.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="install">
+    <div class="section-head">
+      <span class="kicker">Get it</span>
+      <h2>Ships as one static binary</h2>
+      <p>Built entirely on the Go standard library — no dependency to audit, no toolchain to install beyond Go itself. Works offline the moment it's built: the recipe index is compiled into the binary.</p>
+    </div>
+
+    <p style="font-family:var(--mono-code); font-size:13px; color:var(--ink-soft); margin-bottom:6px;">clone and build</p>
+    <div class="install-line">
+      <code><span class="t-prompt">$</span> git clone https://github.com/sammybanapour/hop &amp;&amp; cd hop &amp;&amp; make build</code>
+      <button class="copy-btn" data-copy="git clone https://github.com/sammybanapour/hop && cd hop && make build">copy</button>
+    </div>
+
+    <p style="font-family:var(--mono-code); font-size:13px; color:var(--ink-soft); margin:22px 0 6px;">or, with Go installed</p>
+    <div class="install-line">
+      <code><span class="t-prompt">$</span> go install github.com/sammybanapour/hop/cmd/hop@latest</code>
+      <button class="copy-btn" data-copy="go install github.com/sammybanapour/hop/cmd/hop@latest">copy</button>
+    </div>
+
+    <p style="font-family:var(--mono-code); font-size:13px; color:var(--ink-soft); margin:22px 0 6px;">then put it on PATH</p>
+    <div class="install-line">
+      <code><span class="t-prompt">$</span> eval "$(hop shellenv)"   <span class="t-dim"># add to ~/.zshrc</span></code>
+      <button class="copy-btn" data-copy='eval "$(hop shellenv)"'>copy</button>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap-wide">
+    <div class="foot-row">
+      <div class="brand" style="font-size:16px;"><span class="dot"></span>hop</div>
+      <div class="foot-links">
+        <a href="https://github.com/sammybanapour/hop">GitHub</a>
+        <a href="https://github.com/sammybanapour/hop#readme">Documentation</a>
+        <a href="https://github.com/sammybanapour/hop/blob/main/LICENSE">MIT License</a>
+      </div>
+      <span class="foot-note">named for the jump between generations — not the plant Homebrew is named after</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  // Real recipe data (from internal/core/data/index.json) — not sample text.
+  var pkgs = [
+    ["ripgrep","15.2.0","Recursively search directories for a regex pattern, respecting .gitignore",4],
+    ["fd","10.5.0","A fast, user-friendly alternative to find",4],
+    ["bat","0.26.1","A cat clone with syntax highlighting and git integration",4],
+    ["jq","1.8.2","A lightweight and flexible command-line JSON processor",4],
+    ["fzf","0.74.4","A general-purpose command-line fuzzy finder",4],
+    ["delta","0.19.2","A syntax-highlighting pager for git, diff and grep output",3],
+    ["zoxide","0.10.0","A smarter cd that learns the directories you use",4],
+    ["starship","1.26.0","A minimal, blazing-fast and infinitely customisable shell prompt",4],
+    ["lazygit","0.65.0","A simple terminal UI for git commands",4],
+    ["gitui","0.28.1","Blazing-fast terminal UI for git",2],
+    ["hyperfine","1.20.0","A command-line benchmarking tool with statistical analysis",4],
+    ["just","1.58.0","A handy command runner for project-specific tasks",4],
+    ["dust","1.2.5","A more intuitive version of du, in Rust",4],
+    ["sd","1.1.0","Intuitive find and replace, a friendlier sed",4],
+    ["bottom","0.14.9","A customisable cross-platform process and system monitor",4],
+    ["xh","0.26.2","A friendly and fast tool for sending HTTP requests",4],
+    ["difftastic","0.70.0","A structural diff that understands syntax",4],
+    ["procs","0.14.12","A modern replacement for ps, written in Rust",4],
+    ["zellij","0.45.1","A terminal workspace and multiplexer with batteries included",4],
+    ["ouch","0.8.2","Painless compression and decompression for your terminal",4],
+    ["watchexec","2.7.2","Run commands when files change",4],
+    ["yq","4.53.6","A portable command-line YAML, JSON and XML processor",4],
+    ["gh","2.100.0","GitHub on the command line: pull requests, issues and releases",4],
+    ["shellcheck","0.11.0","A static analysis tool for shell scripts",4],
+    ["grpcurl","1.9.4","Like curl, but for gRPC servers",4],
+    ["mkcert","1.4.4","Make locally trusted development certificates with one command",4],
+    ["websocat","1.14.1","Netcat for WebSockets: connect, serve and pipe ws:// endpoints",4],
+    ["subfinder","2.16.0","Fast passive subdomain enumeration tool",4],
+    ["flyctl","0.4.102","Command-line tool for deploying apps to Fly.io",4],
+    ["hexyl","0.17.0","A colourful command-line hex viewer",4],
+    ["gum","2.0.1","A tool for glamorous shell scripts: prompts, spinners and pickers",4],
+    ["glow","3.0.0","Render markdown on the command line with style",4]
+  ];
+
+  var SHOWN = 20;
+  var el = document.getElementById('catalog');
+  var html = '';
+  pkgs.slice(0, SHOWN).forEach(function(p){
+    html += '<div class="card">'
+      + '<div class="card-top"><span class="card-name">' + p[0] + '</span><span class="card-ver">' + p[1] + '</span></div>'
+      + '<div class="card-desc">' + p[2] + '</div>'
+      + '<div class="card-plats">' + p[3] + ' platform' + (p[3]===1?'':'s') + '</div>'
+      + '</div>';
+  });
+  html += '<div class="catalog-more">+ ' + (pkgs.length - SHOWN) + ' more in the index</div>';
+  el.innerHTML = html;
+
+  document.querySelectorAll('.copy-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var text = btn.getAttribute('data-copy');
+      var done = function(){ var orig = btn.textContent; btn.textContent = 'copied'; setTimeout(function(){ btn.textContent = orig; }, 1400); };
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(done, done);
+      } else {
+        var ta = document.createElement('textarea');
+        ta.value = text; ta.style.position='fixed'; ta.style.opacity='0';
+        document.body.appendChild(ta); ta.select();
+        try { document.execCommand('copy'); } catch(e){}
+        document.body.removeChild(ta);
+        done();
+      }
+    });
+  });
+})();
+</script>
