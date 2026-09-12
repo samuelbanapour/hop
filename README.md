@@ -91,6 +91,33 @@ whatever it can't cover), and it never runs `brew uninstall` for you: once
 you're happy, it prints the exact command to remove the Homebrew copies
 yourself.
 
+## OS and VM images
+
+hop doesn't just manage CLI tools — it can pull OS disk images and container
+rootfs tarballs too, and keep them current the same way it keeps everything
+else current:
+
+```bash
+hop search cloud            # ubuntu-cloud, debian-cloud, …
+hop install ubuntu-cloud    # download + verify, never extracted
+hop info ubuntu-cloud       # → exact path to the .img/.qcow2 file
+hop upgrade ubuntu-cloud    # re-resolves when a new point release ships
+```
+
+An image recipe (`"kind": "image"` in the index) behaves differently from a
+CLI tool on purpose: the artifact is verified against its checksum and
+content-addressed in the store exactly like a binary is, but it is **never
+extracted and never put on `PATH`** — a disk image or rootfs tarball is
+meant to be handed to `qemu`, `docker import`, or a hypervisor exactly as
+downloaded, not unpacked. `hop info <name>` prints the file's real path once
+it's installed.
+
+The built-in index ships `ubuntu-cloud` (24.04 LTS), `debian-cloud`
+(bookworm) and `alpine-minirootfs` (3.20), each resolved from the distro's
+own official checksum manifest — Debian only publishes SHA-512, which is why
+hop's artifact format accepts either SHA-256 or SHA-512, verified with
+exactly the same rigor as everything else in the index.
+
 ## Reproducible project environments
 
 ```toml

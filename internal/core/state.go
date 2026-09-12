@@ -17,7 +17,9 @@ type Installed struct {
 	Name      string    `json:"name"`
 	Version   string    `json:"version"`
 	StorePath string    `json:"store_path"`
+	Kind      Kind      `json:"kind,omitempty"`
 	SHA256    string    `json:"sha256,omitempty"`
+	SHA512    string    `json:"sha512,omitempty"`
 	Deps      []string  `json:"deps,omitempty"`
 	Bins      []BinLink `json:"bins,omitempty"`
 	Mans      []string  `json:"mans,omitempty"`
@@ -41,6 +43,20 @@ type Generation struct {
 }
 
 // Find returns the installed record for name.
+// ImagePath returns the absolute path to a KindImage package's stored file —
+// the exact bytes hop verified, never extracted, ready to hand to qemu,
+// docker import, or whatever else expects them. Empty for anything else.
+func (i *Installed) ImagePath() string {
+	if i == nil || i.Kind != KindImage || i.StorePath == "" || i.Source == "" {
+		return ""
+	}
+	name := baseName(strings.SplitN(i.Source, "?", 2)[0])
+	if name == "" {
+		return ""
+	}
+	return i.StorePath + "/" + name
+}
+
 func (g *Generation) Find(name string) (*Installed, bool) {
 	if g == nil {
 		return nil, false

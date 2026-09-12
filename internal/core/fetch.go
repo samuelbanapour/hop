@@ -3,6 +3,7 @@ package core
 import (
 	"context"
 	"crypto/sha256"
+	"crypto/sha512"
 	"encoding/hex"
 	"errors"
 	"fmt"
@@ -76,17 +77,35 @@ var DiscardSink Sink = discardSink{}
 
 // FetchRequest is one artifact to download.
 type FetchRequest struct {
-	Name   string // package name, used as the progress label
-	URL    string
-	SHA256 string // expected digest; empty means trust-on-first-use
-	Size   int64  // expected size, for the progress bar before headers arrive
+	Name string // package name, used as the progress label
+	URL  string
+	// SHA256 and SHA512 are the expected digest; at most one is normally set
+	// (SHA256 wins if both are, e.g. from a badly hand-edited recipe). Both
+	// empty means trust-on-first-use.
+	SHA256 string
+	SHA512 string
+	Size   int64 // expected size, for the progress bar before headers arrive
+}
+
+// pinnedDigest returns the digest this request pins and which algorithm it
+// is, or ("", "") for trust-on-first-use.
+func (r *FetchRequest) pinnedDigest() (algo, want string) {
+	switch {
+	case r.SHA256 != "":
+		return "sha256", r.SHA256
+	case r.SHA512 != "":
+		return "sha512", r.SHA512
+	default:
+		return "", ""
+	}
 }
 
 // FetchResult is the outcome of one download.
 type FetchResult struct {
 	Req    *FetchRequest
 	Path   string // local file in the download cache
-	SHA256 string // digest actually observed
+	SHA256 string // digests actually observed, both always computed
+	SHA512 string
 	Size   int64
 	Cached bool
 	Err    error
@@ -96,8 +115,8 @@ type FetchResult struct {
 // digest are keyed by content, so the same file shared by several recipes is
 // downloaded once; undeclared ones are keyed by URL.
 func downloadPath(l *Layout, r *FetchRequest) string {
-	if r.SHA256 != "" {
-		return filepath.Join(l.Downloads(), r.SHA256[:min(len(r.SHA256), 64)])
+	if _, want := r.pinnedDigest(); want != "" {
+		return filepath.Join(l.Downloads(), want[:min(len(want), 64)])
 	}
 	h := sha256.Sum256([]byte(r.URL))
 	return filepath.Join(l.Downloads(), "url-"+hex.EncodeToString(h[:8])+"-"+sanitiseName(baseName(r.URL)))
@@ -169,12 +188,17 @@ func FetchAll(ctx context.Context, client *http.Client, l *Layout, reqs []*Fetch
 // failures with backoff.
 func fetchOne(ctx context.Context, client *http.Client, l *Layout, r *FetchRequest, bar BarHandle) *FetchResult {
 	dst := downloadPath(l, r)
+	algo, want := r.pinnedDigest()
 
 	// Cache hit: only trust it if we can prove the contents.
 	if fi, err := os.Stat(dst); err == nil && fi.Size() > 0 {
-		if got, err := hashFile(dst); err == nil {
-			if r.SHA256 == "" || strings.EqualFold(got, r.SHA256) {
-				return &FetchResult{Req: r, Path: dst, SHA256: got, Size: fi.Size(), Cached: true}
+		if sha256hex, sha512hex, err := hashFileBoth(dst); err == nil {
+			got := sha256hex
+			if algo == "sha512" {
+				got = sha512hex
+			}
+			if want == "" || strings.EqualFold(got, want) {
+				return &FetchResult{Req: r, Path: dst, SHA256: sha256hex, SHA512: sha512hex, Size: fi.Size(), Cached: true}
 			}
 		}
 		_ = os.Remove(dst) // corrupt or superseded
@@ -195,17 +219,21 @@ func fetchOne(ctx context.Context, client *http.Client, l *Layout, r *FetchReque
 			}
 		}
 
-		got, size, err := download(ctx, client, r, dst, bar)
+		sha256hex, sha512hex, size, err := download(ctx, client, r, dst, bar)
 		if err == nil {
-			if r.SHA256 != "" && !strings.EqualFold(got, r.SHA256) {
+			got := sha256hex
+			if algo == "sha512" {
+				got = sha512hex
+			}
+			if want != "" && !strings.EqualFold(got, want) {
 				// A digest mismatch is never retried: the bytes on the server
 				// are not the bytes the recipe was written against.
 				_ = os.Remove(dst)
 				return &FetchResult{Req: r, Err: &DigestMismatch{
-					Name: r.Name, URL: r.URL, Want: r.SHA256, Got: got,
+					Name: r.Name, URL: r.URL, Algo: algo, Want: want, Got: got,
 				}}
 			}
-			return &FetchResult{Req: r, Path: dst, SHA256: got, Size: size}
+			return &FetchResult{Req: r, Path: dst, SHA256: sha256hex, SHA512: sha512hex, Size: size}
 		}
 		lastErr = err
 		if !retryable(err) || ctx.Err() != nil {
@@ -216,12 +244,13 @@ func fetchOne(ctx context.Context, client *http.Client, l *Layout, r *FetchReque
 	return &FetchResult{Req: r, Err: lastErr}
 }
 
-// download streams one attempt to a temp file, hashing as it writes so the
-// artifact is never read twice.
-func download(ctx context.Context, client *http.Client, r *FetchRequest, dst string, bar BarHandle) (string, int64, error) {
+// download streams one attempt to a temp file, hashing as it writes — both
+// SHA-256 and SHA-512 in the same pass, since upstreams disagree on which
+// one they publish — so the artifact is never read twice.
+func download(ctx context.Context, client *http.Client, r *FetchRequest, dst string, bar BarHandle) (sha256hex, sha512hex string, size int64, err error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, r.URL, nil)
 	if err != nil {
-		return "", 0, fmt.Errorf("invalid URL %q: %w", r.URL, err)
+		return "", "", 0, fmt.Errorf("invalid URL %q: %w", r.URL, err)
 	}
 	req.Header.Set("User-Agent", userAgent())
 	// Artifacts are already compressed; asking for gzip only wastes CPU and
@@ -230,12 +259,12 @@ func download(ctx context.Context, client *http.Client, r *FetchRequest, dst str
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", 0, err
+		return "", "", 0, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return "", 0, &HTTPError{URL: r.URL, Status: resp.StatusCode, StatusText: resp.Status}
+		return "", "", 0, &HTTPError{URL: r.URL, Status: resp.StatusCode, StatusText: resp.Status}
 	}
 	if resp.ContentLength > 0 {
 		bar.SetTotal(resp.ContentLength)
@@ -243,7 +272,7 @@ func download(ctx context.Context, client *http.Client, r *FetchRequest, dst str
 
 	tmp, err := os.CreateTemp(filepath.Dir(dst), ".dl-*")
 	if err != nil {
-		return "", 0, err
+		return "", "", 0, err
 	}
 	tmpName := tmp.Name()
 	defer func() {
@@ -254,31 +283,31 @@ func download(ctx context.Context, client *http.Client, r *FetchRequest, dst str
 	// Preflight: refuse to start a download that cannot possibly fit.
 	if resp.ContentLength > 0 {
 		if free, err := freeSpace(filepath.Dir(dst)); err == nil && free > 0 && resp.ContentLength+(64<<20) > free {
-			return "", 0, fmt.Errorf("need %s but only %s is free on %s",
+			return "", "", 0, fmt.Errorf("need %s but only %s is free on %s",
 				humanBytes(resp.ContentLength), humanBytes(free), filepath.Dir(dst))
 		}
 	}
 
-	h := sha256.New()
-	w := io.MultiWriter(tmp, h, bar)
+	h256, h512 := sha256.New(), sha512.New()
+	w := io.MultiWriter(tmp, h256, h512, bar)
 	n, err := io.Copy(w, io.LimitReader(resp.Body, maxArchiveBytes))
 	if err != nil {
-		return "", 0, err
+		return "", "", 0, err
 	}
 	if resp.ContentLength > 0 && n != resp.ContentLength {
-		return "", 0, fmt.Errorf("truncated download: got %s of %s",
+		return "", "", 0, fmt.Errorf("truncated download: got %s of %s",
 			humanBytes(n), humanBytes(resp.ContentLength))
 	}
 	if err := tmp.Sync(); err != nil {
-		return "", 0, err
+		return "", "", 0, err
 	}
 	if err := tmp.Close(); err != nil {
-		return "", 0, err
+		return "", "", 0, err
 	}
 	if err := os.Rename(tmpName, dst); err != nil {
-		return "", 0, err
+		return "", "", 0, err
 	}
-	return hex.EncodeToString(h.Sum(nil)), n, nil
+	return hex.EncodeToString(h256.Sum(nil)), hex.EncodeToString(h512.Sum(nil)), n, nil
 }
 
 // retryable distinguishes a flaky network from a wrong URL. Retrying a 404
@@ -324,13 +353,18 @@ func (e *HTTPError) Error() string {
 type DigestMismatch struct {
 	Name string
 	URL  string
+	Algo string // "sha256" or "sha512"
 	Want string
 	Got  string
 }
 
 func (e *DigestMismatch) Error() string {
-	return fmt.Sprintf("checksum mismatch for %s\n      expected %s\n      actual   %s\n      from     %s",
-		e.Name, e.Want, e.Got, e.URL)
+	algo := e.Algo
+	if algo == "" {
+		algo = "sha256"
+	}
+	return fmt.Sprintf("%s checksum mismatch for %s\n      expected %s\n      actual   %s\n      from     %s",
+		algo, e.Name, e.Want, e.Got, e.URL)
 }
 
 // shortError trims an error to something that fits on a progress line.

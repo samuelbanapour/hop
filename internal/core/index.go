@@ -25,6 +25,10 @@ var builtinFS embed.FS
 type Artifact struct {
 	URL    string `json:"url"`
 	SHA256 string `json:"sha256,omitempty"`
+	// SHA512 verifies an artifact whose upstream publishes only a SHA-512
+	// manifest (Debian's cloud images, notably). Exactly one of SHA256 or
+	// SHA512 is expected to be set; SHA256 wins if a recipe somehow sets both.
+	SHA512 string `json:"sha512,omitempty"`
 	Size   int64  `json:"size,omitempty"`
 
 	// Format overrides detection from the URL: tar.gz, tar.xz, tar.bz2, tar,
@@ -46,6 +50,23 @@ type Artifact struct {
 	Man []string `json:"man,omitempty"`
 }
 
+// Kind distinguishes what an installed generation actually does with a
+// recipe's artifact.
+type Kind string
+
+const (
+	// KindBin is a command-line tool: its artifact is extracted, its binaries
+	// are discovered and linked onto PATH. The default; recipes never need to
+	// write it out explicitly.
+	KindBin Kind = ""
+
+	// KindImage is a large single-file artifact — a cloud VM disk image, a
+	// container rootfs tarball — that is verified and content-addressed like
+	// any other package, but is never extracted and never touches PATH. It is
+	// stored as-is and located afterward with `hop info`.
+	KindImage Kind = "image"
+)
+
 // Recipe describes one installable package.
 type Recipe struct {
 	Name        string   `json:"name"`
@@ -54,6 +75,10 @@ type Recipe struct {
 	Homepage    string   `json:"homepage,omitempty"`
 	License     string   `json:"license,omitempty"`
 	Keywords    []string `json:"keywords,omitempty"`
+
+	// Kind selects how an artifact is handled after download. Empty (KindBin)
+	// for ordinary CLI tools; KindImage for OS/VM images and rootfs archives.
+	Kind Kind `json:"kind,omitempty"`
 
 	// Aliases are other names this package answers to, including the name
 	// Homebrew uses when it differs (brew calls delta "git-delta"). They make
@@ -136,6 +161,9 @@ func (ix *Index) build() error {
 	for _, r := range ix.Recipes {
 		if r.Name == "" {
 			return fmt.Errorf("index contains a recipe with no name")
+		}
+		if r.Kind != KindBin && r.Kind != KindImage {
+			return fmt.Errorf("%s: unknown kind %q", r.Name, r.Kind)
 		}
 		key := strings.ToLower(r.Name)
 		if _, dup := ix.byName[key]; dup {

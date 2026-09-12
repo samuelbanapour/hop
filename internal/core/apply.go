@@ -94,6 +94,7 @@ func Apply(ctx context.Context, l *Layout, cur *Generation, plan *Plan, opts App
 			Name:   s.Name,
 			URL:    s.Artifact.URL,
 			SHA256: s.Artifact.SHA256,
+			SHA512: s.Artifact.SHA512,
 			Size:   s.Artifact.Size,
 		})
 	}
@@ -145,7 +146,7 @@ func Apply(ctx context.Context, l *Layout, cur *Generation, plan *Plan, opts App
 		}
 		materialised[strings.ToLower(s.Name)] = entry
 
-		if s.Artifact.SHA256 == "" {
+		if s.Artifact.SHA256 == "" && s.Artifact.SHA512 == "" {
 			res.Recorded[s.Name] = f.SHA256
 		}
 		if s.Recipe.Caveats != "" {
@@ -169,6 +170,7 @@ func Apply(ctx context.Context, l *Layout, cur *Generation, plan *Plan, opts App
 			want.Platform = entry.Platform
 			if f := byName[key]; f != nil {
 				want.SHA256 = f.SHA256
+				want.SHA512 = f.SHA512
 			}
 			want.At = time.Now()
 			final = append(final, want)

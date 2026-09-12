@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "source": "builtin",
-  "generated": "2026-09-12T19:33:11Z",
+  "generated": "2026-09-12T20:04:04Z",
   "recipes": [
     {
       "name": "age",
@@ -19,47 +19,69 @@
           "url": "https://github.com/FiloSottile/age/releases/download/v1.3.2/age-v1.3.2-darwin-amd64.tar.gz",
           "sha256": "1d1e4bc66e1427edad7739ae7616157de0e79db8b6d2a1497d7d9925fb06a539",
           "size": 19376787,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "age",
-            "age-keygen"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/FiloSottile/age/releases/download/v1.3.2/age-v1.3.2-darwin-arm64.tar.gz",
           "sha256": "e2020b073c44f692685a24d6abc378817eb81ffaaf49fd0531ef8565f767f2f5",
           "size": 18106798,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "age",
-            "age-keygen"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/FiloSottile/age/releases/download/v1.3.2/age-v1.3.2-linux-amd64.tar.gz",
           "sha256": "cbe24006683f8eb669266162894b9a522a1af52f2665fbc63a4bb032ed26ac10",
           "size": 19405817,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "age",
-            "age-keygen"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/FiloSottile/age/releases/download/v1.3.2/age-v1.3.2-linux-arm64.tar.gz",
           "sha256": "6b8dc4333c53a5a57c9e5834e3a48f92605d7154014cd07269ff3327db5d37f4",
           "size": 17771923,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "age",
-            "age-keygen"
-          ]
+          "format": "tar.gz"
         }
       }
+    },
+    {
+      "name": "alpine-minirootfs",
+      "version": "3.20",
+      "description": "Alpine Linux minimal root filesystem (musl, ~3MB), for containers and chroots",
+      "homepage": "https://alpinelinux.org",
+      "license": "MIT (Alpine base packages, mixed)",
+      "keywords": [
+        "container",
+        "rootfs",
+        "alpine",
+        "musl",
+        "image"
+      ],
+      "kind": "image",
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://dl-cdn.alpinelinux.org/alpine/v3.20/releases/x86_64/alpine-minirootfs-3.20.10-x86_64.tar.gz",
+          "sha256": "0d44a414245f043ae56872a23762e6c9bee585da2cbe4aa81cbd0331eaf53223",
+          "size": 3495072,
+          "format": "tar.gz"
+        },
+        "darwin-arm64": {
+          "url": "https://dl-cdn.alpinelinux.org/alpine/v3.20/releases/aarch64/alpine-minirootfs-3.20.10-aarch64.tar.gz",
+          "sha256": "61ac877fdbcee6914731bc22a4ed5668ea3470f201f97a7078931c48b71bbeec",
+          "size": 3952266,
+          "format": "tar.gz"
+        },
+        "linux-amd64": {
+          "url": "https://dl-cdn.alpinelinux.org/alpine/v3.20/releases/x86_64/alpine-minirootfs-3.20.10-x86_64.tar.gz",
+          "sha256": "0d44a414245f043ae56872a23762e6c9bee585da2cbe4aa81cbd0331eaf53223",
+          "size": 3495072,
+          "format": "tar.gz"
+        },
+        "linux-arm64": {
+          "url": "https://dl-cdn.alpinelinux.org/alpine/v3.20/releases/aarch64/alpine-minirootfs-3.20.10-aarch64.tar.gz",
+          "sha256": "61ac877fdbcee6914731bc22a4ed5668ea3470f201f97a7078931c48b71bbeec",
+          "size": 3952266,
+          "format": "tar.gz"
+        }
+      },
+      "caveats": "This is a root filesystem tarball, not a command. Find it with:\n\n    hop info alpine-minirootfs\n\nExtract it into a chroot, or `docker import` it as a base image."
     },
     {
       "name": "bandwhich",
@@ -77,49 +99,25 @@
           "url": "https://github.com/imsnif/bandwhich/releases/download/v0.23.1/bandwhich-v0.23.1-x86_64-apple-darwin.tar.gz",
           "sha256": "d4c8f25b997c3f1ad807f251db1d3a0ac53cfcc4d98757d6932360316789ff29",
           "size": 1980809,
-          "format": "tar.gz",
-          "bin": [
-            "bandwhich"
-          ],
-          "man": [
-            "assets/bandwhich.1"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/imsnif/bandwhich/releases/download/v0.23.1/bandwhich-v0.23.1-aarch64-apple-darwin.tar.gz",
           "sha256": "3b440e6a48c94c2ca7507d45f769d8e97fe9069bafa6f718b045a185addfad36",
           "size": 1894447,
-          "format": "tar.gz",
-          "bin": [
-            "bandwhich"
-          ],
-          "man": [
-            "assets/bandwhich.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/imsnif/bandwhich/releases/download/v0.23.1/bandwhich-v0.23.1-x86_64-unknown-linux-musl.tar.gz",
           "sha256": "fec93e01c393cd3ef8aa168a675dffb8fa4841d5fd93390b5d14f238ae29e59c",
           "size": 1601364,
-          "format": "tar.gz",
-          "bin": [
-            "bandwhich"
-          ],
-          "man": [
-            "assets/bandwhich.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/imsnif/bandwhich/releases/download/v0.23.1/bandwhich-v0.23.1-aarch64-unknown-linux-musl.tar.gz",
           "sha256": "6bbf084e5280a1a10833b8f466728ff428a7d637282c0487d6fcda0c4781357a",
           "size": 1495429,
-          "format": "tar.gz",
-          "bin": [
-            "bandwhich"
-          ],
-          "man": [
-            "assets/bandwhich.1"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -139,53 +137,25 @@
           "url": "https://github.com/sharkdp/bat/releases/download/v0.26.1/bat-v0.26.1-x86_64-apple-darwin.tar.gz",
           "sha256": "830d63b0bba1fa040542ec569e3cf77f60d3356b9de75116a344b061e0894245",
           "size": 3367309,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "bat"
-          ],
-          "man": [
-            "bat.1"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/sharkdp/bat/releases/download/v0.26.1/bat-v0.26.1-aarch64-apple-darwin.tar.gz",
           "sha256": "e30beff26779c9bf60bb541e1d79046250cb74378f2757f8eb250afddb19e114",
           "size": 3216703,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "bat"
-          ],
-          "man": [
-            "bat.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/sharkdp/bat/releases/download/v0.26.1/bat-v0.26.1-x86_64-unknown-linux-musl.tar.gz",
           "sha256": "0dcd8ac79732c0d5b136f11f4ee00e581440e16a44eab5b3105b611bbf2cf191",
           "size": 3584928,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "bat"
-          ],
-          "man": [
-            "bat.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/sharkdp/bat/releases/download/v0.26.1/bat-v0.26.1-aarch64-unknown-linux-musl.tar.gz",
           "sha256": "6369242c584065f195fb20cb36fbd7cb63ae690605bbe89868a7596b596c2c23",
           "size": 3383478,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "bat"
-          ],
-          "man": [
-            "bat.1"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -205,37 +175,25 @@
           "url": "https://github.com/ClementTsang/bottom/releases/download/0.14.9/bottom_x86_64-apple-darwin.tar.gz",
           "sha256": "d0b1d446963ee3c4dfbfe2efd9614cfdc77f39e8268bf8cc2e0b5b6cea982774",
           "size": 1901583,
-          "format": "tar.gz",
-          "bin": [
-            "btm"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/ClementTsang/bottom/releases/download/0.14.9/bottom_aarch64-apple-darwin.tar.gz",
           "sha256": "28358e19a3d62b3778fc0d1778b0028a682059145c9ac38ac5076bf124d77714",
           "size": 1755361,
-          "format": "tar.gz",
-          "bin": [
-            "btm"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/ClementTsang/bottom/releases/download/0.14.9/bottom_x86_64-unknown-linux-musl.tar.gz",
           "sha256": "b4bee5b193e7d3f6e090ac14f0ca15acec2e7fe4ef64988e0bfc492e16c28c9a",
           "size": 2126967,
-          "format": "tar.gz",
-          "bin": [
-            "btm"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/ClementTsang/bottom/releases/download/0.14.9/bottom_aarch64-unknown-linux-musl.tar.gz",
           "sha256": "7b6d532f6a6af356970f4e8d7d3a792590485aa4a53ebf038e10d20366125533",
           "size": 1918659,
-          "format": "tar.gz",
-          "bin": [
-            "btm"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -255,28 +213,19 @@
           "url": "https://github.com/theryangeary/choose/releases/download/v1.3.7/choose-aarch64-apple-darwin",
           "sha256": "ba89bf6b9bc180e452699cd33e324407f03c9e081f7894f34b4d17fba1ea74d6",
           "size": 2809392,
-          "format": "raw",
-          "bin": [
-            "choose"
-          ]
+          "format": "raw"
         },
         "linux-amd64": {
           "url": "https://github.com/theryangeary/choose/releases/download/v1.3.7/choose-x86_64-unknown-linux-musl",
           "sha256": "f9958b15b9c5e2ed21162dcd21e514b51a03efc8dcbf730546c3dbef8a2eba2a",
           "size": 3527408,
-          "format": "raw",
-          "bin": [
-            "choose"
-          ]
+          "format": "raw"
         },
         "linux-arm64": {
           "url": "https://github.com/theryangeary/choose/releases/download/v1.3.7/choose-aarch64-unknown-linux-gnu",
           "sha256": "0db1d789ededcedd2c56222eb28f45d5e5e1c56717c0ba5d26c780696bbe3420",
           "size": 3383232,
-          "format": "raw",
-          "bin": [
-            "choose"
-          ]
+          "format": "raw"
         }
       }
     },
@@ -296,37 +245,25 @@
           "url": "https://github.com/sigstore/cosign/releases/download/v3.1.3/cosign-darwin-amd64",
           "sha256": "2347488e5d5b25336644024dfeca5601b190e91197a71a917bda44744aff106c",
           "size": 148611192,
-          "format": "raw",
-          "bin": [
-            "cosign"
-          ]
+          "format": "raw"
         },
         "darwin-arm64": {
           "url": "https://github.com/sigstore/cosign/releases/download/v3.1.3/cosign-darwin-arm64",
           "sha256": "5cf948c2f4dfe59687bdd0b8523709067383e03982cc543475c8a7dc70e92a76",
           "size": 139618946,
-          "format": "raw",
-          "bin": [
-            "cosign"
-          ]
+          "format": "raw"
         },
         "linux-amd64": {
           "url": "https://github.com/sigstore/cosign/releases/download/v3.1.3/cosign-linux-amd64",
           "sha256": "4629c757b7618056f8ddd7e2625ae9fdd94c0372a65049520bc7d9df9efc7f71",
           "size": 141178250,
-          "format": "raw",
-          "bin": [
-            "cosign"
-          ]
+          "format": "raw"
         },
         "linux-arm64": {
           "url": "https://github.com/sigstore/cosign/releases/download/v3.1.3/cosign-linux-arm64",
           "sha256": "c5d324e091826b0d7a78eb16fef316450b4eb9aaec045611c08ba06f5e73220a",
           "size": 132747403,
-          "format": "raw",
-          "bin": [
-            "cosign"
-          ]
+          "format": "raw"
         }
       }
     },
@@ -346,28 +283,19 @@
           "url": "https://github.com/schollz/croc/releases/download/v11.5.2/croc_v11.5.2_macOS-ARM64.tar.gz",
           "sha256": "5978629888393d577cd7dfa4bff9b2c512586511286b82e3e8b4ea9809ac8ed3",
           "size": 8327745,
-          "format": "tar.gz",
-          "bin": [
-            "croc"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/schollz/croc/releases/download/v11.5.2/croc-web_v11.5.2_Linux-amd64.tar.gz",
           "sha256": "4da6a7ff1bd33a7180fc9b08e37cbc5df5e53a5ef67bc55035aa52c421587bd5",
           "size": 10136721,
-          "format": "tar.gz",
-          "bin": [
-            "croc=croc-web"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/schollz/croc/releases/download/v11.5.2/croc_v11.5.2_Linux-ARM64.tar.gz",
           "sha256": "fdfcf43db90c677a6c730b6167f847e629ec65bd8ba8ee413b2ddb4a9a27998b",
           "size": 8246733,
-          "format": "tar.gz",
-          "bin": [
-            "croc"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -387,37 +315,25 @@
           "url": "https://github.com/rs/curlie/releases/download/v1.8.2/curlie_1.8.2_darwin_amd64.tar.gz",
           "sha256": "2c3493a39a0e07beed52a97db643995f32511fd3bab4a831e27ca8cbb1f06ad7",
           "size": 1092242,
-          "format": "tar.gz",
-          "bin": [
-            "curlie"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/rs/curlie/releases/download/v1.8.2/curlie_1.8.2_darwin_arm64.tar.gz",
           "sha256": "6501b25208c0edad5b3e1dbfaaa4cc963cccd1245d4c7d36b30b61607d0ae260",
           "size": 1032570,
-          "format": "tar.gz",
-          "bin": [
-            "curlie"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/rs/curlie/releases/download/v1.8.2/curlie_1.8.2_linux_amd64.tar.gz",
           "sha256": "033d39a06d7a4320f923c49b488b89ec415c1901413ae85d26b9f7a09b38f1a1",
           "size": 1099430,
-          "format": "tar.gz",
-          "bin": [
-            "curlie"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/rs/curlie/releases/download/v1.8.2/curlie_1.8.2_linux_arm64.tar.gz",
           "sha256": "570d505ad08e51ffe98e2ee39ee969cb340e846bc17a10ed2e4ba7a5e9d64c1a",
           "size": 1019210,
-          "format": "tar.gz",
-          "bin": [
-            "curlie"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -437,39 +353,69 @@
           "url": "https://github.com/TomWright/dasel/releases/download/v3.11.2/dasel_darwin_amd64",
           "sha256": "25d46ae4aa84c8e898a1f3cb6315e5a0c7f4e2962835c5510102e56cfe1303a4",
           "size": 10598976,
-          "format": "raw",
-          "bin": [
-            "dasel"
-          ]
+          "format": "raw"
         },
         "darwin-arm64": {
           "url": "https://github.com/TomWright/dasel/releases/download/v3.11.2/dasel_darwin_arm64",
           "sha256": "63407a21f1354dda62c7f015e5262a91b05ce20a858406e2aeac3e5fc614f355",
           "size": 9856210,
-          "format": "raw",
-          "bin": [
-            "dasel"
-          ]
+          "format": "raw"
         },
         "linux-amd64": {
           "url": "https://github.com/TomWright/dasel/releases/download/v3.11.2/dasel_linux_amd64",
           "sha256": "5006ee3a4239ab6a3edb1bf5c932874d814f7c276117ca677352697a4f547799",
           "size": 10477730,
-          "format": "raw",
-          "bin": [
-            "dasel"
-          ]
+          "format": "raw"
         },
         "linux-arm64": {
           "url": "https://github.com/TomWright/dasel/releases/download/v3.11.2/dasel_linux_arm64",
           "sha256": "df33920a792cd8ee5573cec3632a710cd2178d7bc4fc3892c6be78f35e7cbcc6",
           "size": 9765026,
-          "format": "raw",
-          "bin": [
-            "dasel"
-          ]
+          "format": "raw"
         }
       }
+    },
+    {
+      "name": "debian-cloud",
+      "version": "12",
+      "description": "Debian 12 (bookworm) generic cloud image (qcow2), for qemu, cloud-init and VM provisioning",
+      "homepage": "https://cloud.debian.org/images/cloud/",
+      "license": "DFSG (Debian system license)",
+      "keywords": [
+        "vm",
+        "cloud",
+        "qemu",
+        "image",
+        "debian"
+      ],
+      "kind": "image",
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2",
+          "sha512": "84946d6e2f55b1e8dcc114efc059f13882bd2ccdf36852126a13a0aa4a4ce0efee945406b78280e5942096639edc2a3ced20b70c12d9c7c7366ce364ba47a0ff",
+          "size": 449314816,
+          "format": "raw"
+        },
+        "darwin-arm64": {
+          "url": "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-arm64.qcow2",
+          "sha512": "791a822d93afa20360af4497ea2d2c0c0867b9663b8fc4e8b864364334855585a9f053d8fc82c72fe703d66ff76387c6dfc7be8534f0c85c47f0448f6dd28dd4",
+          "size": 435683328,
+          "format": "raw"
+        },
+        "linux-amd64": {
+          "url": "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2",
+          "sha512": "84946d6e2f55b1e8dcc114efc059f13882bd2ccdf36852126a13a0aa4a4ce0efee945406b78280e5942096639edc2a3ced20b70c12d9c7c7366ce364ba47a0ff",
+          "size": 449314816,
+          "format": "raw"
+        },
+        "linux-arm64": {
+          "url": "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-arm64.qcow2",
+          "sha512": "791a822d93afa20360af4497ea2d2c0c0867b9663b8fc4e8b864364334855585a9f053d8fc82c72fe703d66ff76387c6dfc7be8534f0c85c47f0448f6dd28dd4",
+          "size": 435683328,
+          "format": "raw"
+        }
+      },
+      "caveats": "This is a disk image, not a command. Find it with:\n\n    hop info debian-cloud\n\nBoot it with qemu, or import it into your hypervisor of choice."
     },
     {
       "name": "delta",
@@ -487,31 +433,19 @@
           "url": "https://github.com/dandavison/delta/releases/download/0.19.2/delta-0.19.2-aarch64-apple-darwin.tar.gz",
           "sha256": "9be36612a5a13e9e386dc498fb8e50dc87c72ee42b63db0ea05b32f99a72a69a",
           "size": 3027429,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "delta"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/dandavison/delta/releases/download/0.19.2/delta-0.19.2-x86_64-unknown-linux-musl.tar.gz",
           "sha256": "f1ea01ca7728ce3462debc359f39dfc7cbbc1a63224b71fefabf92042864aa1b",
           "size": 3403232,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "delta"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/dandavison/delta/releases/download/0.19.2/delta-0.19.2-aarch64-unknown-linux-gnu.tar.gz",
           "sha256": "0bfce159a5cddd5feb3d6db4a616d883ff51253ce08ac7ec11cb1d208cfaab9e",
           "size": 3166854,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "delta"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -531,37 +465,25 @@
           "url": "https://github.com/Wilfred/difftastic/releases/download/0.70.0/difft-x86_64-apple-darwin.tar.gz",
           "sha256": "c180541ef7963aad4f75d4ef99aed2bf7f5c132d25a3b8152b20309be1fba82f",
           "size": 11472200,
-          "format": "tar.gz",
-          "bin": [
-            "difft"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/Wilfred/difftastic/releases/download/0.70.0/difft-aarch64-apple-darwin.tar.gz",
           "sha256": "1921267221fcb5779d30c4dcc0b3b4620abbe851ffd5596a4715576581518f51",
           "size": 12157511,
-          "format": "tar.gz",
-          "bin": [
-            "difft"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/Wilfred/difftastic/releases/download/0.70.0/difft-x86_64-unknown-linux-musl.tar.gz",
           "sha256": "16f65a74a3d64d0bb44d31223d56d0ccaa9ad148f520322450a0629ee21f205f",
           "size": 11904574,
-          "format": "tar.gz",
-          "bin": [
-            "difft"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/Wilfred/difftastic/releases/download/0.70.0/difft-aarch64-unknown-linux-gnu.tar.gz",
           "sha256": "e729684907d67d1a1727a08f443877e19e40eeb2efebcd95c1b8f7fee4284e8e",
           "size": 11626007,
-          "format": "tar.gz",
-          "bin": [
-            "difft"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -581,41 +503,25 @@
           "url": "https://github.com/Byron/dua-cli/releases/download/v2.45.0/dua-v2.45.0-x86_64-apple-darwin.tar.gz",
           "sha256": "99e64f96dbedd173308c4d7023f57fc4f50629144adc282ed2b51e4eeca77b1c",
           "size": 2254776,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "dua"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/Byron/dua-cli/releases/download/v2.45.0/dua-v2.45.0-aarch64-apple-darwin.tar.gz",
           "sha256": "2b7bdeae33a856cd2e5986b21c76758dca48ba1f688af77f58bec08294fac2f8",
           "size": 2079161,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "dua"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/Byron/dua-cli/releases/download/v2.45.0/dua-v2.45.0-x86_64-unknown-linux-musl.tar.gz",
           "sha256": "d0b972f5bbcab2260db791bae3796f61f22d6df7f1b3707aeb2eed9aa281e4cd",
           "size": 2481345,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "dua"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/Byron/dua-cli/releases/download/v2.45.0/dua-v2.45.0-aarch64-unknown-linux-musl.tar.gz",
           "sha256": "3ac90e746b52c6da2ecccac2d3e245eb3fe10386be4754575a43c374b6ad785a",
           "size": 2319286,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "dua"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -635,49 +541,25 @@
           "url": "https://github.com/muesli/duf/releases/download/v0.9.1/duf_0.9.1_darwin_x86_64.tar.gz",
           "sha256": "e3384519b0055c904b7352b55cd81bd101f5dd94dab1195a72880bddca7c2aaf",
           "size": 1277865,
-          "format": "tar.gz",
-          "bin": [
-            "duf"
-          ],
-          "man": [
-            "duf.1"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/muesli/duf/releases/download/v0.9.1/duf_0.9.1_darwin_arm64.tar.gz",
           "sha256": "512ba0ff3585bb8c65841de557a4c4b8712332db005dc952fa98d373a05d01df",
           "size": 1212705,
-          "format": "tar.gz",
-          "bin": [
-            "duf"
-          ],
-          "man": [
-            "duf.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/muesli/duf/releases/download/v0.9.1/duf_0.9.1_linux_x86_64.tar.gz",
           "sha256": "5add851e7062c5e56939abb664705e4d14fa2d06289490aff31d51f153832de7",
           "size": 1285584,
-          "format": "tar.gz",
-          "bin": [
-            "duf"
-          ],
-          "man": [
-            "duf.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/muesli/duf/releases/download/v0.9.1/duf_0.9.1_linux_arm64.tar.gz",
           "sha256": "22ea0ad29f6610bf443aa351e600de97e47a9b380ef58316606a84bb8f595216",
           "size": 1189297,
-          "format": "tar.gz",
-          "bin": [
-            "duf"
-          ],
-          "man": [
-            "duf.1"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -697,41 +579,25 @@
           "url": "https://github.com/bootandy/dust/releases/download/v1.2.5/dust-v1.2.5-x86_64-apple-darwin.tar.gz",
           "sha256": "29566236d7a5e2afbc3fcf2d365845a4eaf0fc969a4ed9f8b878bc1a4fc7d2b8",
           "size": 1122946,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "dust"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/bootandy/dust/releases/download/v1.2.5/dust-v1.2.5-aarch64-apple-darwin.tar.gz",
           "sha256": "7f17449fecff70cce61e6060fac490dfe66b1b40ee1639bc1f72d121b846e364",
           "size": 1040581,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "dust"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/bootandy/dust/releases/download/v1.2.5/dust-v1.2.5-x86_64-unknown-linux-musl.tar.gz",
           "sha256": "79813b5743fab1e04c1d9c34042aab865dbe09efb76719e7c7d260568850fabc",
           "size": 1255296,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "dust"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/bootandy/dust/releases/download/v1.2.5/dust-v1.2.5-aarch64-unknown-linux-musl.tar.gz",
           "sha256": "331b328233a70e56f0509ff962b2a6ea606eb2e654ce8a0e9a3bebe1bd54a2be",
           "size": 1131020,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "dust"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -751,53 +617,25 @@
           "url": "https://github.com/zyedidia/eget/releases/download/v1.3.4/eget-1.3.4-darwin_amd64.tar.gz",
           "sha256": "fbe88d010145f04ada708d81c4ce264ae1bd89d17ae779b816e6dabff787df08",
           "size": 2885114,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "eget"
-          ],
-          "man": [
-            "eget.1"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/zyedidia/eget/releases/download/v1.3.4/eget-1.3.4-darwin_arm64.tar.gz",
           "sha256": "47398a317d75b0eae103a9ff9be86729295f659b3ab9bbe2cabc7c48ef35a0c6",
           "size": 2753558,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "eget"
-          ],
-          "man": [
-            "eget.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/zyedidia/eget/releases/download/v1.3.4/eget-1.3.4-linux_amd64.tar.gz",
           "sha256": "c6b3da99e494e14a9f8c2877f9eb5891d573a95f436ecba7013cfb7d0992abf5",
           "size": 2790733,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "eget"
-          ],
-          "man": [
-            "eget.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/zyedidia/eget/releases/download/v1.3.4/eget-1.3.4-linux_arm64.tar.gz",
           "sha256": "2258d8e52a1906e5ac5c32d940b5ff2807ab93873827e4cbe9e959f5ebf16188",
           "size": 2554414,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "eget"
-          ],
-          "man": [
-            "eget.1"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -817,19 +655,13 @@
           "url": "https://github.com/eza-community/eza/releases/download/v0.23.5/eza_x86_64-unknown-linux-musl.tar.gz",
           "sha256": "e06eebab74b73d6b7d51a796a353824b001bea82df077706382e100815d28904",
           "size": 1412332,
-          "format": "tar.gz",
-          "bin": [
-            "eza"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/eza-community/eza/releases/download/v0.23.5/eza_aarch64-unknown-linux-gnu.tar.gz",
           "sha256": "40b87ae8628aa2ff0f0d2dc24ab52f689631366385c3da630bae745671fd71ec",
           "size": 1137855,
-          "format": "tar.gz",
-          "bin": [
-            "eza"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -849,53 +681,25 @@
           "url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-v10.5.0-x86_64-apple-darwin.tar.gz",
           "sha256": "7e31028c62c6955877735d0406807aa484c2a5e6f86235a59e26c29c301da590",
           "size": 1426858,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "fd"
-          ],
-          "man": [
-            "fd.1"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-v10.5.0-aarch64-apple-darwin.tar.gz",
           "sha256": "b67e1836c468e42e411984b56e52fa7abec08c2bd22c867398e7cc134aac5e12",
           "size": 1334374,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "fd"
-          ],
-          "man": [
-            "fd.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-v10.5.0-x86_64-unknown-linux-musl.tar.gz",
           "sha256": "761c72dc8e120d85b22292063be8a796e2eeb20eb3e4f38b8fa2343ccf3514a7",
           "size": 1573549,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "fd"
-          ],
-          "man": [
-            "fd.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-v10.5.0-aarch64-unknown-linux-musl.tar.gz",
           "sha256": "d76c4317f7d5dba69f8a2a15856c90c777e7f0dd4e85f0de8c76de6992c374d4",
           "size": 1429078,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "fd"
-          ],
-          "man": [
-            "fd.1"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -910,45 +714,30 @@
         "deploy",
         "cloud"
       ],
-      "aliases": [
-        "fly"
-      ],
       "artifacts": {
         "darwin-amd64": {
           "url": "https://github.com/superfly/flyctl/releases/download/v0.4.102/flyctl_0.4.102_macOS_x86_64.tar.gz",
           "sha256": "167d9f926f307e4a0799c76267f7b0002174df56a57f69fefd52d8e9a4285f55",
           "size": 53452688,
-          "format": "tar.gz",
-          "bin": [
-            "flyctl"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/superfly/flyctl/releases/download/v0.4.102/flyctl_0.4.102_macOS_arm64.tar.gz",
           "sha256": "4780d045c38d4ff7e7bc296e2d2f3e0f093b0fcece5f6022afc948ddf94288a8",
           "size": 50459711,
-          "format": "tar.gz",
-          "bin": [
-            "flyctl"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/superfly/flyctl/releases/download/v0.4.102/flyctl_0.4.102_Linux_x86_64.tar.gz",
           "sha256": "94a7219201660d57705d6f92fc4a75199aa0c491c349325fd67dca0b43bc588e",
           "size": 50777985,
-          "format": "tar.gz",
-          "bin": [
-            "flyctl"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/superfly/flyctl/releases/download/v0.4.102/flyctl_0.4.102_Linux_arm64.tar.gz",
           "sha256": "4acd7d16824e8733447a28eaab92bd6d3284044a273ffafec5d5f98bd3453ebb",
           "size": 46690206,
-          "format": "tar.gz",
-          "bin": [
-            "flyctl"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -968,37 +757,25 @@
           "url": "https://github.com/antonmedv/fx/releases/download/39.2.0/fx_darwin_amd64",
           "sha256": "2ad7d0a6e1ea67ab10a22cc06825fdc776511e8f412926d1c752b630eac12e02",
           "size": 17984928,
-          "format": "raw",
-          "bin": [
-            "fx"
-          ]
+          "format": "raw"
         },
         "darwin-arm64": {
           "url": "https://github.com/antonmedv/fx/releases/download/39.2.0/fx_darwin_arm64",
           "sha256": "5d7dadbf8ac4e4a55b5b6d31bdd958b90823292997ba9ddae395f66417bb4a9b",
           "size": 17640450,
-          "format": "raw",
-          "bin": [
-            "fx"
-          ]
+          "format": "raw"
         },
         "linux-amd64": {
           "url": "https://github.com/antonmedv/fx/releases/download/39.2.0/fx_linux_amd64",
           "sha256": "17ea6549c7cf0b8be5ec109d04da7fbf1d5de9f7b99d957a6215081933528afe",
           "size": 18104523,
-          "format": "raw",
-          "bin": [
-            "fx"
-          ]
+          "format": "raw"
         },
         "linux-arm64": {
           "url": "https://github.com/antonmedv/fx/releases/download/39.2.0/fx_linux_arm64",
           "sha256": "85ea8435b0a80b6d31ffa9f61ac9b67d9bb8f0ffffabdfe5e7e587b07a0a0684",
           "size": 17639716,
-          "format": "raw",
-          "bin": [
-            "fx"
-          ]
+          "format": "raw"
         }
       }
     },
@@ -1018,37 +795,25 @@
           "url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-darwin_amd64.tar.gz",
           "sha256": "2d392b50be66e2ab104ccd52a6072df692b1f9b9c5b449a9c098de885f32c4c5",
           "size": 2358031,
-          "format": "tar.gz",
-          "bin": [
-            "fzf"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-darwin_arm64.tar.gz",
           "sha256": "4f6a113bfc0c7959e0005c78d566a51afc4fcefc956f43735c62a9deb19e92ae",
           "size": 2148967,
-          "format": "tar.gz",
-          "bin": [
-            "fzf"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-linux_amd64.tar.gz",
           "sha256": "05e6813a337cc722c3ed07e54a764b75cc5d671e2e60459db0ba696ee5fa7504",
           "size": 2286563,
-          "format": "tar.gz",
-          "bin": [
-            "fzf"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-linux_arm64.tar.gz",
           "sha256": "5d673b849f494f0d64ec471d8640b153ca8849e3846a31da17abdcfce8df6b46",
           "size": 2074969,
-          "format": "tar.gz",
-          "bin": [
-            "fzf"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -1068,73 +833,25 @@
           "url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_macOS_amd64.zip",
           "sha256": "fcd7799e85eb575f3c7d2b1679bfbfedaefa1269d4bc7d096b51e10939b4812b",
           "size": 15818005,
-          "format": "zip",
-          "strip": 1,
-          "bin": [
-            "bin/gh"
-          ],
-          "man": [
-            "share/man/man1/gh-agent-task-create.1",
-            "share/man/man1/gh-agent-task-list.1",
-            "share/man/man1/gh-agent-task-view.1",
-            "share/man/man1/gh-agent-task.1",
-            "share/man/man1/gh-alias-delete.1",
-            "share/man/man1/gh-alias-import.1"
-          ]
+          "format": "zip"
         },
         "darwin-arm64": {
           "url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_macOS_arm64.zip",
           "sha256": "45f9a62da2f6e641a7fad57e2ce39656dfd7ef331372d80a2a2aed65abb01642",
           "size": 14212224,
-          "format": "zip",
-          "strip": 1,
-          "bin": [
-            "bin/gh"
-          ],
-          "man": [
-            "share/man/man1/gh-agent-task-create.1",
-            "share/man/man1/gh-agent-task-list.1",
-            "share/man/man1/gh-agent-task-view.1",
-            "share/man/man1/gh-agent-task.1",
-            "share/man/man1/gh-alias-delete.1",
-            "share/man/man1/gh-alias-import.1"
-          ]
+          "format": "zip"
         },
         "linux-amd64": {
           "url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_linux_amd64.tar.gz",
           "sha256": "e4d4bb4498e8d007abe545b6568926793ace1b6447da598294a610018cb164be",
           "size": 15152253,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "bin/gh"
-          ],
-          "man": [
-            "share/man/man1/gh-agent-task-create.1",
-            "share/man/man1/gh-agent-task-list.1",
-            "share/man/man1/gh-agent-task-view.1",
-            "share/man/man1/gh-agent-task.1",
-            "share/man/man1/gh-alias-delete.1",
-            "share/man/man1/gh-alias-import.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_linux_arm64.tar.gz",
           "sha256": "ea4e7a581a32ccad6cc7923cb1576ac5859ba4b9a16ab22eb8f8a96e78e2e961",
           "size": 13783869,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "bin/gh"
-          ],
-          "man": [
-            "share/man/man1/gh-agent-task-create.1",
-            "share/man/man1/gh-agent-task-list.1",
-            "share/man/man1/gh-agent-task-view.1",
-            "share/man/man1/gh-agent-task.1",
-            "share/man/man1/gh-alias-delete.1",
-            "share/man/man1/gh-alias-import.1"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -1154,53 +871,25 @@
           "url": "https://github.com/orhun/git-cliff/releases/download/v2.14.1/git-cliff-2.14.1-x86_64-apple-darwin.tar.gz",
           "sha256": "d1ca51bfd8b8c2a09434532bdb85bab50179b7c0bde2378aa48f3c1a7dc2fd36",
           "size": 7270080,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "git-cliff"
-          ],
-          "man": [
-            "man/git-cliff.1"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/orhun/git-cliff/releases/download/v2.14.1/git-cliff-2.14.1-aarch64-apple-darwin.tar.gz",
           "sha256": "2e2d1f60963aa6a201dbd21df14d7f44025328b8bb33437695f15a516598615a",
           "size": 6782470,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "git-cliff"
-          ],
-          "man": [
-            "man/git-cliff.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/orhun/git-cliff/releases/download/v2.14.1/git-cliff-2.14.1-x86_64-unknown-linux-musl.tar.gz",
           "sha256": "cba6ae86f0a4205784eed8ef049fe53c904138806e33a1bda2e25026b17198eb",
           "size": 7953132,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "git-cliff"
-          ],
-          "man": [
-            "man/git-cliff.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/orhun/git-cliff/releases/download/v2.14.1/git-cliff-2.14.1-aarch64-unknown-linux-musl.tar.gz",
           "sha256": "ee79fa39a8bb100b12937b0ac4800cc4436ae48f678ef8a1502ce99754552b0c",
           "size": 7238781,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "git-cliff"
-          ],
-          "man": [
-            "man/git-cliff.1"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -1220,37 +909,25 @@
           "url": "https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_darwin_x64.tar.gz",
           "sha256": "dfe101a4db2255fc85120ac7f3d25e4342c3c20cf749f2c20a18081af1952709",
           "size": 8359235,
-          "format": "tar.gz",
-          "bin": [
-            "gitleaks"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_darwin_arm64.tar.gz",
           "sha256": "b40ab0ae55c505963e365f271a8d3846efbc170aa17f2607f13df610a9aeb6a5",
           "size": 7897593,
-          "format": "tar.gz",
-          "bin": [
-            "gitleaks"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_x64.tar.gz",
           "sha256": "551f6fc83ea457d62a0d98237cbad105af8d557003051f41f3e7ca7b3f2470eb",
           "size": 8230402,
-          "format": "tar.gz",
-          "bin": [
-            "gitleaks"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/gitleaks/gitleaks/releases/download/v8.30.1/gitleaks_8.30.1_linux_arm64.tar.gz",
           "sha256": "e4a487ee7ccd7d3a7f7ec08657610aa3606637dab924210b3aee62570fb4b080",
           "size": 7601421,
-          "format": "tar.gz",
-          "bin": [
-            "gitleaks"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -1269,19 +946,13 @@
           "url": "https://github.com/gitui-org/gitui/releases/download/v0.28.1/gitui-linux-x86_64.tar.gz",
           "sha256": "f6149b9ae203397158b0c89c13cfde718e7121d3d3cd2ebc597f93d6628d9b5b",
           "size": 6840775,
-          "format": "tar.gz",
-          "bin": [
-            "./gitui"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/gitui-org/gitui/releases/download/v0.28.1/gitui-linux-aarch64.tar.gz",
           "sha256": "2a640da05b73e9152a7bf92bfd7c23acd9d60438f4f2cabb62357014a5fd7c28",
           "size": 6987794,
-          "format": "tar.gz",
-          "bin": [
-            "./gitui"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -1301,41 +972,25 @@
           "url": "https://github.com/charmbracelet/glow/releases/download/v3.0.0/glow_3.0.0_Darwin_x86_64.tar.gz",
           "sha256": "b911b90622e686d44bc072112898584a601ed8353276b735835d8cdbcc27f660",
           "size": 6925688,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "glow"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/charmbracelet/glow/releases/download/v3.0.0/glow_3.0.0_Darwin_arm64.tar.gz",
           "sha256": "4b8a9a32412c0525e4c239e65171706fc5beb6d423608d99fe16788d47b345d3",
           "size": 6466187,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "glow"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/charmbracelet/glow/releases/download/v3.0.0/glow_3.0.0_Linux_x86_64.tar.gz",
           "sha256": "13e05e4b2acc18d2aee44291aefe6325b077ec321b631a0cfa780e8e3bc33f78",
           "size": 6824849,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "glow"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/charmbracelet/glow/releases/download/v3.0.0/glow_3.0.0_Linux_arm64.tar.gz",
           "sha256": "810c39f4691feb75e675a5f5f54b9fa091354e7599d9cf9c9fc9b97e47a99759",
           "size": 6223975,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "glow"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -1355,49 +1010,25 @@
           "url": "https://github.com/orf/gping/releases/download/gping-v1.21.0/gping-macOS-x86_64.tar.gz",
           "sha256": "d0206c60fb5e7c6a9b727968aec847a3b0eb206f1f763c6c784324288114e732",
           "size": 1309205,
-          "format": "tar.gz",
-          "bin": [
-            "gping"
-          ],
-          "man": [
-            "gping.1"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/orf/gping/releases/download/gping-v1.21.0/gping-macOS-arm64.tar.gz",
           "sha256": "9061a06d93490f97b3a956e149d8ec4c9030625f764e8dbfac9b737c00bd9ea0",
           "size": 1225081,
-          "format": "tar.gz",
-          "bin": [
-            "gping"
-          ],
-          "man": [
-            "gping.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/orf/gping/releases/download/gping-v1.21.0/gping-Linux-musl-x86_64.tar.gz",
           "sha256": "cea59e22f6faf941f054cf0925433a2e3e4e6c42dc5c778b0265279a5056aeec",
           "size": 1478569,
-          "format": "tar.gz",
-          "bin": [
-            "gping"
-          ],
-          "man": [
-            "gping.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/orf/gping/releases/download/gping-v1.21.0/gping-Linux-musl-arm64.tar.gz",
           "sha256": "75e485e9ae081b4478b7c9fea0585a125dd7e640334cdbdec852af6238c3f1f1",
           "size": 1373998,
-          "format": "tar.gz",
-          "bin": [
-            "gping"
-          ],
-          "man": [
-            "gping.1"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -1417,37 +1048,25 @@
           "url": "https://github.com/tomnomnom/gron/releases/download/v0.7.1/gron-darwin-amd64-0.7.1.tgz",
           "sha256": "59034d4aa883c5815784b290567d104669a51f20eaf97f1d8baa4f74e22047d6",
           "size": 3927504,
-          "format": "tar.gz",
-          "bin": [
-            "gron"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/tomnomnom/gron/releases/download/v0.7.1/gron-darwin-arm64-0.7.1.tgz",
           "sha256": "1b9b987c6ead684a992db91b7a32fd15ef946013dfabfe84d00b2fa6f55d7182",
           "size": 3785662,
-          "format": "tar.gz",
-          "bin": [
-            "gron"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/tomnomnom/gron/releases/download/v0.7.1/gron-linux-amd64-0.7.1.tgz",
           "sha256": "ca0335826b02b044fa05d7e951521e45c6ced1c381a73ed5803450088e18bf22",
           "size": 4052281,
-          "format": "tar.gz",
-          "bin": [
-            "gron"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/tomnomnom/gron/releases/download/v0.7.1/gron-linux-arm64-0.7.1.tgz",
           "sha256": "5d1d4764723a0f768d9ddef0685a052f564c8bbf5e475382342faf4224a07d80",
           "size": 3771848,
-          "format": "tar.gz",
-          "bin": [
-            "gron"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -1467,37 +1086,25 @@
           "url": "https://github.com/fullstorydev/grpcurl/releases/download/v1.9.4/grpcurl_1.9.4_osx_x86_64.tar.gz",
           "sha256": "0c1b24a82097862027af6abe88f362db73e4846859a3ceda2dd466e4dc971a06",
           "size": 10228231,
-          "format": "tar.gz",
-          "bin": [
-            "grpcurl"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/fullstorydev/grpcurl/releases/download/v1.9.4/grpcurl_1.9.4_osx_arm64.tar.gz",
           "sha256": "e0df111350acf8ee38f453f4e97e0474cfe1a987ee0c368ebe5383e6a4bccf25",
           "size": 9513972,
-          "format": "tar.gz",
-          "bin": [
-            "grpcurl"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/fullstorydev/grpcurl/releases/download/v1.9.4/grpcurl_1.9.4_linux_x86_64.tar.gz",
           "sha256": "97e13d58d2733a0e62cd2571d1d5f0c02823f0d25282f08bddedf1ad9c5d1736",
           "size": 9968722,
-          "format": "tar.gz",
-          "bin": [
-            "grpcurl"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/fullstorydev/grpcurl/releases/download/v1.9.4/grpcurl_1.9.4_linux_arm64.tar.gz",
           "sha256": "ad66227d90631da5428b4a5ccf28d63846f0f15649d8b2367df044a59edbb617",
           "size": 9026859,
-          "format": "tar.gz",
-          "bin": [
-            "grpcurl"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -1517,37 +1124,25 @@
           "url": "https://github.com/anchore/grype/releases/download/v0.118.0/grype_0.118.0_darwin_amd64.tar.gz",
           "sha256": "cfeecf3462321c37ec4bd37dcd8a7f6630cc6c0c9997a07ff34002c5d7ef9bb3",
           "size": 31767326,
-          "format": "tar.gz",
-          "bin": [
-            "grype"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/anchore/grype/releases/download/v0.118.0/grype_0.118.0_darwin_arm64.tar.gz",
           "sha256": "938f050bb5076c8aa761867b39843abad2414dfe4cc82b7d36886e634f49c640",
           "size": 29041722,
-          "format": "tar.gz",
-          "bin": [
-            "grype"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/anchore/grype/releases/download/v0.118.0/grype_0.118.0_linux_amd64.tar.gz",
           "sha256": "1d444c5e7360471815f7158f71935fcecc68a3c417d85c7344f770854300bba2",
           "size": 30404925,
-          "format": "tar.gz",
-          "bin": [
-            "grype"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/anchore/grype/releases/download/v0.118.0/grype_0.118.0_linux_arm64.tar.gz",
           "sha256": "32aceeb8ee837244775fcb522372c8b3a47914986385f3148f4ee2c930482a84",
           "size": 27739853,
-          "format": "tar.gz",
-          "bin": [
-            "grype"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -1567,41 +1162,25 @@
           "url": "https://github.com/charmbracelet/gum/releases/download/v2.0.1/gum_2.0.1_Darwin_x86_64.tar.gz",
           "sha256": "4d125b60fbaa28ef1674bb16f3859ed4e813acb027a79d24603b598ea4a0b71f",
           "size": 5136508,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "gum"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/charmbracelet/gum/releases/download/v2.0.1/gum_2.0.1_Darwin_arm64.tar.gz",
           "sha256": "994662daab6fcfe9dcfc57d87ca42bcae2948d86fa864f9010a3848fa9bb7d6e",
           "size": 4713633,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "gum"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/charmbracelet/gum/releases/download/v2.0.1/gum_2.0.1_Linux_x86_64.tar.gz",
           "sha256": "4dfe4547f960813864c803b3617aa64427fa32ca566707fde949e08975297c48",
           "size": 4963930,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "gum"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/charmbracelet/gum/releases/download/v2.0.1/gum_2.0.1_Linux_arm64.tar.gz",
           "sha256": "6998202a8fea27bb2007f69e44ec5dcb4cff5268c62d995de857eee0e2cd52cb",
           "size": 4543575,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "gum"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -1621,53 +1200,25 @@
           "url": "https://github.com/sharkdp/hexyl/releases/download/v0.17.0/hexyl-v0.17.0-x86_64-apple-darwin.tar.gz",
           "sha256": "55346f1dcee92bf93f32e104b0fb9d31fab8eec36532a9b6107b4e0e0aef5f46",
           "size": 535239,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "hexyl"
-          ],
-          "man": [
-            "hexyl.1"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/sharkdp/hexyl/releases/download/v0.17.0/hexyl-v0.17.0-aarch64-apple-darwin.tar.gz",
           "sha256": "d8c50f5ec688faf566ea4c13d6aa12a5681dc370dab3ffba0a9db935a5986630",
           "size": 507300,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "hexyl"
-          ],
-          "man": [
-            "hexyl.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/sharkdp/hexyl/releases/download/v0.17.0/hexyl-v0.17.0-x86_64-unknown-linux-musl.tar.gz",
           "sha256": "82b374b800cc965f4116b9d5d6a50394945170d4f65b9ef6ced3b82b014de8a6",
           "size": 600537,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "hexyl"
-          ],
-          "man": [
-            "hexyl.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/sharkdp/hexyl/releases/download/v0.17.0/hexyl-v0.17.0-aarch64-unknown-linux-gnu.tar.gz",
           "sha256": "70b97648935f98801fd3c3e4758ff4e92afcf7e75316ff65d4e4f5d2e321b658",
           "size": 531498,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "hexyl"
-          ],
-          "man": [
-            "hexyl.1"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -1686,53 +1237,25 @@
           "url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-x86_64-apple-darwin.tar.gz",
           "sha256": "f58d0b90993fadfa122a351428c469ce24afef3865f027f0e6e86f0830d088f1",
           "size": 621721,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "hyperfine"
-          ],
-          "man": [
-            "hyperfine.1"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-aarch64-apple-darwin.tar.gz",
           "sha256": "8ee7067016620447c9d2d6234ec9a4680f958b7ad983549b56334668f63075b5",
           "size": 582508,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "hyperfine"
-          ],
-          "man": [
-            "hyperfine.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-x86_64-unknown-linux-musl.tar.gz",
           "sha256": "3285ec7959285288137043dd81dce0dde056227018a8277532d9a364b4f03c2b",
           "size": 710161,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "hyperfine"
-          ],
-          "man": [
-            "hyperfine.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-aarch64-unknown-linux-gnu.tar.gz",
           "sha256": "90875cb1db7a1d797c311174d061728361e58fc70e3b62262a00635ac3b1997c",
           "size": 607895,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "hyperfine"
-          ],
-          "man": [
-            "hyperfine.1"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -1752,37 +1275,25 @@
           "url": "https://github.com/jqlang/jq/releases/download/jq-1.8.2/jq-osx-amd64",
           "sha256": "e94b266e3c26690550006abe63152b782280f4e14374accdf04cbde844f00bc0",
           "size": 871768,
-          "format": "raw",
-          "bin": [
-            "jq"
-          ]
+          "format": "raw"
         },
         "darwin-arm64": {
           "url": "https://github.com/jqlang/jq/releases/download/jq-1.8.2/jq-macos-arm64",
           "sha256": "2d75340ba57a4b4b4c8708a21c2dc8e958a48aaa8bba13b27f77f6e4c0eca07e",
           "size": 841504,
-          "format": "raw",
-          "bin": [
-            "jq"
-          ]
+          "format": "raw"
         },
         "linux-amd64": {
           "url": "https://github.com/jqlang/jq/releases/download/jq-1.8.2/jq-linux64",
           "sha256": "b1c22172dd303f3be49e935aa56aa48a8b7a46e0bc838b4997d3bb451495870f",
           "size": 2267912,
-          "format": "raw",
-          "bin": [
-            "jq"
-          ]
+          "format": "raw"
         },
         "linux-arm64": {
           "url": "https://github.com/jqlang/jq/releases/download/jq-1.8.2/jq-linux-arm64",
           "sha256": "8b85c817833814ddca00a144c33705546355afccf0cf39b188f3cdb48b852309",
           "size": 1797688,
-          "format": "raw",
-          "bin": [
-            "jq"
-          ]
+          "format": "raw"
         }
       }
     },
@@ -1802,49 +1313,25 @@
           "url": "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-x86_64-apple-darwin.tar.gz",
           "sha256": "9a09cfef66aaa79da58203970103a0684307716caaabd3e9844cacc4dc0f4023",
           "size": 2330963,
-          "format": "tar.gz",
-          "bin": [
-            "just"
-          ],
-          "man": [
-            "just.1"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-aarch64-apple-darwin.tar.gz",
           "sha256": "50ae3e996c974a0bf32ea7d10f495070df33f1b43e0616b2769e3d4821ed8f48",
           "size": 2146038,
-          "format": "tar.gz",
-          "bin": [
-            "just"
-          ],
-          "man": [
-            "just.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-x86_64-unknown-linux-musl.tar.gz",
           "sha256": "4a5cc2f53e6f0f8c59092a6cc38291eb729d46a7dd95d3ae582008881b84931d",
           "size": 2529009,
-          "format": "tar.gz",
-          "bin": [
-            "just"
-          ],
-          "man": [
-            "just.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-aarch64-unknown-linux-musl.tar.gz",
           "sha256": "748237128c4c40cbdabc65e841d05ceba13cc23a91eaba395495894c1d9764df",
           "size": 2306281,
-          "format": "tar.gz",
-          "bin": [
-            "just"
-          ],
-          "man": [
-            "just.1"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -1864,37 +1351,25 @@
           "url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Darwin_amd64.tar.gz",
           "sha256": "7e8802c57c45a0cd389e8fc38472243fe4cf48d8ad5957e189ce370e19e5eda0",
           "size": 42172258,
-          "format": "tar.gz",
-          "bin": [
-            "k9s"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Darwin_arm64.tar.gz",
           "sha256": "9b8c0e8f461e5d33aeee43a67f5ef4aff646a008a786887b8266cbb153c610cc",
           "size": 39201894,
-          "format": "tar.gz",
-          "bin": [
-            "k9s"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Linux_amd64.tar.gz",
           "sha256": "c3752ad51a5a4015a113819c4eeb6e55a4d0e4b8e652494797532f6fc8161dd7",
           "size": 41387759,
-          "format": "tar.gz",
-          "bin": [
-            "k9s"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/derailed/k9s/releases/download/v0.51.0/k9s_Linux_arm64.tar.gz",
           "sha256": "3ee05c82e5f9198928a4e86133608ba6a2c10a2244d6a7789e820f78319d640c",
           "size": 37438999,
-          "format": "tar.gz",
-          "bin": [
-            "k9s"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -1914,37 +1389,25 @@
           "url": "https://github.com/ahmetb/kubectx/releases/download/v0.11.0/kubectx_v0.11.0_darwin_x86_64.tar.gz",
           "sha256": "80097893b478c55be51ffe826c172f0fd5095d23cca02adbcbcabc412700a689",
           "size": 5256842,
-          "format": "tar.gz",
-          "bin": [
-            "kubectx"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/ahmetb/kubectx/releases/download/v0.11.0/kubectx_v0.11.0_darwin_arm64.tar.gz",
           "sha256": "b8c9b5150ca6d902474a115cf7e535831081b9ae10cbe561ea36c82bb3823d02",
           "size": 4866080,
-          "format": "tar.gz",
-          "bin": [
-            "kubectx"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/ahmetb/kubectx/releases/download/v0.11.0/kubectx_v0.11.0_linux_x86_64.tar.gz",
           "sha256": "08e031c54fbffb3f100e904e4eae94bba2730fedf4869921fda79e4d7a8f5d4c",
           "size": 5175790,
-          "format": "tar.gz",
-          "bin": [
-            "kubectx"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/ahmetb/kubectx/releases/download/v0.11.0/kubectx_v0.11.0_linux_arm64.tar.gz",
           "sha256": "1dac2072216689e773325cb7587b858ea7415706ebcf04e23bf80e7e70555340",
           "size": 4690533,
-          "format": "tar.gz",
-          "bin": [
-            "kubectx"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -1964,37 +1427,25 @@
           "url": "https://github.com/ahmetb/kubectx/releases/download/v0.11.0/kubens_v0.11.0_darwin_x86_64.tar.gz",
           "sha256": "9dbe1bf26fd911f2f56661a2f34bf2fe32dfd3af5f11287d0a864da92a746509",
           "size": 8758479,
-          "format": "tar.gz",
-          "bin": [
-            "kubens"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/ahmetb/kubectx/releases/download/v0.11.0/kubens_v0.11.0_darwin_arm64.tar.gz",
           "sha256": "b1c87ddca22f1afc3e980ac807a715cd1183750022798d28a0a4e0cf66bec4e3",
           "size": 7884437,
-          "format": "tar.gz",
-          "bin": [
-            "kubens"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/ahmetb/kubectx/releases/download/v0.11.0/kubens_v0.11.0_linux_x86_64.tar.gz",
           "sha256": "326c021c7b35468ed9a187b361198d0f22ae32828139c65eb6670c0d8301cc09",
           "size": 8629090,
-          "format": "tar.gz",
-          "bin": [
-            "kubens"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/ahmetb/kubectx/releases/download/v0.11.0/kubens_v0.11.0_linux_arm64.tar.gz",
           "sha256": "37058abe82ef20c93b44f3dc8ca2382dbb95d416cec958fbf7b8f79f011be86c",
           "size": 7561883,
-          "format": "tar.gz",
-          "bin": [
-            "kubens"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -2013,37 +1464,25 @@
           "url": "https://github.com/jesseduffield/lazygit/releases/download/v0.65.0/lazygit_0.65.0_darwin_x86_64.tar.gz",
           "sha256": "3848033450205f975aa6a587e76f01c9796bff3a3cc0e32060ac77b9423264e3",
           "size": 7101244,
-          "format": "tar.gz",
-          "bin": [
-            "lazygit"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/jesseduffield/lazygit/releases/download/v0.65.0/lazygit_0.65.0_darwin_arm64.tar.gz",
           "sha256": "d8ea1cade9e4279e45cbb58652e84edb07e98a9f8ec0604099c8b0a8f709e63a",
           "size": 6596776,
-          "format": "tar.gz",
-          "bin": [
-            "lazygit"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/jesseduffield/lazygit/releases/download/v0.65.0/lazygit_0.65.0_linux_x86_64.tar.gz",
           "sha256": "44d8e7dd1484b4a66e191bd4ab25a71e8b4b3a65ab122f838e65677ef58c5506",
           "size": 6986569,
-          "format": "tar.gz",
-          "bin": [
-            "lazygit"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/jesseduffield/lazygit/releases/download/v0.65.0/lazygit_0.65.0_linux_arm64.tar.gz",
           "sha256": "d954a09c128bd37b2bd0d254308474e87de3729cfe0e37f5b46a49357a4fe257",
           "size": 6326137,
-          "format": "tar.gz",
-          "bin": [
-            "lazygit"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -2063,37 +1502,25 @@
           "url": "https://github.com/gokcehan/lf/releases/download/r42/lf-darwin-amd64.tar.gz",
           "sha256": "3a3c2180cce9274d5c4713b092cff2b1169db9d9df4334e1c40d485eab1e565a",
           "size": 2337597,
-          "format": "tar.gz",
-          "bin": [
-            "lf"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/gokcehan/lf/releases/download/r42/lf-darwin-arm64.tar.gz",
           "sha256": "b08f3249cc9536fe7d9a29746a2de322c247f81cd543db541a770fe49b53bd37",
           "size": 2172503,
-          "format": "tar.gz",
-          "bin": [
-            "lf"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/gokcehan/lf/releases/download/r42/lf-linux-amd64.tar.gz",
           "sha256": "c6abe6c0c11a0a4ae89754884aad67de18decc113935cbc5eaa57dc0d1850fb4",
           "size": 2324047,
-          "format": "tar.gz",
-          "bin": [
-            "lf"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/gokcehan/lf/releases/download/r42/lf-linux-arm64.tar.gz",
           "sha256": "b8095f4f9d2561340bea019a21ce5a7ac671f4c76402b7039732c003b6c03951",
           "size": 2109998,
-          "format": "tar.gz",
-          "bin": [
-            "lf"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -2113,40 +1540,19 @@
           "url": "https://github.com/micro-editor/micro/releases/download/v2.0.15/micro-2.0.15-macos-arm64.tar.gz",
           "sha256": "2ff285cc49f2ac3f7a6e9110e2dabd3c848b73eed56a8396d627c0af80a34624",
           "size": 4879518,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "micro"
-          ],
-          "man": [
-            "micro.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/micro-editor/micro/releases/download/v2.0.15/micro-2.0.15-linux64.tar.gz",
           "sha256": "dfa1b6ae53e4e0b063b54224fd2b6b0a3c3159ea09d042a3a8f5cd001844d44c",
           "size": 5088851,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "micro"
-          ],
-          "man": [
-            "micro.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/micro-editor/micro/releases/download/v2.0.15/micro-2.0.15-linux-arm64.tar.gz",
           "sha256": "5ca127857bf5500be3879f1a70b27556e737a49da04a1be5334de9e8e8781ad9",
           "size": 4680364,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "micro"
-          ],
-          "man": [
-            "micro.1"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -2166,37 +1572,25 @@
           "url": "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-darwin-amd64",
           "sha256": "a32dfab51f1845d51e810db8e47dcf0e6b51ae3422426514bf5a2b8302e97d4e",
           "size": 5303728,
-          "format": "raw",
-          "bin": [
-            "mkcert"
-          ]
+          "format": "raw"
         },
         "darwin-arm64": {
           "url": "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-darwin-arm64",
           "sha256": "c8af0df44bce04359794dad8ea28d750437411d632748049d08644ffb66a60c6",
           "size": 5174450,
-          "format": "raw",
-          "bin": [
-            "mkcert"
-          ]
+          "format": "raw"
         },
         "linux-amd64": {
           "url": "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64",
           "sha256": "6d31c65b03972c6dc4a14ab429f2928300518b26503f58723e532d1b0a3bbb52",
           "size": 4788866,
-          "format": "raw",
-          "bin": [
-            "mkcert"
-          ]
+          "format": "raw"
         },
         "linux-arm64": {
           "url": "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-arm64",
           "sha256": "b98f2cc69fd9147fe4d405d859c57504571adec0d3611c3eefd04107c7ac00d0",
           "size": 4633188,
-          "format": "raw",
-          "bin": [
-            "mkcert"
-          ]
+          "format": "raw"
         }
       }
     },
@@ -2216,19 +1610,13 @@
           "url": "https://github.com/denisidoro/navi/releases/download/v2.24.0/navi-v2.24.0-x86_64-unknown-linux-musl.tar.gz",
           "sha256": "f334047479241f7c8b48d091f4e814dcc798a51a74dfd04ee63cbf67e8c921ba",
           "size": 1418230,
-          "format": "tar.gz",
-          "bin": [
-            "navi"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/denisidoro/navi/releases/download/v2.24.0/navi-v2.24.0-aarch64-unknown-linux-gnu.tar.gz",
           "sha256": "de99e69906a0e06ffd30a329645e15f9e96a6b42c49eaac8baccac9bc314768a",
           "size": 1234121,
-          "format": "tar.gz",
-          "bin": [
-            "navi"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -2248,65 +1636,25 @@
           "url": "https://github.com/ouch-org/ouch/releases/download/0.8.2/ouch-x86_64-apple-darwin.tar.gz",
           "sha256": "db1f4eef469f481d3f609c00bbd64d6b981b61b1945f8d64f92cd622df515eab",
           "size": 2579220,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "ouch"
-          ],
-          "man": [
-            "man/ouch-compress.1",
-            "man/ouch-decompress.1",
-            "man/ouch-list.1",
-            "man/ouch.1"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/ouch-org/ouch/releases/download/0.8.2/ouch-aarch64-apple-darwin.tar.gz",
           "sha256": "36d912a6739ccec6889b6e67cfe24d503e889b61c6da556b840a5e4e7e39a2e0",
           "size": 2413898,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "ouch"
-          ],
-          "man": [
-            "man/ouch-compress.1",
-            "man/ouch-decompress.1",
-            "man/ouch-list.1",
-            "man/ouch.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/ouch-org/ouch/releases/download/0.8.2/ouch-x86_64-unknown-linux-musl.tar.gz",
           "sha256": "c4ced4672badf374696c52661f4cacf154769771dbc7454222907e83ca81b4c0",
           "size": 2799860,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "ouch"
-          ],
-          "man": [
-            "man/ouch-compress.1",
-            "man/ouch-decompress.1",
-            "man/ouch-list.1",
-            "man/ouch.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/ouch-org/ouch/releases/download/0.8.2/ouch-aarch64-unknown-linux-musl.tar.gz",
           "sha256": "892735538af1b5b7db6927dc8a2dc9a8a06f5c7b60f610e297b6158577fb952b",
           "size": 2589221,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "ouch"
-          ],
-          "man": [
-            "man/ouch-compress.1",
-            "man/ouch-decompress.1",
-            "man/ouch-list.1",
-            "man/ouch.1"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -2325,37 +1673,25 @@
           "url": "https://github.com/dalance/procs/releases/download/v0.14.12/procs-v0.14.12-x86_64-mac.zip",
           "sha256": "2c276f40c99051984942a5b135b74ce4bc9184984a1543dddfcf275bde71d8d4",
           "size": 2233395,
-          "format": "zip",
-          "bin": [
-            "procs"
-          ]
+          "format": "zip"
         },
         "darwin-arm64": {
           "url": "https://github.com/dalance/procs/releases/download/v0.14.12/procs-v0.14.12-aarch64-mac.zip",
           "sha256": "20c7a33426ed7a43c3e13a48f2d1866ecc979a8ad46733f86ddc78ab7f12d49c",
           "size": 2095351,
-          "format": "zip",
-          "bin": [
-            "procs"
-          ]
+          "format": "zip"
         },
         "linux-amd64": {
           "url": "https://github.com/dalance/procs/releases/download/v0.14.12/procs-v0.14.12-x86_64-linux.zip",
           "sha256": "81964faf9d5cd0e9f399d5d0954fb6fe4d4d9f7d3cbec4507633df5a45b11713",
           "size": 2565746,
-          "format": "zip",
-          "bin": [
-            "procs"
-          ]
+          "format": "zip"
         },
         "linux-arm64": {
           "url": "https://github.com/dalance/procs/releases/download/v0.14.12/procs-v0.14.12-aarch64-linux.zip",
           "sha256": "74b4f82acc6fe553cbd5af20ba0baac420b42bef9bb0cbb38fef14b8317d9f91",
           "size": 2400955,
-          "format": "zip",
-          "bin": [
-            "procs"
-          ]
+          "format": "zip"
         }
       }
     },
@@ -2375,53 +1711,25 @@
           "url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-x86_64-apple-darwin.tar.gz",
           "sha256": "af7825fcc69a2afc7a7aea55fc9af90e26421d8f20fe59df32e233c0b8a231c1",
           "size": 1878284,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "rg"
-          ],
-          "man": [
-            "doc/rg.1"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-aarch64-apple-darwin.tar.gz",
           "sha256": "3750b2e93f37e0c692657da574d7019a101c0084da05a790c83fd335bad973e4",
           "size": 1764284,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "rg"
-          ],
-          "man": [
-            "doc/rg.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-x86_64-unknown-linux-musl.tar.gz",
           "sha256": "33e15bcf1624b25cdd2a55813a47a2f95dbe126268203e76aa6a585d1e7b149c",
           "size": 2265718,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "rg"
-          ],
-          "man": [
-            "doc/rg.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-aarch64-unknown-linux-musl.tar.gz",
           "sha256": "800b1e7206afe799dfb5a6901f23147cfaabe0e52210538100f61e86e1740915",
           "size": 1982561,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "rg"
-          ],
-          "man": [
-            "doc/rg.1"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -2441,53 +1749,25 @@
           "url": "https://github.com/chmln/sd/releases/download/v1.1.0/sd-v1.1.0-x86_64-apple-darwin.tar.gz",
           "sha256": "1fca1e9c91813a8aac6821063c923107ba0f66a83309e095edcd3b202f67f97e",
           "size": 927982,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "sd"
-          ],
-          "man": [
-            "sd.1"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/chmln/sd/releases/download/v1.1.0/sd-v1.1.0-aarch64-apple-darwin.tar.gz",
           "sha256": "4bd3c09226376ca0a1d69589c91e86276fae36c5fbaaee669afce583f6682030",
           "size": 852694,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "sd"
-          ],
-          "man": [
-            "sd.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/chmln/sd/releases/download/v1.1.0/sd-v1.1.0-x86_64-unknown-linux-musl.tar.gz",
           "sha256": "02f00f4777d43e8e95b7b8d49e1a0d6e502fed4b8e79c1c8b8063857a30caa2e",
           "size": 1049511,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "sd"
-          ],
-          "man": [
-            "sd.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/chmln/sd/releases/download/v1.1.0/sd-v1.1.0-aarch64-unknown-linux-musl.tar.gz",
           "sha256": "ec8c93c0533ff21f4851d11566808d4082544baf063d9b96ea77c27e98b7cd99",
           "size": 924956,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "sd"
-          ],
-          "man": [
-            "sd.1"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -2507,41 +1787,25 @@
           "url": "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.darwin.x86_64.tar.gz",
           "sha256": "c2c15e08df0e8fbc374c335b230a7ee958c313fa5714817a59aa59f1aa594f51",
           "size": 6700263,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "shellcheck"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.darwin.aarch64.tar.gz",
           "sha256": "339b930feb1ea764467013cc1f72d09cd6b869ebf1013296ba9055ab2ffbd26f",
           "size": 11370575,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "shellcheck"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.gz",
           "sha256": "b7af85e41cc99489dcc21d66c6d5f3685138f06d34651e6d34b42ec6d54fe6f6",
           "size": 3773312,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "shellcheck"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.aarch64.tar.gz",
           "sha256": "68a8133197a50beb8803f8d42f9908d1af1c5540d4bb05fdfca8c1fa47decefc",
           "size": 11668131,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "shellcheck"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -2561,41 +1825,25 @@
           "url": "https://github.com/charmbracelet/skate/releases/download/v1.0.1/skate_1.0.1_Darwin_x86_64.tar.gz",
           "sha256": "59ba6143eb449d343a110ef762b4108e1e25cf591baf4b714a47a74c748c36f4",
           "size": 4857768,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "skate"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/charmbracelet/skate/releases/download/v1.0.1/skate_1.0.1_Darwin_arm64.tar.gz",
           "sha256": "e340d47557741aa8cc07ca158eca063e810c5038098f040f50b476b2a328f295",
           "size": 4586732,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "skate"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/charmbracelet/skate/releases/download/v1.0.1/skate_1.0.1_Linux_x86_64.tar.gz",
           "sha256": "5da31f39c6394d85e6d58a57559233148f7b47d77057cbaa4924ea02ca645ee8",
           "size": 4768710,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "skate"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/charmbracelet/skate/releases/download/v1.0.1/skate_1.0.1_Linux_arm64.tar.gz",
           "sha256": "49c3eb8d8acf20bdc1de273c1cf7d09a0ba9ec23a3d772441990543070672425",
           "size": 4404489,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "skate"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -2614,37 +1862,25 @@
           "url": "https://github.com/starship/starship/releases/download/v1.26.0/starship-x86_64-apple-darwin.tar.gz",
           "sha256": "5548f406a4b6f5695903bdea83f77ce47ec12c8c0e62dabd33122d8f133e4207",
           "size": 4375401,
-          "format": "tar.gz",
-          "bin": [
-            "starship"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/starship/starship/releases/download/v1.26.0/starship-aarch64-apple-darwin.tar.gz",
           "sha256": "c40b27b11f580411e068f2fa6c1be7830a387c0bc47a94d1d37f32b054c5361d",
           "size": 4053668,
-          "format": "tar.gz",
-          "bin": [
-            "starship"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/starship/starship/releases/download/v1.26.0/starship-x86_64-unknown-linux-musl.tar.gz",
           "sha256": "b7c232b0e8249d8e55a40beb79c5c43a7d370f3f9408bd215deb0170daeaadf3",
           "size": 5191063,
-          "format": "tar.gz",
-          "bin": [
-            "starship"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/starship/starship/releases/download/v1.26.0/starship-aarch64-unknown-linux-musl.tar.gz",
           "sha256": "dc30189378d2f2e287384e8a692d3f95ad1df64cf0e8c36aa9201516028aed6b",
           "size": 4784551,
-          "format": "tar.gz",
-          "bin": [
-            "starship"
-          ]
+          "format": "tar.gz"
         }
       },
       "caveats": "Add the prompt initialiser to the end of your profile:\n\n    eval \"$(starship init zsh)\"    # or bash, fish"
@@ -2665,37 +1901,25 @@
           "url": "https://github.com/stern/stern/releases/download/v1.34.0/stern_1.34.0_darwin_amd64.tar.gz",
           "sha256": "153355317f21e565ea10bc710d4c2e3d98fd06f83cae5eb927e7031cc724a7a6",
           "size": 14403975,
-          "format": "tar.gz",
-          "bin": [
-            "stern"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/stern/stern/releases/download/v1.34.0/stern_1.34.0_darwin_arm64.tar.gz",
           "sha256": "4014d84096e1e603ee115864e03a1e15fb9bae9876647bf7bb8031eee278dcd3",
           "size": 13188737,
-          "format": "tar.gz",
-          "bin": [
-            "stern"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/stern/stern/releases/download/v1.34.0/stern_1.34.0_linux_amd64.tar.gz",
           "sha256": "7754adfa653939240f7d20fff4ada9b69cda40c9e70732301f67bb8045f1ef3e",
           "size": 14144343,
-          "format": "tar.gz",
-          "bin": [
-            "stern"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/stern/stern/releases/download/v1.34.0/stern_1.34.0_linux_arm64.tar.gz",
           "sha256": "e215cfc5e42d71e93b77d3fac8f0df7d736271f44b2d92a5b417eaa588edff3a",
           "size": 12573579,
-          "format": "tar.gz",
-          "bin": [
-            "stern"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -2715,37 +1939,25 @@
           "url": "https://github.com/projectdiscovery/subfinder/releases/download/v2.16.0/subfinder_2.16.0_macOS_amd64.zip",
           "sha256": "8300c4d98f75596b7e8460ba6f3322dfeda4674bc2bcbde14d61d098db260b50",
           "size": 10245741,
-          "format": "zip",
-          "bin": [
-            "subfinder"
-          ]
+          "format": "zip"
         },
         "darwin-arm64": {
           "url": "https://github.com/projectdiscovery/subfinder/releases/download/v2.16.0/subfinder_2.16.0_macOS_arm64.zip",
           "sha256": "af55827c9e6cdc530cca377ad459214ead16daf1b79d90e3dcefa387f644e057",
           "size": 9603227,
-          "format": "zip",
-          "bin": [
-            "subfinder"
-          ]
+          "format": "zip"
         },
         "linux-amd64": {
           "url": "https://github.com/projectdiscovery/subfinder/releases/download/v2.16.0/subfinder_2.16.0_linux_amd64.zip",
           "sha256": "1b7f9c608e9a5bd59e609a5e09710d63c5485e92d3d49dc2c16eb4fdbe10cb60",
           "size": 10011380,
-          "format": "zip",
-          "bin": [
-            "subfinder"
-          ]
+          "format": "zip"
         },
         "linux-arm64": {
           "url": "https://github.com/projectdiscovery/subfinder/releases/download/v2.16.0/subfinder_2.16.0_linux_arm64.zip",
           "sha256": "c81d49559c0f630177be9e347e502e7a3d474aacc6ff78291ffcb4964367d63d",
           "size": 9134128,
-          "format": "zip",
-          "bin": [
-            "subfinder"
-          ]
+          "format": "zip"
         }
       }
     },
@@ -2765,37 +1977,25 @@
           "url": "https://github.com/anchore/syft/releases/download/v1.51.1/syft_1.51.1_darwin_amd64.tar.gz",
           "sha256": "0e186ce1d4351ec276126851ca3ff258ed070e93e73574ed64858d4fc2339867",
           "size": 30501876,
-          "format": "tar.gz",
-          "bin": [
-            "syft"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/anchore/syft/releases/download/v1.51.1/syft_1.51.1_darwin_arm64.tar.gz",
           "sha256": "ac063af3b9874769deb7ea1e6d76841e68f9e3bb50cd654226fc977de65532c1",
           "size": 27907057,
-          "format": "tar.gz",
-          "bin": [
-            "syft"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/anchore/syft/releases/download/v1.51.1/syft_1.51.1_linux_amd64.tar.gz",
           "sha256": "8fcb33017a0dc1058298c923c436d19dfa68ae93968e0b423248542e3afb9fc3",
           "size": 29203595,
-          "format": "tar.gz",
-          "bin": [
-            "syft"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/anchore/syft/releases/download/v1.51.1/syft_1.51.1_linux_arm64.tar.gz",
           "sha256": "a7fd2b784e6664acd44719270574f6cd8c6864fc2b1700bf9099bd1cccda7d7f",
           "size": 26668605,
-          "format": "tar.gz",
-          "bin": [
-            "syft"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -2810,45 +2010,30 @@
         "docs",
         "cheatsheet"
       ],
-      "aliases": [
-        "tldr"
-      ],
       "artifacts": {
         "darwin-amd64": {
           "url": "https://github.com/tealdeer-rs/tealdeer/releases/download/v1.9.0/tealdeer-macos-x86_64",
           "sha256": "58337de7ad3446235f1493e02456002a9aa4e915cf70347d12334aa5fe08bfe5",
           "size": 3146224,
-          "format": "raw",
-          "bin": [
-            "tldr"
-          ]
+          "format": "raw"
         },
         "darwin-arm64": {
           "url": "https://github.com/tealdeer-rs/tealdeer/releases/download/v1.9.0/tealdeer-macos-aarch64",
           "sha256": "e6c6d9bf6d0267a38d5709c2b8334467fedd456927429ab426ff823201c13a40",
           "size": 2775792,
-          "format": "raw",
-          "bin": [
-            "tldr"
-          ]
+          "format": "raw"
         },
         "linux-amd64": {
           "url": "https://github.com/tealdeer-rs/tealdeer/releases/download/v1.9.0/tealdeer-linux-x86_64-musl",
           "sha256": "dc7263b550e90c0689ea2cb434e3144469805d5dddecbb1f7fc534e1185b7408",
           "size": 3572672,
-          "format": "raw",
-          "bin": [
-            "tldr"
-          ]
+          "format": "raw"
         },
         "linux-arm64": {
           "url": "https://github.com/tealdeer-rs/tealdeer/releases/download/v1.9.0/tealdeer-linux-aarch64-musl",
           "sha256": "a748f181c00933980cb850f4a24199c45900fc523787f6c524232a6bfc66b895",
           "size": 2953568,
-          "format": "raw",
-          "bin": [
-            "tldr"
-          ]
+          "format": "raw"
         }
       }
     },
@@ -2868,19 +2053,13 @@
           "url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_macOS-ARM64.tar.gz",
           "sha256": "1caada5e0e2091909357c7525d3aa76f4b660b13821bc143b190c7483e31cc11",
           "size": 47694894,
-          "format": "tar.gz",
-          "bin": [
-            "trivy"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/aquasecurity/trivy/releases/download/v0.74.0/trivy_0.74.0_Linux-ARM64.tar.gz",
           "sha256": "b94ce1976bbf3c15b514b605ee88be7c6d94a29be2302847ff01cb794d47aad5",
           "size": 45424969,
-          "format": "tar.gz",
-          "bin": [
-            "trivy"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -2900,39 +2079,69 @@
           "url": "https://github.com/crate-ci/typos/releases/download/v1.50.1/typos-v1.50.1-x86_64-apple-darwin.tar.gz",
           "sha256": "b31ccf2f21154b2bc8d2a84f395f746106edda0feec4817fbecdb12216df53bd",
           "size": 3453130,
-          "format": "tar.gz",
-          "bin": [
-            "typos"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/crate-ci/typos/releases/download/v1.50.1/typos-v1.50.1-aarch64-apple-darwin.tar.gz",
           "sha256": "2c940734b44b6e199e165278b662b7e17c68f068471a2a8a5e491ce635414ae6",
           "size": 3339592,
-          "format": "tar.gz",
-          "bin": [
-            "typos"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/crate-ci/typos/releases/download/v1.50.1/typos-v1.50.1-x86_64-unknown-linux-musl.tar.gz",
           "sha256": "edf0545109aee6a22751d04ddecb97c45be47d3aa0409564fb895eeeace91b1e",
           "size": 8209954,
-          "format": "tar.gz",
-          "bin": [
-            "typos"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/crate-ci/typos/releases/download/v1.50.1/typos-v1.50.1-aarch64-unknown-linux-musl.tar.gz",
           "sha256": "a48feb58c517977ca953e634507c72819d64df8717c33ced3e43868d174fd39e",
           "size": 7141462,
-          "format": "tar.gz",
-          "bin": [
-            "typos"
-          ]
+          "format": "tar.gz"
         }
       }
+    },
+    {
+      "name": "ubuntu-cloud",
+      "version": "24.04",
+      "description": "Ubuntu 24.04 LTS server cloud image (qcow2), for qemu, cloud-init and VM provisioning",
+      "homepage": "https://cloud-images.ubuntu.com",
+      "license": "GPL-2.0 and others (Ubuntu system license)",
+      "keywords": [
+        "vm",
+        "cloud",
+        "qemu",
+        "image",
+        "ubuntu"
+      ],
+      "kind": "image",
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://cloud-images.ubuntu.com/releases/noble/release/ubuntu-24.04-server-cloudimg-amd64.img",
+          "sha256": "612b2c0cc1bc413a6cb8c38fd611794caf0f2b436c50013d8b3794db12ad7354",
+          "size": 625256960,
+          "format": "raw"
+        },
+        "darwin-arm64": {
+          "url": "https://cloud-images.ubuntu.com/releases/noble/release/ubuntu-24.04-server-cloudimg-arm64.img",
+          "sha256": "7b682958a67ff5de068e36de6af8b75fa645d296af5a70d6500527f6a33781db",
+          "size": 619621888,
+          "format": "raw"
+        },
+        "linux-amd64": {
+          "url": "https://cloud-images.ubuntu.com/releases/noble/release/ubuntu-24.04-server-cloudimg-amd64.img",
+          "sha256": "612b2c0cc1bc413a6cb8c38fd611794caf0f2b436c50013d8b3794db12ad7354",
+          "size": 625256960,
+          "format": "raw"
+        },
+        "linux-arm64": {
+          "url": "https://cloud-images.ubuntu.com/releases/noble/release/ubuntu-24.04-server-cloudimg-arm64.img",
+          "sha256": "7b682958a67ff5de068e36de6af8b75fa645d296af5a70d6500527f6a33781db",
+          "size": 619621888,
+          "format": "raw"
+        }
+      },
+      "caveats": "This is a disk image, not a command. Find it with:\n\n    hop info ubuntu-cloud\n\nBoot it with qemu, or import it into your hypervisor of choice."
     },
     {
       "name": "vhs",
@@ -2950,41 +2159,25 @@
           "url": "https://github.com/charmbracelet/vhs/releases/download/v0.12.0/vhs_0.12.0_Darwin_x86_64.tar.gz",
           "sha256": "de5c7151286a38080a7069c952dec7d9f1813032a4d58fd44197bc76a5c2a071",
           "size": 9963327,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "vhs"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/charmbracelet/vhs/releases/download/v0.12.0/vhs_0.12.0_Darwin_arm64.tar.gz",
           "sha256": "8fe52ea2bfe829c1c733d66b82683346795b0f36baa7dbc52961da8f3b82eaca",
           "size": 9284160,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "vhs"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/charmbracelet/vhs/releases/download/v0.12.0/vhs_0.12.0_Linux_x86_64.tar.gz",
           "sha256": "9f3dc4672af1ec4e83361f4efe996da95c82177b9d795b21d8bcbad814d26823",
           "size": 9473331,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "vhs"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/charmbracelet/vhs/releases/download/v0.12.0/vhs_0.12.0_Linux_arm64.tar.gz",
           "sha256": "b72a5a6d89089b83abf87796047c4c0660d127231dbf040ac9f067a7bc68c44f",
           "size": 8803966,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "vhs"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -3004,37 +2197,25 @@
           "url": "https://github.com/watchexec/watchexec/releases/download/v2.7.2/watchexec-2.7.2-x86_64-apple-darwin.tar.xz",
           "sha256": "6a5481a14165f30da8826c7ae1ab3501402328834e7e2483d7c8b7ec4e608810",
           "size": 2415084,
-          "format": "tar.xz",
-          "bin": [
-            "watchexec"
-          ]
+          "format": "tar.xz"
         },
         "darwin-arm64": {
           "url": "https://github.com/watchexec/watchexec/releases/download/v2.7.2/watchexec-2.7.2-aarch64-apple-darwin.tar.xz",
           "sha256": "31e553b7160720796266168987c5e0728c388cc4776a26297b6a9feb00ab6437",
           "size": 2052916,
-          "format": "tar.xz",
-          "bin": [
-            "watchexec"
-          ]
+          "format": "tar.xz"
         },
         "linux-amd64": {
           "url": "https://github.com/watchexec/watchexec/releases/download/v2.7.2/watchexec-2.7.2-x86_64-unknown-linux-musl.tar.xz",
           "sha256": "a2c01f82fb4cdafca1fa12cb88e4a1145dec63364dbdf92664efbaac3bb44dd2",
           "size": 3051220,
-          "format": "tar.xz",
-          "bin": [
-            "watchexec"
-          ]
+          "format": "tar.xz"
         },
         "linux-arm64": {
           "url": "https://github.com/watchexec/watchexec/releases/download/v2.7.2/watchexec-2.7.2-aarch64-unknown-linux-musl.tar.xz",
           "sha256": "83cbce2ffc85adaab14d6ded09b292f4383358ac6d9a51b4e4e083df0cb7c831",
           "size": 2596392,
-          "format": "tar.xz",
-          "bin": [
-            "watchexec"
-          ]
+          "format": "tar.xz"
         }
       }
     },
@@ -3054,37 +2235,25 @@
           "url": "https://github.com/vi/websocat/releases/download/v1.14.1/websocat.x86_64-apple-darwin",
           "sha256": "45521ba59a6604785543406bf8e398ce7d565d54c09657176afba795dd28f191",
           "size": 2903076,
-          "format": "raw",
-          "bin": [
-            "websocat"
-          ]
+          "format": "raw"
         },
         "darwin-arm64": {
           "url": "https://github.com/vi/websocat/releases/download/v1.14.1/websocat.aarch64-apple-darwin",
           "sha256": "c7402a1de17aa5446f86a7fe439cf502c49436c1f2df298c16fd8c2bf092a84e",
           "size": 2823784,
-          "format": "raw",
-          "bin": [
-            "websocat"
-          ]
+          "format": "raw"
         },
         "linux-amd64": {
           "url": "https://github.com/vi/websocat/releases/download/v1.14.1/websocat.x86_64-unknown-linux-musl",
           "sha256": "66f8dd3a0394761556339117f8bb5123bddefd44e087af2a72ec22b0bd08d514",
           "size": 7845504,
-          "format": "raw",
-          "bin": [
-            "websocat"
-          ]
+          "format": "raw"
         },
         "linux-arm64": {
           "url": "https://github.com/vi/websocat/releases/download/v1.14.1/websocat.aarch64-unknown-linux-musl",
           "sha256": "711a69576a2ff473fb01a90ffafb571c2ed019e55479d7ae71b12c2eadeb7011",
           "size": 6248736,
-          "format": "raw",
-          "bin": [
-            "websocat"
-          ]
+          "format": "raw"
         }
       }
     },
@@ -3104,53 +2273,25 @@
           "url": "https://github.com/ducaale/xh/releases/download/v0.26.2/xh-v0.26.2-x86_64-apple-darwin.tar.gz",
           "sha256": "1f19ae1a2f411c58bd6943c638472cd5c4179ed019fe4f786e524b27da4c14a2",
           "size": 4413500,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "xh"
-          ],
-          "man": [
-            "doc/xh.1"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/ducaale/xh/releases/download/v0.26.2/xh-v0.26.2-aarch64-apple-darwin.tar.gz",
           "sha256": "cc5739d061a8469d0011ca0ab92d4a5cd726cc56f0ef30108953b119f54d0719",
           "size": 4144757,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "xh"
-          ],
-          "man": [
-            "doc/xh.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/ducaale/xh/releases/download/v0.26.2/xh-v0.26.2-x86_64-unknown-linux-musl.tar.gz",
           "sha256": "8c53b6a23435754f9e2ea8ab8c0d0296a1921404b88132cf9b364ff6e8c22a6e",
           "size": 4609532,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "xh"
-          ],
-          "man": [
-            "doc/xh.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/ducaale/xh/releases/download/v0.26.2/xh-v0.26.2-aarch64-unknown-linux-musl.tar.gz",
           "sha256": "3a44900a8ac53f614aa0cd1d2e54ecf4e93584384c1ad091aa18d7992686d7eb",
           "size": 4220425,
-          "format": "tar.gz",
-          "strip": 1,
-          "bin": [
-            "xh"
-          ],
-          "man": [
-            "doc/xh.1"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -3170,49 +2311,25 @@
           "url": "https://github.com/mikefarah/yq/releases/download/v4.53.6/yq_darwin_amd64.tar.gz",
           "sha256": "cf8304676c6572960a3720a189fd42e7038bf989dc181f0c05019a2883caf540",
           "size": 5790294,
-          "format": "tar.gz",
-          "bin": [
-            "yq=yq_darwin_amd64"
-          ],
-          "man": [
-            "yq.1"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/mikefarah/yq/releases/download/v4.53.6/yq_darwin_arm64.tar.gz",
           "sha256": "4e2b18f4242c720965af7919dc0573819474cecf03a71b6cd7656025f2e5162c",
           "size": 5313594,
-          "format": "tar.gz",
-          "bin": [
-            "yq=yq_darwin_arm64"
-          ],
-          "man": [
-            "yq.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/mikefarah/yq/releases/download/v4.53.6/yq_linux_amd64.tar.gz",
           "sha256": "38b907b21b1b04327fb9481c595331d925a67c6ee1aabd0ef419d0b7d12dfb3d",
           "size": 5729058,
-          "format": "tar.gz",
-          "bin": [
-            "yq=yq_linux_amd64"
-          ],
-          "man": [
-            "yq.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/mikefarah/yq/releases/download/v4.53.6/yq_linux_arm64.tar.gz",
           "sha256": "d5e7531273d45c5d4b7abb4a1597c47a0fecb5d6b081dfa755064b38ffcc34f4",
           "size": 5146582,
-          "format": "tar.gz",
-          "bin": [
-            "yq=yq_linux_arm64"
-          ],
-          "man": [
-            "yq.1"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -3232,37 +2349,25 @@
           "url": "https://github.com/zellij-org/zellij/releases/download/v0.45.1/zellij-x86_64-apple-darwin.tar.gz",
           "sha256": "8e8bea22737d1652278c51fc5c26c7c22c9855d0ebb9634a84b8873823093114",
           "size": 16044196,
-          "format": "tar.gz",
-          "bin": [
-            "zellij"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/zellij-org/zellij/releases/download/v0.45.1/zellij-aarch64-apple-darwin.tar.gz",
           "sha256": "c029ba4fe1927b79ad9f0cdd59155c4dff80777863c85857d4d09b88b56f9891",
           "size": 15390807,
-          "format": "tar.gz",
-          "bin": [
-            "zellij"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/zellij-org/zellij/releases/download/v0.45.1/zellij-x86_64-unknown-linux-musl.tar.gz",
           "sha256": "40bcc2e03f5d5ae8e054e39f676081fe12ab70871506996ba595834c3718eefc",
           "size": 18729165,
-          "format": "tar.gz",
-          "bin": [
-            "zellij"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/zellij-org/zellij/releases/download/v0.45.1/zellij-aarch64-unknown-linux-musl.tar.gz",
           "sha256": "05f0802afadd53f8db9514e7cae53c9ae8432fed1b35b8294aa816ee3044a16b",
           "size": 17986395,
-          "format": "tar.gz",
-          "bin": [
-            "zellij"
-          ]
+          "format": "tar.gz"
         }
       }
     },
@@ -3282,69 +2387,25 @@
           "url": "https://github.com/ajeetdsouza/zoxide/releases/download/v0.10.0/zoxide-0.10.0-x86_64-apple-darwin.tar.gz",
           "sha256": "18ab7ae2633ad6e2ab79a4e665cbba1e95b7c872d44523326efb793202451dad",
           "size": 517384,
-          "format": "tar.gz",
-          "bin": [
-            "zoxide"
-          ],
-          "man": [
-            "man/man1/zoxide-add.1",
-            "man/man1/zoxide-import.1",
-            "man/man1/zoxide-init.1",
-            "man/man1/zoxide-query.1",
-            "man/man1/zoxide-remove.1",
-            "man/man1/zoxide.1"
-          ]
+          "format": "tar.gz"
         },
         "darwin-arm64": {
           "url": "https://github.com/ajeetdsouza/zoxide/releases/download/v0.10.0/zoxide-0.10.0-aarch64-apple-darwin.tar.gz",
           "sha256": "b55ae6f2f5f23d0a6ccb3bd4eeb2af9c7e0a6556e5255c82100e40305129bbb0",
           "size": 482696,
-          "format": "tar.gz",
-          "bin": [
-            "zoxide"
-          ],
-          "man": [
-            "man/man1/zoxide-add.1",
-            "man/man1/zoxide-import.1",
-            "man/man1/zoxide-init.1",
-            "man/man1/zoxide-query.1",
-            "man/man1/zoxide-remove.1",
-            "man/man1/zoxide.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-amd64": {
           "url": "https://github.com/ajeetdsouza/zoxide/releases/download/v0.10.0/zoxide-0.10.0-x86_64-unknown-linux-musl.tar.gz",
           "sha256": "2d93385b99f3e82cf2701609a1bffcad863fbeb75aa3fe7eb6be4d29be68b1ae",
           "size": 591384,
-          "format": "tar.gz",
-          "bin": [
-            "zoxide"
-          ],
-          "man": [
-            "man/man1/zoxide-add.1",
-            "man/man1/zoxide-import.1",
-            "man/man1/zoxide-init.1",
-            "man/man1/zoxide-query.1",
-            "man/man1/zoxide-remove.1",
-            "man/man1/zoxide.1"
-          ]
+          "format": "tar.gz"
         },
         "linux-arm64": {
           "url": "https://github.com/ajeetdsouza/zoxide/releases/download/v0.10.0/zoxide-0.10.0-aarch64-unknown-linux-musl.tar.gz",
           "sha256": "f1f16c5d6298d63dee467eedea1cdcd8490e43e493bea43acd416dc9033ef641",
           "size": 551084,
-          "format": "tar.gz",
-          "bin": [
-            "zoxide"
-          ],
-          "man": [
-            "man/man1/zoxide-add.1",
-            "man/man1/zoxide-import.1",
-            "man/man1/zoxide-init.1",
-            "man/man1/zoxide-query.1",
-            "man/man1/zoxide-remove.1",
-            "man/man1/zoxide.1"
-          ]
+          "format": "tar.gz"
         }
       },
       "caveats": "Add the shell hook to your profile:\n\n    eval \"$(zoxide init zsh)\"    # or bash, fish, powershell"

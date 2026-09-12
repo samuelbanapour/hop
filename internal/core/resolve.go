@@ -317,7 +317,8 @@ func (r *Resolver) PlanInstall(names []string, force bool) (*Plan, error) {
 			Rosetta: r.Platform.IsRosettaFallback(s.plat),
 		})
 		upsert(Installed{
-			Name: s.recipe.Name, Version: s.recipe.Version, SHA256: s.artifact.SHA256,
+			Name: s.recipe.Name, Version: s.recipe.Version, Kind: s.recipe.Kind,
+			SHA256: s.artifact.SHA256, SHA512: s.artifact.SHA512,
 			Platform: s.plat, Source: s.artifact.URL, Deps: s.recipe.Deps,
 			Explicit: s.explicit,
 		})
@@ -326,7 +327,7 @@ func (r *Resolver) PlanInstall(names []string, force bool) (*Plan, error) {
 				"%s has no native %s build; installing the x86_64 build to run under Rosetta 2",
 				s.recipe.Name, r.Platform))
 		}
-		if s.artifact.SHA256 == "" {
+		if s.artifact.SHA256 == "" && s.artifact.SHA512 == "" {
 			plan.Warnings = append(plan.Warnings, fmt.Sprintf(
 				"%s has no pinned checksum; hop will record the digest it observes (trust on first use)",
 				s.recipe.Name))
@@ -515,7 +516,8 @@ func (r *Resolver) PlanUpgrade(names []string) (*Plan, error) {
 			Rosetta: r.Platform.IsRosettaFallback(s.plat),
 		})
 		upsert(Installed{
-			Name: s.recipe.Name, Version: s.recipe.Version, SHA256: s.artifact.SHA256,
+			Name: s.recipe.Name, Version: s.recipe.Version, Kind: s.recipe.Kind,
+			SHA256: s.artifact.SHA256, SHA512: s.artifact.SHA512,
 			Platform: s.plat, Source: s.artifact.URL, Deps: s.recipe.Deps,
 			Explicit: s.explicit,
 		})
@@ -611,7 +613,8 @@ func (r *Resolver) PlanSync(want map[string]string, prune bool) (*Plan, error) {
 			Rosetta: r.Platform.IsRosettaFallback(s.plat),
 		})
 		final = append(final, Installed{
-			Name: s.recipe.Name, Version: s.recipe.Version, SHA256: s.artifact.SHA256,
+			Name: s.recipe.Name, Version: s.recipe.Version, Kind: s.recipe.Kind,
+			SHA256: s.artifact.SHA256, SHA512: s.artifact.SHA512,
 			Platform: s.plat, Source: s.artifact.URL, Deps: s.recipe.Deps,
 			Explicit: s.explicit,
 		})

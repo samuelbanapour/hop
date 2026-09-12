@@ -2,6 +2,7 @@ package core
 
 import (
 	"crypto/sha256"
+	"crypto/sha512"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -105,18 +106,20 @@ func lexists(path string) bool {
 	return err == nil
 }
 
-// hashFile returns the lowercase hex SHA-256 of a file's contents.
-func hashFile(path string) (string, error) {
+// hashFileBoth returns the lowercase hex SHA-256 and SHA-512 of a file's
+// contents in a single pass, since upstreams disagree on which one they
+// publish for verification.
+func hashFileBoth(path string) (sha256hex, sha512hex string, err error) {
 	f, err := os.Open(path)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 	defer f.Close()
-	h := sha256.New()
-	if _, err := io.Copy(h, f); err != nil {
-		return "", err
+	h256, h512 := sha256.New(), sha512.New()
+	if _, err := io.Copy(io.MultiWriter(h256, h512), f); err != nil {
+		return "", "", err
 	}
-	return hex.EncodeToString(h.Sum(nil)), nil
+	return hex.EncodeToString(h256.Sum(nil)), hex.EncodeToString(h512.Sum(nil)), nil
 }
 
 // dirSize sums the apparent size of a tree, skipping symlinks so a store path

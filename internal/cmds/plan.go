@@ -105,12 +105,18 @@ func renderResult(a *App, res *core.ApplyResult, gen *core.Generation) {
 	if len(res.Added) > 0 || len(res.Changed) > 0 {
 		t := ui.NewTable()
 		for _, p := range append(append([]core.Installed{}, res.Added...), res.Changed...) {
-			cmds := make([]string, 0, len(p.Bins))
-			for _, b := range p.Bins {
-				cmds = append(cmds, b.Name)
+			note := ""
+			if p.Kind == core.KindImage {
+				note = ui.Yellow("image") + ui.Grey(" · "+ui.Bytes(p.Size))
+			} else {
+				cmds := make([]string, 0, len(p.Bins))
+				for _, b := range p.Bins {
+					cmds = append(cmds, b.Name)
+				}
+				sort.Strings(cmds)
+				note = ui.Grey(strings.Join(cmds, ", "))
 			}
-			sort.Strings(cmds)
-			t.Row("  "+ui.Green("✓"), ui.PkgVer(p.Name, p.Version), ui.Grey(strings.Join(cmds, ", ")))
+			t.Row("  "+ui.Green("✓"), ui.PkgVer(p.Name, p.Version), note)
 		}
 		t.Render()
 	}
@@ -174,7 +180,16 @@ func renderResult(a *App, res *core.ApplyResult, gen *core.Generation) {
 		}
 	}
 
-	if len(res.Added) > 0 {
+	// Only nag about PATH if something added actually needs to be on it —
+	// an image-only install has nothing to run.
+	addedACommand := false
+	for _, p := range res.Added {
+		if len(p.Bins) > 0 {
+			addedACommand = true
+			break
+		}
+	}
+	if addedACommand {
 		warnPathIfNeeded(a)
 	}
 }

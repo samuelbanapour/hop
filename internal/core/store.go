@@ -94,10 +94,20 @@ func HaveStorePath(dir string) bool {
 // and renamed into place, so the store only ever contains complete packages.
 func Materialise(l *Layout, r *Recipe, a *Artifact, plat Platform, archivePath, contentHash string) (*StoreEntry, error) {
 	dir := l.StorePath(r.Name, r.Version, contentHash)
+	isImage := r.Kind == KindImage
+
+	// resolve fills in Bins/Mans for a bin-kind package; an image-kind package
+	// carries neither, since it is never extracted and never touches PATH.
+	resolve := func(e *StoreEntry) error {
+		if isImage {
+			return nil
+		}
+		return e.discover(a)
+	}
 
 	if HaveStorePath(dir) {
 		e := &StoreEntry{Path: dir, Reused: true, Platform: plat}
-		if err := e.discover(a); err != nil {
+		if err := resolve(e); err != nil {
 			// A damaged reuse is worse than a slow re-extract: rebuild it.
 			_ = removeTree(dir)
 		} else {
@@ -121,12 +131,20 @@ func Materialise(l *Layout, r *Recipe, a *Artifact, plat Platform, archivePath, 
 		}
 	}()
 
-	if err := extract(archivePath, stage, DetectFormat(a), a.Strip, defaultRawName(r, a)); err != nil {
+	if isImage {
+		// An OS/VM image or rootfs tarball is verified and content-addressed
+		// like anything else hop installs, but it is never unpacked: the
+		// whole point is to hand the exact bytes to qemu, docker import, or
+		// whatever else expects them intact.
+		if err := placeImageFile(archivePath, stage, a); err != nil {
+			return nil, fmt.Errorf("storing %s: %w", r.Name, err)
+		}
+	} else if err := extract(archivePath, stage, DetectFormat(a), a.Strip, defaultRawName(r, a)); err != nil {
 		return nil, fmt.Errorf("extracting %s: %w", r.Name, err)
 	}
 
 	e := &StoreEntry{Path: stage, Platform: plat}
-	if err := e.discover(a); err != nil {
+	if err := resolve(e); err != nil {
 		return nil, err
 	}
 
@@ -141,7 +159,7 @@ func Materialise(l *Layout, r *Recipe, a *Artifact, plat Platform, archivePath, 
 		if HaveStorePath(dir) {
 			committed = true
 			e2 := &StoreEntry{Path: dir, Reused: true, Platform: plat}
-			if err2 := e2.discover(a); err2 == nil {
+			if err2 := resolve(e2); err2 == nil {
 				e2.Size, _ = dirSize(dir)
 				return e2, nil
 			}
@@ -152,11 +170,39 @@ func Materialise(l *Layout, r *Recipe, a *Artifact, plat Platform, archivePath, 
 
 	// Re-point discovered paths at the committed location.
 	final := &StoreEntry{Path: dir, Platform: plat}
-	if err := final.discover(a); err != nil {
+	if err := resolve(final); err != nil {
 		return nil, err
 	}
 	final.Size, _ = dirSize(dir)
 	return final, nil
+}
+
+// placeImageFile puts the verified download-cache file into the store as-is,
+// named for the artifact's URL (query strings stripped). A hard link is
+// tried first so a multi-hundred-megabyte image is never copied twice on the
+// same filesystem; io.Copy is the portable fallback.
+func placeImageFile(archivePath, stage string, a *Artifact) error {
+	name := baseName(strings.SplitN(a.URL, "?", 2)[0])
+	if name == "" {
+		name = "image"
+	}
+	dst := filepath.Join(stage, name)
+
+	if err := os.Link(archivePath, dst); err == nil {
+		return nil
+	}
+	src, err := os.Open(archivePath)
+	if err != nil {
+		return err
+	}
+	defer src.Close()
+	out, err := os.OpenFile(dst, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, 0o644)
+	if err != nil {
+		return err
+	}
+	defer out.Close()
+	_, err = io.Copy(out, src)
+	return err
 }
 
 // discover locates the executables and manpages named by the artifact. A

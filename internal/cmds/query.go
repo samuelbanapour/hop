@@ -110,14 +110,16 @@ func runList(a *App, args []string) error {
 		type row struct {
 			Name     string `json:"name"`
 			Version  string `json:"version"`
+			Kind     string `json:"kind,omitempty"`
 			Explicit bool   `json:"explicit"`
 			Size     int64  `json:"size"`
 			Platform string `json:"platform"`
 			Store    string `json:"store_path"`
+			Image    string `json:"image_path,omitempty"`
 		}
 		out := make([]row, 0, len(pkgs))
 		for _, p := range pkgs {
-			out = append(out, row{p.Name, p.Version, p.Explicit, p.Size, string(p.Platform), p.StorePath})
+			out = append(out, row{p.Name, p.Version, string(p.Kind), p.Explicit, p.Size, string(p.Platform), p.StorePath, p.ImagePath()})
 		}
 		return a.emitJSON(out)
 	}
@@ -263,7 +265,9 @@ func runInfo(a *App, args []string) error {
 	if len(r.Deps) > 0 {
 		pairs = append(pairs, [2]string{"Depends on", strings.Join(r.Deps, ", ")})
 	}
-	if cmds := r.BinNames(plat); len(cmds) > 0 {
+	if r.Kind == core.KindImage {
+		pairs = append(pairs, [2]string{"Kind", ui.Yellow("image") + ui.Grey(" — verified and stored, never extracted or put on PATH")})
+	} else if cmds := r.BinNames(plat); len(cmds) > 0 {
 		pairs = append(pairs, [2]string{"Commands", strings.Join(cmds, ", ")})
 	}
 	pairs = append(pairs, [2]string{"Platforms", strings.Join(r.Platforms(), ", ")})
@@ -275,7 +279,11 @@ func runInfo(a *App, args []string) error {
 			status = ui.Yellow(fmt.Sprintf("installed %s, %s available", inst.Version, r.Version))
 		}
 		pairs = append(pairs, [2]string{"Status", status})
-		pairs = append(pairs, [2]string{"Store path", ui.Grey(inst.StorePath)})
+		if img := inst.ImagePath(); img != "" {
+			pairs = append(pairs, [2]string{"Image file", ui.Grey(img)})
+		} else {
+			pairs = append(pairs, [2]string{"Store path", ui.Grey(inst.StorePath)})
+		}
 		pairs = append(pairs, [2]string{"Installed", ui.Ago(inst.At)})
 	case !haveArt:
 		pairs = append(pairs, [2]string{"Status", ui.Red("no build for " + plat.Pretty())})
@@ -287,10 +295,13 @@ func runInfo(a *App, args []string) error {
 		if art.Size > 0 {
 			pairs = append(pairs, [2]string{"Download", ui.Bytes(art.Size)})
 		}
-		if art.SHA256 != "" {
+		switch {
+		case art.SHA256 != "":
 			pairs = append(pairs, [2]string{"SHA-256", ui.Grey(art.SHA256)})
-		} else {
-			pairs = append(pairs, [2]string{"SHA-256", ui.Yellow("not pinned (trust on first use)")})
+		case art.SHA512 != "":
+			pairs = append(pairs, [2]string{"SHA-512", ui.Grey(art.SHA512)})
+		default:
+			pairs = append(pairs, [2]string{"Checksum", ui.Yellow("not pinned (trust on first use)")})
 		}
 		pairs = append(pairs, [2]string{"Artifact", ui.Grey(art.URL)})
 		if plat.IsRosettaFallback(artPlat) {
@@ -333,6 +344,14 @@ func runWhich(a *App, args []string) error {
 		// Point at the system copy, if there is one, rather than dead-ending.
 		if p, err := lookPathOutsideHop(a, cmd); err == nil {
 			ui.Hint("your PATH resolves %s to %s (not managed by hop)", cmd, p)
+		}
+		// The argument might name an installed image, not a command — those
+		// are never on PATH by design, so "which" alone would just confuse.
+		if gen, err := a.Current(); err == nil {
+			if p, ok := gen.Find(cmd); ok && p.Kind == core.KindImage {
+				ui.Hint("%s is installed as an image, not a command; see `hop info %s`", p.Name, p.Name)
+				return nil
+			}
 		}
 		ix, ierr := a.Index_()
 		if ierr == nil {
