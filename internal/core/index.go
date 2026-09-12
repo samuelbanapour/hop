@@ -416,7 +416,7 @@ func UpdateIndex(l *Layout, client *http.Client) (*UpdateResult, error) {
 	return &UpdateResult{Changed: true, Recipes: cand.Len(), Source: url, FetchedAt: now}, nil
 }
 
-func userAgent() string { return "hop/" + Version + " (+https://github.com/sammybanapour/hop)" }
+func userAgent() string { return "hop/" + Version + " (+https://github.com/samuelbanapour/hop)" }
 
 // ----------------------------------------------------------------- helpers ----
 

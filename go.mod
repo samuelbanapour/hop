@@ -1,3 +1,3 @@
-module github.com/sammybanapour/hop
+module github.com/samuelbanapour/hop
 
 go 1.27

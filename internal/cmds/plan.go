@@ -5,8 +5,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/sammybanapour/hop/internal/core"
-	"github.com/sammybanapour/hop/internal/ui"
+	"github.com/samuelbanapour/hop/internal/core"
+	"github.com/samuelbanapour/hop/internal/ui"
 )
 
 // verbColour gives each action a consistent colour across every command, so

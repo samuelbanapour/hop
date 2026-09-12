@@ -39,7 +39,7 @@ still hurt:
 ## Install
 
 ```bash
-git clone https://github.com/sammybanapour/hop.git
+git clone https://github.com/samuelbanapour/hop.git
 cd hop
 make build
 ./bin/hop --help
@@ -48,7 +48,7 @@ make build
 Or with Go installed:
 
 ```bash
-go install github.com/sammybanapour/hop/cmd/hop@latest
+go install github.com/samuelbanapour/hop/cmd/hop@latest
 ```
 
 Then put hop on your `PATH`:

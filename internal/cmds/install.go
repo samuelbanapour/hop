@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/sammybanapour/hop/internal/core"
-	"github.com/sammybanapour/hop/internal/ui"
+	"github.com/samuelbanapour/hop/internal/core"
+	"github.com/samuelbanapour/hop/internal/ui"
 )
 
 func init() {
