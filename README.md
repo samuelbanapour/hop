@@ -3,7 +3,7 @@
 A fast, atomic package manager for the terminal — like Homebrew, but every
 install is a transaction and every mistake is one command away from undone.
 
-Ships as a single binary called `hop`.
+Ships as a single binary called `hop`. **[hopcli-site.onrender.com](https://hopcli-site.onrender.com)**
 
 ```
 $ hop install ripgrep fd bat jq
