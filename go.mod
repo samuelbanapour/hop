@@ -1,3 +1,3 @@
-module github.com/samuelbanapour/hop
+module github.com/samuelbanapour/hopcli
 
 go 1.27

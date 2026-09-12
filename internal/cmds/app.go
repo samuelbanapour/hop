@@ -17,8 +17,8 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/samuelbanapour/hop/internal/core"
-	"github.com/samuelbanapour/hop/internal/ui"
+	"github.com/samuelbanapour/hopcli/internal/core"
+	"github.com/samuelbanapour/hopcli/internal/ui"
 )
 
 // Exit codes. Distinguishing usage errors from failures lets scripts react

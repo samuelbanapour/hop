@@ -8,7 +8,7 @@ package main
 import (
 	"os"
 
-	"github.com/samuelbanapour/hop/internal/cmds"
+	"github.com/samuelbanapour/hopcli/internal/cmds"
 )
 
 func main() { os.Exit(cmds.Main(os.Args[1:])) }

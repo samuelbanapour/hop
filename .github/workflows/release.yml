@@ -68,8 +68,8 @@ jobs:
           mkdir -p dist
           go build -trimpath \
             -ldflags "-s -w \
-              -X github.com/samuelbanapour/hop/internal/core.Version=${{ steps.version.outputs.version }} \
-              -X github.com/samuelbanapour/hop/internal/core.Revision=${{ github.sha }}" \
+              -X github.com/samuelbanapour/hopcli/internal/core.Version=${{ steps.version.outputs.version }} \
+              -X github.com/samuelbanapour/hopcli/internal/core.Revision=${{ github.sha }}" \
             -o dist/hop ./cmd/hop
 
       - name: Package

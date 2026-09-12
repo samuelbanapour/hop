@@ -1,4 +1,4 @@
-<title>hop</title>
+<title>HopCLI</title>
 <meta name="description" content="A fast, atomic package manager for the terminal — parallel installs, instant rollback, nothing executed from a recipe but data.">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
@@ -322,13 +322,13 @@
 
 <nav>
   <div class="nav-row">
-    <a class="brand" href="#top"><span class="dot"></span>hop</a>
+    <a class="brand" href="#top"><span class="dot"></span>HopCLI</a>
     <div class="nav-links">
       <a href="#compare">Why not brew</a>
       <a href="#mechanism">How it works</a>
       <a href="#packages">Packages</a>
       <a href="#migrate">Migrate</a>
-      <a class="gh" href="https://github.com/samuelbanapour/hop">on GitHub ↗</a>
+      <a class="gh" href="https://github.com/samuelbanapour/hopcli">on GitHub ↗</a>
     </div>
   </div>
 </nav>
@@ -339,7 +339,7 @@
       <div>
         <span class="eyebrow">v0.1 · darwin &amp; linux · zero dependencies</span>
         <h1 class="title">Install things.<br>Undo things.<br><em>Instantly.</em></h1>
-        <p class="sub">hop is a package manager for the terminal. Every install runs as one transaction — downloaded, verified and linked in parallel — and every change is one command away from undone, with no re-download.</p>
+        <p class="sub">HopCLI is a package manager for the terminal. Every install runs as one transaction — downloaded, verified and linked in parallel — and every change is one command away from undone, with no re-download.</p>
         <div class="hero-actions">
           <a class="btn btn-primary" href="#install">Install hop</a>
           <a class="btn btn-ghost" href="#compare">Why not just use Homebrew?</a>
@@ -384,8 +384,8 @@
   <section id="compare">
     <div class="section-head reveal">
       <span class="kicker">The pitch</span>
-      <h2>Homebrew taught everyone what a friendly package manager feels like. hop keeps the feeling and fixes the mechanics.</h2>
-      <p>Nothing here is a knock on Homebrew — it's the reason a whole generation of developers expects installing a CLI tool to be one line. hop is what that idea looks like designed around a transaction log instead of a mutable prefix.</p>
+      <h2>Homebrew taught everyone what a friendly package manager feels like. HopCLI keeps the feeling and fixes the mechanics.</h2>
+      <p>Nothing here is a knock on Homebrew — it's the reason a whole generation of developers expects installing a CLI tool to be one line. HopCLI is what that idea looks like designed around a transaction log instead of a mutable prefix.</p>
     </div>
 
     <div class="spec-scroll reveal">
@@ -571,14 +571,14 @@
 
     <p style="font-family:var(--mono-code); font-size:13px; color:var(--ink-soft); margin-bottom:6px;">clone and build</p>
     <div class="install-line reveal">
-      <code><span class="t-prompt">$</span> git clone https://github.com/samuelbanapour/hop &amp;&amp; cd hop &amp;&amp; make build</code>
-      <button class="copy-btn" data-copy="git clone https://github.com/samuelbanapour/hop && cd hop && make build">copy</button>
+      <code><span class="t-prompt">$</span> git clone https://github.com/samuelbanapour/hopcli &amp;&amp; cd hop &amp;&amp; make build</code>
+      <button class="copy-btn" data-copy="git clone https://github.com/samuelbanapour/hopcli && cd hop && make build">copy</button>
     </div>
 
     <p style="font-family:var(--mono-code); font-size:13px; color:var(--ink-soft); margin:22px 0 6px;">or, with Go installed</p>
     <div class="install-line reveal">
-      <code><span class="t-prompt">$</span> go install github.com/samuelbanapour/hop/cmd/hop@latest</code>
-      <button class="copy-btn" data-copy="go install github.com/samuelbanapour/hop/cmd/hop@latest">copy</button>
+      <code><span class="t-prompt">$</span> go install github.com/samuelbanapour/hopcli/cmd/hop@latest</code>
+      <button class="copy-btn" data-copy="go install github.com/samuelbanapour/hopcli/cmd/hop@latest">copy</button>
     </div>
 
     <p style="font-family:var(--mono-code); font-size:13px; color:var(--ink-soft); margin:22px 0 6px;">then put it on PATH</p>
@@ -592,13 +592,13 @@
 <footer>
   <div class="wrap-wide">
     <div class="foot-row">
-      <div class="brand" style="font-size:16px;"><span class="dot"></span>hop</div>
+      <div class="brand" style="font-size:16px;"><span class="dot"></span>HopCLI</div>
       <div class="foot-links">
-        <a href="https://github.com/samuelbanapour/hop">GitHub</a>
-        <a href="https://github.com/samuelbanapour/hop#readme">Documentation</a>
-        <a href="https://github.com/samuelbanapour/hop/blob/main/LICENSE">MIT License</a>
+        <a href="https://github.com/samuelbanapour/hopcli">GitHub</a>
+        <a href="https://github.com/samuelbanapour/hopcli#readme">Documentation</a>
+        <a href="https://github.com/samuelbanapour/hopcli/blob/main/LICENSE">MIT License</a>
       </div>
-      <span class="foot-note">named for the jump between generations — not the plant Homebrew is named after</span>
+      <span class="foot-note">ships as one binary, hop — named for the jump between generations</span>
     </div>
   </div>
 </footer>

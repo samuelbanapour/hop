@@ -7,8 +7,8 @@ import (
 	"sort"
 	"strings"
 
-	"github.com/samuelbanapour/hop/internal/core"
-	"github.com/samuelbanapour/hop/internal/ui"
+	"github.com/samuelbanapour/hopcli/internal/core"
+	"github.com/samuelbanapour/hopcli/internal/ui"
 )
 
 func init() {

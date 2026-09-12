@@ -1,7 +1,9 @@
-# hop
+# HopCLI
 
 A fast, atomic package manager for the terminal — like Homebrew, but every
 install is a transaction and every mistake is one command away from undone.
+
+Ships as a single binary called `hop`.
 
 ```
 $ hop install ripgrep fd bat jq
@@ -21,7 +23,7 @@ $ hop install ripgrep fd bat jq
 ## Why not just use Homebrew?
 
 Homebrew is what taught a generation of Mac and Linux users that a package
-manager could be pleasant. hop keeps that spirit and fixes the parts that
+manager could be pleasant. HopCLI keeps that spirit and fixes the parts that
 still hurt:
 
 | | Homebrew | hop |
@@ -39,7 +41,7 @@ still hurt:
 ## Install
 
 ```bash
-git clone https://github.com/samuelbanapour/hop.git
+git clone https://github.com/samuelbanapour/hopcli.git
 cd hop
 make build
 ./bin/hop --help
@@ -48,7 +50,7 @@ make build
 Or with Go installed:
 
 ```bash
-go install github.com/samuelbanapour/hop/cmd/hop@latest
+go install github.com/samuelbanapour/hopcli/cmd/hop@latest
 ```
 
 Then put hop on your `PATH`:
