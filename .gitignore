@@ -1,0 +1,7 @@
+# exFAT AppleDouble sidecars (see README: Building on exFAT)
+._*
+.DS_Store
+
+# build output
+/bin/
+/dist/

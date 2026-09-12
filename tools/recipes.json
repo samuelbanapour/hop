@@ -1,0 +1,471 @@
+{
+  "comment": "Source-of-truth spec for the built-in index. `go run ./tools/genindex` resolves each repo's latest release, inspects the real archives, and writes internal/core/data/index.json with exact digests, strip depths and binary paths.",
+  "packages": [
+    {
+      "name": "bat",
+      "repo": "sharkdp/bat",
+      "bin": [
+        "bat"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "cat",
+        "pager",
+        "syntax"
+      ],
+      "description": "A cat clone with syntax highlighting and git integration"
+    },
+    {
+      "name": "bottom",
+      "repo": "ClementTsang/bottom",
+      "bin": [
+        "btm"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "top",
+        "monitor",
+        "process"
+      ],
+      "description": "A customisable cross-platform graphical process and system monitor",
+      "aliases": [
+        "btm"
+      ]
+    },
+    {
+      "name": "delta",
+      "repo": "dandavison/delta",
+      "bin": [
+        "delta"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "git",
+        "diff",
+        "pager"
+      ],
+      "description": "A syntax-highlighting pager for git, diff and grep output",
+      "aliases": [
+        "git-delta"
+      ]
+    },
+    {
+      "name": "difftastic",
+      "repo": "Wilfred/difftastic",
+      "bin": [
+        "difft"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "diff",
+        "syntax",
+        "ast"
+      ],
+      "description": "A structural diff that understands syntax",
+      "aliases": [
+        "difft"
+      ]
+    },
+    {
+      "name": "dust",
+      "repo": "bootandy/dust",
+      "bin": [
+        "dust"
+      ],
+      "license": "Apache-2.0",
+      "keywords": [
+        "du",
+        "disk",
+        "usage"
+      ],
+      "description": "A more intuitive version of du, in Rust"
+    },
+    {
+      "name": "fd",
+      "repo": "sharkdp/fd",
+      "bin": [
+        "fd"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "find",
+        "search",
+        "files"
+      ],
+      "description": "A fast, user-friendly alternative to find",
+      "aliases": [
+        "fd-find"
+      ]
+    },
+    {
+      "name": "flyctl",
+      "repo": "superfly/flyctl",
+      "bin": [
+        "flyctl"
+      ],
+      "license": "Apache-2.0",
+      "keywords": [
+        "fly",
+        "deploy",
+        "cloud"
+      ],
+      "aliases": [
+        "fly"
+      ],
+      "description": "Command-line tool for deploying apps to Fly.io"
+    },
+    {
+      "name": "fzf",
+      "repo": "junegunn/fzf",
+      "bin": [
+        "fzf"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "fuzzy",
+        "finder",
+        "interactive"
+      ],
+      "description": "A general-purpose command-line fuzzy finder"
+    },
+    {
+      "name": "gh",
+      "repo": "cli/cli",
+      "bin": [
+        "gh"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "github",
+        "git",
+        "pr"
+      ],
+      "description": "GitHub on the command line: pull requests, issues and releases"
+    },
+    {
+      "name": "gitui",
+      "repo": "extrawurst/gitui",
+      "bin": [
+        "gitui"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "git",
+        "tui"
+      ],
+      "description": "Blazing-fast terminal UI for git"
+    },
+    {
+      "name": "glow",
+      "repo": "charmbracelet/glow",
+      "bin": [
+        "glow"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "markdown",
+        "render",
+        "pager"
+      ],
+      "description": "Render markdown on the command line with style"
+    },
+    {
+      "name": "grpcurl",
+      "repo": "fullstorydev/grpcurl",
+      "bin": [
+        "grpcurl"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "grpc",
+        "curl",
+        "rpc"
+      ],
+      "description": "Like curl, but for gRPC servers"
+    },
+    {
+      "name": "gum",
+      "repo": "charmbracelet/gum",
+      "bin": [
+        "gum"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "tui",
+        "prompt",
+        "shell"
+      ],
+      "description": "A tool for glamorous shell scripts: prompts, spinners and pickers"
+    },
+    {
+      "name": "hexyl",
+      "repo": "sharkdp/hexyl",
+      "bin": [
+        "hexyl"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "hex",
+        "binary",
+        "viewer"
+      ],
+      "description": "A colourful command-line hex viewer"
+    },
+    {
+      "name": "hyperfine",
+      "repo": "sharkdp/hyperfine",
+      "bin": [
+        "hyperfine"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "benchmark",
+        "timing"
+      ],
+      "description": "A command-line benchmarking tool with statistical analysis"
+    },
+    {
+      "name": "jq",
+      "repo": "jqlang/jq",
+      "bin": [
+        "jq"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "json",
+        "filter",
+        "query"
+      ],
+      "description": "A lightweight and flexible command-line JSON processor"
+    },
+    {
+      "name": "just",
+      "repo": "casey/just",
+      "bin": [
+        "just"
+      ],
+      "license": "CC0-1.0",
+      "keywords": [
+        "make",
+        "task",
+        "runner"
+      ],
+      "description": "A handy command runner for project-specific tasks"
+    },
+    {
+      "name": "lazygit",
+      "repo": "jesseduffield/lazygit",
+      "bin": [
+        "lazygit"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "git",
+        "tui"
+      ],
+      "description": "A simple terminal UI for git commands"
+    },
+    {
+      "name": "mkcert",
+      "repo": "FiloSottile/mkcert",
+      "bin": [
+        "mkcert"
+      ],
+      "license": "BSD-3-Clause",
+      "keywords": [
+        "tls",
+        "https",
+        "certificate"
+      ],
+      "description": "Make locally trusted development certificates with one command"
+    },
+    {
+      "name": "ouch",
+      "repo": "ouch-org/ouch",
+      "bin": [
+        "ouch"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "archive",
+        "compress",
+        "zip"
+      ],
+      "description": "Painless compression and decompression for your terminal"
+    },
+    {
+      "name": "procs",
+      "repo": "dalance/procs",
+      "bin": [
+        "procs"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "ps",
+        "process"
+      ],
+      "description": "A modern replacement for ps, written in Rust"
+    },
+    {
+      "name": "ripgrep",
+      "repo": "BurntSushi/ripgrep",
+      "bin": [
+        "rg"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "search",
+        "grep",
+        "regex"
+      ],
+      "description": "Recursively search directories for a regex pattern, respecting .gitignore",
+      "aliases": [
+        "rg"
+      ]
+    },
+    {
+      "name": "sd",
+      "repo": "chmln/sd",
+      "bin": [
+        "sd"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "sed",
+        "replace",
+        "regex"
+      ],
+      "description": "Intuitive find and replace, a friendlier sed"
+    },
+    {
+      "name": "shellcheck",
+      "repo": "koalaman/shellcheck",
+      "bin": [
+        "shellcheck"
+      ],
+      "license": "GPL-3.0",
+      "keywords": [
+        "lint",
+        "shell",
+        "bash"
+      ],
+      "description": "A static analysis tool for shell scripts"
+    },
+    {
+      "name": "starship",
+      "repo": "starship/starship",
+      "bin": [
+        "starship"
+      ],
+      "license": "ISC",
+      "keywords": [
+        "prompt",
+        "shell"
+      ],
+      "description": "A minimal, blazing-fast and infinitely customisable shell prompt",
+      "caveats": "Add the prompt initialiser to the end of your profile:\n\n    eval \"$(starship init zsh)\"    # or bash, fish"
+    },
+    {
+      "name": "subfinder",
+      "repo": "projectdiscovery/subfinder",
+      "bin": [
+        "subfinder"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "dns",
+        "subdomain",
+        "recon"
+      ],
+      "description": "Fast passive subdomain enumeration tool"
+    },
+    {
+      "name": "watchexec",
+      "repo": "watchexec/watchexec",
+      "bin": [
+        "watchexec"
+      ],
+      "license": "Apache-2.0",
+      "keywords": [
+        "watch",
+        "reload",
+        "files"
+      ],
+      "description": "Run commands when files change"
+    },
+    {
+      "name": "websocat",
+      "repo": "vi/websocat",
+      "bin": [
+        "websocat"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "websocket",
+        "netcat",
+        "ws"
+      ],
+      "description": "Netcat for WebSockets: connect, serve and pipe ws:// endpoints"
+    },
+    {
+      "name": "xh",
+      "repo": "ducaale/xh",
+      "bin": [
+        "xh"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "http",
+        "curl",
+        "request"
+      ],
+      "description": "A friendly and fast tool for sending HTTP requests"
+    },
+    {
+      "name": "yq",
+      "repo": "mikefarah/yq",
+      "bin": [
+        "yq"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "yaml",
+        "json",
+        "query"
+      ],
+      "description": "A portable command-line YAML, JSON and XML processor",
+      "aliases": [
+        "yq-go"
+      ]
+    },
+    {
+      "name": "zellij",
+      "repo": "zellij-org/zellij",
+      "bin": [
+        "zellij"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "terminal",
+        "multiplexer",
+        "tmux"
+      ],
+      "description": "A terminal workspace and multiplexer with batteries included"
+    },
+    {
+      "name": "zoxide",
+      "repo": "ajeetdsouza/zoxide",
+      "bin": [
+        "zoxide"
+      ],
+      "license": "MIT",
+      "keywords": [
+        "cd",
+        "navigation",
+        "jump"
+      ],
+      "description": "A smarter cd that learns the directories you use",
+      "caveats": "Add the shell hook to your profile:\n\n    eval \"$(zoxide init zsh)\"    # or bash, fish, powershell"
+    }
+  ]
+}

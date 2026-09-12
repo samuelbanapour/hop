@@ -1,0 +1,1831 @@
+{
+  "schema": 1,
+  "source": "builtin",
+  "generated": "2026-09-12T17:00:16Z",
+  "recipes": [
+    {
+      "name": "bat",
+      "version": "0.26.1",
+      "description": "A cat clone with syntax highlighting and git integration",
+      "homepage": "https://github.com/sharkdp/bat",
+      "license": "MIT",
+      "keywords": [
+        "cat",
+        "pager",
+        "syntax"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/sharkdp/bat/releases/download/v0.26.1/bat-v0.26.1-x86_64-apple-darwin.tar.gz",
+          "sha256": "830d63b0bba1fa040542ec569e3cf77f60d3356b9de75116a344b061e0894245",
+          "size": 3367309,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "bat"
+          ],
+          "man": [
+            "bat.1"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/sharkdp/bat/releases/download/v0.26.1/bat-v0.26.1-aarch64-apple-darwin.tar.gz",
+          "sha256": "e30beff26779c9bf60bb541e1d79046250cb74378f2757f8eb250afddb19e114",
+          "size": 3216703,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "bat"
+          ],
+          "man": [
+            "bat.1"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/sharkdp/bat/releases/download/v0.26.1/bat-v0.26.1-x86_64-unknown-linux-musl.tar.gz",
+          "sha256": "0dcd8ac79732c0d5b136f11f4ee00e581440e16a44eab5b3105b611bbf2cf191",
+          "size": 3584928,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "bat"
+          ],
+          "man": [
+            "bat.1"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/sharkdp/bat/releases/download/v0.26.1/bat-v0.26.1-aarch64-unknown-linux-musl.tar.gz",
+          "sha256": "6369242c584065f195fb20cb36fbd7cb63ae690605bbe89868a7596b596c2c23",
+          "size": 3383478,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "bat"
+          ],
+          "man": [
+            "bat.1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "bottom",
+      "version": "0.14.9",
+      "description": "A customisable cross-platform graphical process and system monitor",
+      "homepage": "https://github.com/ClementTsang/bottom",
+      "license": "MIT",
+      "keywords": [
+        "top",
+        "monitor",
+        "process"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/ClementTsang/bottom/releases/download/0.14.9/bottom_x86_64-apple-darwin.tar.gz",
+          "sha256": "d0b1d446963ee3c4dfbfe2efd9614cfdc77f39e8268bf8cc2e0b5b6cea982774",
+          "size": 1901583,
+          "format": "tar.gz",
+          "bin": [
+            "btm"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/ClementTsang/bottom/releases/download/0.14.9/bottom_aarch64-apple-darwin.tar.gz",
+          "sha256": "28358e19a3d62b3778fc0d1778b0028a682059145c9ac38ac5076bf124d77714",
+          "size": 1755361,
+          "format": "tar.gz",
+          "bin": [
+            "btm"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/ClementTsang/bottom/releases/download/0.14.9/bottom_x86_64-unknown-linux-musl.tar.gz",
+          "sha256": "b4bee5b193e7d3f6e090ac14f0ca15acec2e7fe4ef64988e0bfc492e16c28c9a",
+          "size": 2126967,
+          "format": "tar.gz",
+          "bin": [
+            "btm"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/ClementTsang/bottom/releases/download/0.14.9/bottom_aarch64-unknown-linux-musl.tar.gz",
+          "sha256": "7b6d532f6a6af356970f4e8d7d3a792590485aa4a53ebf038e10d20366125533",
+          "size": 1918659,
+          "format": "tar.gz",
+          "bin": [
+            "btm"
+          ]
+        }
+      }
+    },
+    {
+      "name": "delta",
+      "version": "0.19.2",
+      "description": "A syntax-highlighting pager for git, diff and grep output",
+      "homepage": "https://github.com/dandavison/delta",
+      "license": "MIT",
+      "keywords": [
+        "git",
+        "diff",
+        "pager"
+      ],
+      "artifacts": {
+        "darwin-arm64": {
+          "url": "https://github.com/dandavison/delta/releases/download/0.19.2/delta-0.19.2-aarch64-apple-darwin.tar.gz",
+          "sha256": "9be36612a5a13e9e386dc498fb8e50dc87c72ee42b63db0ea05b32f99a72a69a",
+          "size": 3027429,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "delta"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/dandavison/delta/releases/download/0.19.2/delta-0.19.2-x86_64-unknown-linux-musl.tar.gz",
+          "sha256": "f1ea01ca7728ce3462debc359f39dfc7cbbc1a63224b71fefabf92042864aa1b",
+          "size": 3403232,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "delta"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/dandavison/delta/releases/download/0.19.2/delta-0.19.2-aarch64-unknown-linux-gnu.tar.gz",
+          "sha256": "0bfce159a5cddd5feb3d6db4a616d883ff51253ce08ac7ec11cb1d208cfaab9e",
+          "size": 3166854,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "delta"
+          ]
+        }
+      }
+    },
+    {
+      "name": "difftastic",
+      "version": "0.70.0",
+      "description": "A structural diff that understands syntax",
+      "homepage": "https://github.com/Wilfred/difftastic",
+      "license": "MIT",
+      "keywords": [
+        "diff",
+        "syntax",
+        "ast"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/Wilfred/difftastic/releases/download/0.70.0/difft-x86_64-apple-darwin.tar.gz",
+          "sha256": "c180541ef7963aad4f75d4ef99aed2bf7f5c132d25a3b8152b20309be1fba82f",
+          "size": 11472200,
+          "format": "tar.gz",
+          "bin": [
+            "difft"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/Wilfred/difftastic/releases/download/0.70.0/difft-aarch64-apple-darwin.tar.gz",
+          "sha256": "1921267221fcb5779d30c4dcc0b3b4620abbe851ffd5596a4715576581518f51",
+          "size": 12157511,
+          "format": "tar.gz",
+          "bin": [
+            "difft"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/Wilfred/difftastic/releases/download/0.70.0/difft-x86_64-unknown-linux-musl.tar.gz",
+          "sha256": "16f65a74a3d64d0bb44d31223d56d0ccaa9ad148f520322450a0629ee21f205f",
+          "size": 11904574,
+          "format": "tar.gz",
+          "bin": [
+            "difft"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/Wilfred/difftastic/releases/download/0.70.0/difft-aarch64-unknown-linux-gnu.tar.gz",
+          "sha256": "e729684907d67d1a1727a08f443877e19e40eeb2efebcd95c1b8f7fee4284e8e",
+          "size": 11626007,
+          "format": "tar.gz",
+          "bin": [
+            "difft"
+          ]
+        }
+      }
+    },
+    {
+      "name": "dust",
+      "version": "1.2.5",
+      "description": "A more intuitive version of du, in Rust",
+      "homepage": "https://github.com/bootandy/dust",
+      "license": "Apache-2.0",
+      "keywords": [
+        "du",
+        "disk",
+        "usage"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/bootandy/dust/releases/download/v1.2.5/dust-v1.2.5-x86_64-apple-darwin.tar.gz",
+          "sha256": "29566236d7a5e2afbc3fcf2d365845a4eaf0fc969a4ed9f8b878bc1a4fc7d2b8",
+          "size": 1122946,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "dust"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/bootandy/dust/releases/download/v1.2.5/dust-v1.2.5-aarch64-apple-darwin.tar.gz",
+          "sha256": "7f17449fecff70cce61e6060fac490dfe66b1b40ee1639bc1f72d121b846e364",
+          "size": 1040581,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "dust"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/bootandy/dust/releases/download/v1.2.5/dust-v1.2.5-x86_64-unknown-linux-musl.tar.gz",
+          "sha256": "79813b5743fab1e04c1d9c34042aab865dbe09efb76719e7c7d260568850fabc",
+          "size": 1255296,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "dust"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/bootandy/dust/releases/download/v1.2.5/dust-v1.2.5-aarch64-unknown-linux-musl.tar.gz",
+          "sha256": "331b328233a70e56f0509ff962b2a6ea606eb2e654ce8a0e9a3bebe1bd54a2be",
+          "size": 1131020,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "dust"
+          ]
+        }
+      }
+    },
+    {
+      "name": "fd",
+      "version": "10.5.0",
+      "description": "A fast, user-friendly alternative to find",
+      "homepage": "https://github.com/sharkdp/fd",
+      "license": "MIT",
+      "keywords": [
+        "find",
+        "search",
+        "files"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-v10.5.0-x86_64-apple-darwin.tar.gz",
+          "sha256": "7e31028c62c6955877735d0406807aa484c2a5e6f86235a59e26c29c301da590",
+          "size": 1426858,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "fd"
+          ],
+          "man": [
+            "fd.1"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-v10.5.0-aarch64-apple-darwin.tar.gz",
+          "sha256": "b67e1836c468e42e411984b56e52fa7abec08c2bd22c867398e7cc134aac5e12",
+          "size": 1334374,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "fd"
+          ],
+          "man": [
+            "fd.1"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-v10.5.0-x86_64-unknown-linux-musl.tar.gz",
+          "sha256": "761c72dc8e120d85b22292063be8a796e2eeb20eb3e4f38b8fa2343ccf3514a7",
+          "size": 1573549,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "fd"
+          ],
+          "man": [
+            "fd.1"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/sharkdp/fd/releases/download/v10.5.0/fd-v10.5.0-aarch64-unknown-linux-musl.tar.gz",
+          "sha256": "d76c4317f7d5dba69f8a2a15856c90c777e7f0dd4e85f0de8c76de6992c374d4",
+          "size": 1429078,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "fd"
+          ],
+          "man": [
+            "fd.1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "flyctl",
+      "version": "0.4.102",
+      "description": "Command-line tool for deploying apps to Fly.io",
+      "homepage": "https://github.com/superfly/flyctl",
+      "license": "Apache-2.0",
+      "keywords": [
+        "fly",
+        "deploy",
+        "cloud"
+      ],
+      "aliases": [
+        "fly"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/superfly/flyctl/releases/download/v0.4.102/flyctl_0.4.102_macOS_x86_64.tar.gz",
+          "sha256": "167d9f926f307e4a0799c76267f7b0002174df56a57f69fefd52d8e9a4285f55",
+          "size": 53452688,
+          "format": "tar.gz",
+          "bin": [
+            "flyctl"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/superfly/flyctl/releases/download/v0.4.102/flyctl_0.4.102_macOS_arm64.tar.gz",
+          "sha256": "4780d045c38d4ff7e7bc296e2d2f3e0f093b0fcece5f6022afc948ddf94288a8",
+          "size": 50459711,
+          "format": "tar.gz",
+          "bin": [
+            "flyctl"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/superfly/flyctl/releases/download/v0.4.102/flyctl_0.4.102_Linux_x86_64.tar.gz",
+          "sha256": "94a7219201660d57705d6f92fc4a75199aa0c491c349325fd67dca0b43bc588e",
+          "size": 50777985,
+          "format": "tar.gz",
+          "bin": [
+            "flyctl"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/superfly/flyctl/releases/download/v0.4.102/flyctl_0.4.102_Linux_arm64.tar.gz",
+          "sha256": "4acd7d16824e8733447a28eaab92bd6d3284044a273ffafec5d5f98bd3453ebb",
+          "size": 46690206,
+          "format": "tar.gz",
+          "bin": [
+            "flyctl"
+          ]
+        }
+      }
+    },
+    {
+      "name": "fzf",
+      "version": "0.74.4",
+      "description": "A general-purpose command-line fuzzy finder",
+      "homepage": "https://github.com/junegunn/fzf",
+      "license": "MIT",
+      "keywords": [
+        "fuzzy",
+        "finder",
+        "interactive"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-darwin_amd64.tar.gz",
+          "sha256": "2d392b50be66e2ab104ccd52a6072df692b1f9b9c5b449a9c098de885f32c4c5",
+          "size": 2358031,
+          "format": "tar.gz",
+          "bin": [
+            "fzf"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-darwin_arm64.tar.gz",
+          "sha256": "4f6a113bfc0c7959e0005c78d566a51afc4fcefc956f43735c62a9deb19e92ae",
+          "size": 2148967,
+          "format": "tar.gz",
+          "bin": [
+            "fzf"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-linux_amd64.tar.gz",
+          "sha256": "05e6813a337cc722c3ed07e54a764b75cc5d671e2e60459db0ba696ee5fa7504",
+          "size": 2286563,
+          "format": "tar.gz",
+          "bin": [
+            "fzf"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/junegunn/fzf/releases/download/v0.74.4/fzf-0.74.4-linux_arm64.tar.gz",
+          "sha256": "5d673b849f494f0d64ec471d8640b153ca8849e3846a31da17abdcfce8df6b46",
+          "size": 2074969,
+          "format": "tar.gz",
+          "bin": [
+            "fzf"
+          ]
+        }
+      }
+    },
+    {
+      "name": "gh",
+      "version": "2.100.0",
+      "description": "GitHub on the command line: pull requests, issues and releases",
+      "homepage": "https://github.com/cli/cli",
+      "license": "MIT",
+      "keywords": [
+        "github",
+        "git",
+        "pr"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_macOS_amd64.zip",
+          "sha256": "fcd7799e85eb575f3c7d2b1679bfbfedaefa1269d4bc7d096b51e10939b4812b",
+          "size": 15818005,
+          "format": "zip",
+          "strip": 1,
+          "bin": [
+            "bin/gh"
+          ],
+          "man": [
+            "share/man/man1/gh-agent-task-create.1",
+            "share/man/man1/gh-agent-task-list.1",
+            "share/man/man1/gh-agent-task-view.1",
+            "share/man/man1/gh-agent-task.1",
+            "share/man/man1/gh-alias-delete.1",
+            "share/man/man1/gh-alias-import.1"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_macOS_arm64.zip",
+          "sha256": "45f9a62da2f6e641a7fad57e2ce39656dfd7ef331372d80a2a2aed65abb01642",
+          "size": 14212224,
+          "format": "zip",
+          "strip": 1,
+          "bin": [
+            "bin/gh"
+          ],
+          "man": [
+            "share/man/man1/gh-agent-task-create.1",
+            "share/man/man1/gh-agent-task-list.1",
+            "share/man/man1/gh-agent-task-view.1",
+            "share/man/man1/gh-agent-task.1",
+            "share/man/man1/gh-alias-delete.1",
+            "share/man/man1/gh-alias-import.1"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_linux_amd64.tar.gz",
+          "sha256": "e4d4bb4498e8d007abe545b6568926793ace1b6447da598294a610018cb164be",
+          "size": 15152253,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "bin/gh"
+          ],
+          "man": [
+            "share/man/man1/gh-agent-task-create.1",
+            "share/man/man1/gh-agent-task-list.1",
+            "share/man/man1/gh-agent-task-view.1",
+            "share/man/man1/gh-agent-task.1",
+            "share/man/man1/gh-alias-delete.1",
+            "share/man/man1/gh-alias-import.1"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/cli/cli/releases/download/v2.100.0/gh_2.100.0_linux_arm64.tar.gz",
+          "sha256": "ea4e7a581a32ccad6cc7923cb1576ac5859ba4b9a16ab22eb8f8a96e78e2e961",
+          "size": 13783869,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "bin/gh"
+          ],
+          "man": [
+            "share/man/man1/gh-agent-task-create.1",
+            "share/man/man1/gh-agent-task-list.1",
+            "share/man/man1/gh-agent-task-view.1",
+            "share/man/man1/gh-agent-task.1",
+            "share/man/man1/gh-alias-delete.1",
+            "share/man/man1/gh-alias-import.1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "gitui",
+      "version": "0.28.1",
+      "description": "Blazing-fast terminal UI for git",
+      "homepage": "https://github.com/extrawurst/gitui",
+      "license": "MIT",
+      "keywords": [
+        "git",
+        "tui"
+      ],
+      "artifacts": {
+        "linux-amd64": {
+          "url": "https://github.com/gitui-org/gitui/releases/download/v0.28.1/gitui-linux-x86_64.tar.gz",
+          "sha256": "f6149b9ae203397158b0c89c13cfde718e7121d3d3cd2ebc597f93d6628d9b5b",
+          "size": 6840775,
+          "format": "tar.gz",
+          "bin": [
+            "./gitui"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/gitui-org/gitui/releases/download/v0.28.1/gitui-linux-aarch64.tar.gz",
+          "sha256": "2a640da05b73e9152a7bf92bfd7c23acd9d60438f4f2cabb62357014a5fd7c28",
+          "size": 6987794,
+          "format": "tar.gz",
+          "bin": [
+            "./gitui"
+          ]
+        }
+      }
+    },
+    {
+      "name": "glow",
+      "version": "3.0.0",
+      "description": "Render markdown on the command line with style",
+      "homepage": "https://github.com/charmbracelet/glow",
+      "license": "MIT",
+      "keywords": [
+        "markdown",
+        "render",
+        "pager"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/charmbracelet/glow/releases/download/v3.0.0/glow_3.0.0_Darwin_x86_64.tar.gz",
+          "sha256": "b911b90622e686d44bc072112898584a601ed8353276b735835d8cdbcc27f660",
+          "size": 6925688,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "glow"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/charmbracelet/glow/releases/download/v3.0.0/glow_3.0.0_Darwin_arm64.tar.gz",
+          "sha256": "4b8a9a32412c0525e4c239e65171706fc5beb6d423608d99fe16788d47b345d3",
+          "size": 6466187,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "glow"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/charmbracelet/glow/releases/download/v3.0.0/glow_3.0.0_Linux_x86_64.tar.gz",
+          "sha256": "13e05e4b2acc18d2aee44291aefe6325b077ec321b631a0cfa780e8e3bc33f78",
+          "size": 6824849,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "glow"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/charmbracelet/glow/releases/download/v3.0.0/glow_3.0.0_Linux_arm64.tar.gz",
+          "sha256": "810c39f4691feb75e675a5f5f54b9fa091354e7599d9cf9c9fc9b97e47a99759",
+          "size": 6223975,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "glow"
+          ]
+        }
+      }
+    },
+    {
+      "name": "grpcurl",
+      "version": "1.9.4",
+      "description": "Like curl, but for gRPC servers",
+      "homepage": "https://github.com/fullstorydev/grpcurl",
+      "license": "MIT",
+      "keywords": [
+        "grpc",
+        "curl",
+        "rpc"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/fullstorydev/grpcurl/releases/download/v1.9.4/grpcurl_1.9.4_osx_x86_64.tar.gz",
+          "sha256": "0c1b24a82097862027af6abe88f362db73e4846859a3ceda2dd466e4dc971a06",
+          "size": 10228231,
+          "format": "tar.gz",
+          "bin": [
+            "grpcurl"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/fullstorydev/grpcurl/releases/download/v1.9.4/grpcurl_1.9.4_osx_arm64.tar.gz",
+          "sha256": "e0df111350acf8ee38f453f4e97e0474cfe1a987ee0c368ebe5383e6a4bccf25",
+          "size": 9513972,
+          "format": "tar.gz",
+          "bin": [
+            "grpcurl"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/fullstorydev/grpcurl/releases/download/v1.9.4/grpcurl_1.9.4_linux_x86_64.tar.gz",
+          "sha256": "97e13d58d2733a0e62cd2571d1d5f0c02823f0d25282f08bddedf1ad9c5d1736",
+          "size": 9968722,
+          "format": "tar.gz",
+          "bin": [
+            "grpcurl"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/fullstorydev/grpcurl/releases/download/v1.9.4/grpcurl_1.9.4_linux_arm64.tar.gz",
+          "sha256": "ad66227d90631da5428b4a5ccf28d63846f0f15649d8b2367df044a59edbb617",
+          "size": 9026859,
+          "format": "tar.gz",
+          "bin": [
+            "grpcurl"
+          ]
+        }
+      }
+    },
+    {
+      "name": "gum",
+      "version": "2.0.1",
+      "description": "A tool for glamorous shell scripts: prompts, spinners and pickers",
+      "homepage": "https://github.com/charmbracelet/gum",
+      "license": "MIT",
+      "keywords": [
+        "tui",
+        "prompt",
+        "shell"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/charmbracelet/gum/releases/download/v2.0.1/gum_2.0.1_Darwin_x86_64.tar.gz",
+          "sha256": "4d125b60fbaa28ef1674bb16f3859ed4e813acb027a79d24603b598ea4a0b71f",
+          "size": 5136508,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "gum"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/charmbracelet/gum/releases/download/v2.0.1/gum_2.0.1_Darwin_arm64.tar.gz",
+          "sha256": "994662daab6fcfe9dcfc57d87ca42bcae2948d86fa864f9010a3848fa9bb7d6e",
+          "size": 4713633,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "gum"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/charmbracelet/gum/releases/download/v2.0.1/gum_2.0.1_Linux_x86_64.tar.gz",
+          "sha256": "4dfe4547f960813864c803b3617aa64427fa32ca566707fde949e08975297c48",
+          "size": 4963930,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "gum"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/charmbracelet/gum/releases/download/v2.0.1/gum_2.0.1_Linux_arm64.tar.gz",
+          "sha256": "6998202a8fea27bb2007f69e44ec5dcb4cff5268c62d995de857eee0e2cd52cb",
+          "size": 4543575,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "gum"
+          ]
+        }
+      }
+    },
+    {
+      "name": "hexyl",
+      "version": "0.17.0",
+      "description": "A colourful command-line hex viewer",
+      "homepage": "https://github.com/sharkdp/hexyl",
+      "license": "MIT",
+      "keywords": [
+        "hex",
+        "binary",
+        "viewer"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/sharkdp/hexyl/releases/download/v0.17.0/hexyl-v0.17.0-x86_64-apple-darwin.tar.gz",
+          "sha256": "55346f1dcee92bf93f32e104b0fb9d31fab8eec36532a9b6107b4e0e0aef5f46",
+          "size": 535239,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "hexyl"
+          ],
+          "man": [
+            "hexyl.1"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/sharkdp/hexyl/releases/download/v0.17.0/hexyl-v0.17.0-aarch64-apple-darwin.tar.gz",
+          "sha256": "d8c50f5ec688faf566ea4c13d6aa12a5681dc370dab3ffba0a9db935a5986630",
+          "size": 507300,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "hexyl"
+          ],
+          "man": [
+            "hexyl.1"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/sharkdp/hexyl/releases/download/v0.17.0/hexyl-v0.17.0-x86_64-unknown-linux-musl.tar.gz",
+          "sha256": "82b374b800cc965f4116b9d5d6a50394945170d4f65b9ef6ced3b82b014de8a6",
+          "size": 600537,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "hexyl"
+          ],
+          "man": [
+            "hexyl.1"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/sharkdp/hexyl/releases/download/v0.17.0/hexyl-v0.17.0-aarch64-unknown-linux-gnu.tar.gz",
+          "sha256": "70b97648935f98801fd3c3e4758ff4e92afcf7e75316ff65d4e4f5d2e321b658",
+          "size": 531498,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "hexyl"
+          ],
+          "man": [
+            "hexyl.1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "hyperfine",
+      "version": "1.20.0",
+      "description": "A command-line benchmarking tool with statistical analysis",
+      "homepage": "https://github.com/sharkdp/hyperfine",
+      "license": "MIT",
+      "keywords": [
+        "benchmark",
+        "timing"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-x86_64-apple-darwin.tar.gz",
+          "sha256": "f58d0b90993fadfa122a351428c469ce24afef3865f027f0e6e86f0830d088f1",
+          "size": 621721,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "hyperfine"
+          ],
+          "man": [
+            "hyperfine.1"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-aarch64-apple-darwin.tar.gz",
+          "sha256": "8ee7067016620447c9d2d6234ec9a4680f958b7ad983549b56334668f63075b5",
+          "size": 582508,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "hyperfine"
+          ],
+          "man": [
+            "hyperfine.1"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-x86_64-unknown-linux-musl.tar.gz",
+          "sha256": "3285ec7959285288137043dd81dce0dde056227018a8277532d9a364b4f03c2b",
+          "size": 710161,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "hyperfine"
+          ],
+          "man": [
+            "hyperfine.1"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/sharkdp/hyperfine/releases/download/v1.20.0/hyperfine-v1.20.0-aarch64-unknown-linux-gnu.tar.gz",
+          "sha256": "90875cb1db7a1d797c311174d061728361e58fc70e3b62262a00635ac3b1997c",
+          "size": 607895,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "hyperfine"
+          ],
+          "man": [
+            "hyperfine.1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "jq",
+      "version": "1.8.2",
+      "description": "A lightweight and flexible command-line JSON processor",
+      "homepage": "https://github.com/jqlang/jq",
+      "license": "MIT",
+      "keywords": [
+        "json",
+        "filter",
+        "query"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/jqlang/jq/releases/download/jq-1.8.2/jq-osx-amd64",
+          "sha256": "e94b266e3c26690550006abe63152b782280f4e14374accdf04cbde844f00bc0",
+          "size": 871768,
+          "format": "raw",
+          "bin": [
+            "jq"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/jqlang/jq/releases/download/jq-1.8.2/jq-macos-arm64",
+          "sha256": "2d75340ba57a4b4b4c8708a21c2dc8e958a48aaa8bba13b27f77f6e4c0eca07e",
+          "size": 841504,
+          "format": "raw",
+          "bin": [
+            "jq"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/jqlang/jq/releases/download/jq-1.8.2/jq-linux64",
+          "sha256": "b1c22172dd303f3be49e935aa56aa48a8b7a46e0bc838b4997d3bb451495870f",
+          "size": 2267912,
+          "format": "raw",
+          "bin": [
+            "jq"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/jqlang/jq/releases/download/jq-1.8.2/jq-linux-arm64",
+          "sha256": "8b85c817833814ddca00a144c33705546355afccf0cf39b188f3cdb48b852309",
+          "size": 1797688,
+          "format": "raw",
+          "bin": [
+            "jq"
+          ]
+        }
+      }
+    },
+    {
+      "name": "just",
+      "version": "1.58.0",
+      "description": "A handy command runner for project-specific tasks",
+      "homepage": "https://github.com/casey/just",
+      "license": "CC0-1.0",
+      "keywords": [
+        "make",
+        "task",
+        "runner"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-x86_64-apple-darwin.tar.gz",
+          "sha256": "9a09cfef66aaa79da58203970103a0684307716caaabd3e9844cacc4dc0f4023",
+          "size": 2330963,
+          "format": "tar.gz",
+          "bin": [
+            "just"
+          ],
+          "man": [
+            "just.1"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-aarch64-apple-darwin.tar.gz",
+          "sha256": "50ae3e996c974a0bf32ea7d10f495070df33f1b43e0616b2769e3d4821ed8f48",
+          "size": 2146038,
+          "format": "tar.gz",
+          "bin": [
+            "just"
+          ],
+          "man": [
+            "just.1"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-x86_64-unknown-linux-musl.tar.gz",
+          "sha256": "4a5cc2f53e6f0f8c59092a6cc38291eb729d46a7dd95d3ae582008881b84931d",
+          "size": 2529009,
+          "format": "tar.gz",
+          "bin": [
+            "just"
+          ],
+          "man": [
+            "just.1"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/casey/just/releases/download/1.58.0/just-1.58.0-aarch64-unknown-linux-musl.tar.gz",
+          "sha256": "748237128c4c40cbdabc65e841d05ceba13cc23a91eaba395495894c1d9764df",
+          "size": 2306281,
+          "format": "tar.gz",
+          "bin": [
+            "just"
+          ],
+          "man": [
+            "just.1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "lazygit",
+      "version": "0.65.0",
+      "description": "A simple terminal UI for git commands",
+      "homepage": "https://github.com/jesseduffield/lazygit",
+      "license": "MIT",
+      "keywords": [
+        "git",
+        "tui"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/jesseduffield/lazygit/releases/download/v0.65.0/lazygit_0.65.0_darwin_x86_64.tar.gz",
+          "sha256": "3848033450205f975aa6a587e76f01c9796bff3a3cc0e32060ac77b9423264e3",
+          "size": 7101244,
+          "format": "tar.gz",
+          "bin": [
+            "lazygit"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/jesseduffield/lazygit/releases/download/v0.65.0/lazygit_0.65.0_darwin_arm64.tar.gz",
+          "sha256": "d8ea1cade9e4279e45cbb58652e84edb07e98a9f8ec0604099c8b0a8f709e63a",
+          "size": 6596776,
+          "format": "tar.gz",
+          "bin": [
+            "lazygit"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/jesseduffield/lazygit/releases/download/v0.65.0/lazygit_0.65.0_linux_x86_64.tar.gz",
+          "sha256": "44d8e7dd1484b4a66e191bd4ab25a71e8b4b3a65ab122f838e65677ef58c5506",
+          "size": 6986569,
+          "format": "tar.gz",
+          "bin": [
+            "lazygit"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/jesseduffield/lazygit/releases/download/v0.65.0/lazygit_0.65.0_linux_arm64.tar.gz",
+          "sha256": "d954a09c128bd37b2bd0d254308474e87de3729cfe0e37f5b46a49357a4fe257",
+          "size": 6326137,
+          "format": "tar.gz",
+          "bin": [
+            "lazygit"
+          ]
+        }
+      }
+    },
+    {
+      "name": "mkcert",
+      "version": "1.4.4",
+      "description": "Make locally trusted development certificates with one command",
+      "homepage": "https://github.com/FiloSottile/mkcert",
+      "license": "BSD-3-Clause",
+      "keywords": [
+        "tls",
+        "https",
+        "certificate"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-darwin-amd64",
+          "sha256": "a32dfab51f1845d51e810db8e47dcf0e6b51ae3422426514bf5a2b8302e97d4e",
+          "size": 5303728,
+          "format": "raw",
+          "bin": [
+            "mkcert"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-darwin-arm64",
+          "sha256": "c8af0df44bce04359794dad8ea28d750437411d632748049d08644ffb66a60c6",
+          "size": 5174450,
+          "format": "raw",
+          "bin": [
+            "mkcert"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-amd64",
+          "sha256": "6d31c65b03972c6dc4a14ab429f2928300518b26503f58723e532d1b0a3bbb52",
+          "size": 4788866,
+          "format": "raw",
+          "bin": [
+            "mkcert"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/FiloSottile/mkcert/releases/download/v1.4.4/mkcert-v1.4.4-linux-arm64",
+          "sha256": "b98f2cc69fd9147fe4d405d859c57504571adec0d3611c3eefd04107c7ac00d0",
+          "size": 4633188,
+          "format": "raw",
+          "bin": [
+            "mkcert"
+          ]
+        }
+      }
+    },
+    {
+      "name": "ouch",
+      "version": "0.8.2",
+      "description": "Painless compression and decompression for your terminal",
+      "homepage": "https://github.com/ouch-org/ouch",
+      "license": "MIT",
+      "keywords": [
+        "archive",
+        "compress",
+        "zip"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/ouch-org/ouch/releases/download/0.8.2/ouch-x86_64-apple-darwin.tar.gz",
+          "sha256": "db1f4eef469f481d3f609c00bbd64d6b981b61b1945f8d64f92cd622df515eab",
+          "size": 2579220,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "ouch"
+          ],
+          "man": [
+            "man/ouch-compress.1",
+            "man/ouch-decompress.1",
+            "man/ouch-list.1",
+            "man/ouch.1"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/ouch-org/ouch/releases/download/0.8.2/ouch-aarch64-apple-darwin.tar.gz",
+          "sha256": "36d912a6739ccec6889b6e67cfe24d503e889b61c6da556b840a5e4e7e39a2e0",
+          "size": 2413898,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "ouch"
+          ],
+          "man": [
+            "man/ouch-compress.1",
+            "man/ouch-decompress.1",
+            "man/ouch-list.1",
+            "man/ouch.1"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/ouch-org/ouch/releases/download/0.8.2/ouch-x86_64-unknown-linux-musl.tar.gz",
+          "sha256": "c4ced4672badf374696c52661f4cacf154769771dbc7454222907e83ca81b4c0",
+          "size": 2799860,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "ouch"
+          ],
+          "man": [
+            "man/ouch-compress.1",
+            "man/ouch-decompress.1",
+            "man/ouch-list.1",
+            "man/ouch.1"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/ouch-org/ouch/releases/download/0.8.2/ouch-aarch64-unknown-linux-musl.tar.gz",
+          "sha256": "892735538af1b5b7db6927dc8a2dc9a8a06f5c7b60f610e297b6158577fb952b",
+          "size": 2589221,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "ouch"
+          ],
+          "man": [
+            "man/ouch-compress.1",
+            "man/ouch-decompress.1",
+            "man/ouch-list.1",
+            "man/ouch.1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "procs",
+      "version": "0.14.12",
+      "description": "A modern replacement for ps, written in Rust",
+      "homepage": "https://github.com/dalance/procs",
+      "license": "MIT",
+      "keywords": [
+        "ps",
+        "process"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/dalance/procs/releases/download/v0.14.12/procs-v0.14.12-x86_64-mac.zip",
+          "sha256": "2c276f40c99051984942a5b135b74ce4bc9184984a1543dddfcf275bde71d8d4",
+          "size": 2233395,
+          "format": "zip",
+          "bin": [
+            "procs"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/dalance/procs/releases/download/v0.14.12/procs-v0.14.12-aarch64-mac.zip",
+          "sha256": "20c7a33426ed7a43c3e13a48f2d1866ecc979a8ad46733f86ddc78ab7f12d49c",
+          "size": 2095351,
+          "format": "zip",
+          "bin": [
+            "procs"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/dalance/procs/releases/download/v0.14.12/procs-v0.14.12-x86_64-linux.zip",
+          "sha256": "81964faf9d5cd0e9f399d5d0954fb6fe4d4d9f7d3cbec4507633df5a45b11713",
+          "size": 2565746,
+          "format": "zip",
+          "bin": [
+            "procs"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/dalance/procs/releases/download/v0.14.12/procs-v0.14.12-aarch64-linux.zip",
+          "sha256": "74b4f82acc6fe553cbd5af20ba0baac420b42bef9bb0cbb38fef14b8317d9f91",
+          "size": 2400955,
+          "format": "zip",
+          "bin": [
+            "procs"
+          ]
+        }
+      }
+    },
+    {
+      "name": "ripgrep",
+      "version": "15.2.0",
+      "description": "Recursively search directories for a regex pattern, respecting .gitignore",
+      "homepage": "https://github.com/BurntSushi/ripgrep",
+      "license": "MIT",
+      "keywords": [
+        "search",
+        "grep",
+        "regex"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-x86_64-apple-darwin.tar.gz",
+          "sha256": "af7825fcc69a2afc7a7aea55fc9af90e26421d8f20fe59df32e233c0b8a231c1",
+          "size": 1878284,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "rg"
+          ],
+          "man": [
+            "doc/rg.1"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-aarch64-apple-darwin.tar.gz",
+          "sha256": "3750b2e93f37e0c692657da574d7019a101c0084da05a790c83fd335bad973e4",
+          "size": 1764284,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "rg"
+          ],
+          "man": [
+            "doc/rg.1"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-x86_64-unknown-linux-musl.tar.gz",
+          "sha256": "33e15bcf1624b25cdd2a55813a47a2f95dbe126268203e76aa6a585d1e7b149c",
+          "size": 2265718,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "rg"
+          ],
+          "man": [
+            "doc/rg.1"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/BurntSushi/ripgrep/releases/download/15.2.0/ripgrep-15.2.0-aarch64-unknown-linux-musl.tar.gz",
+          "sha256": "800b1e7206afe799dfb5a6901f23147cfaabe0e52210538100f61e86e1740915",
+          "size": 1982561,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "rg"
+          ],
+          "man": [
+            "doc/rg.1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "sd",
+      "version": "1.1.0",
+      "description": "Intuitive find and replace, a friendlier sed",
+      "homepage": "https://github.com/chmln/sd",
+      "license": "MIT",
+      "keywords": [
+        "sed",
+        "replace",
+        "regex"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/chmln/sd/releases/download/v1.1.0/sd-v1.1.0-x86_64-apple-darwin.tar.gz",
+          "sha256": "1fca1e9c91813a8aac6821063c923107ba0f66a83309e095edcd3b202f67f97e",
+          "size": 927982,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "sd"
+          ],
+          "man": [
+            "sd.1"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/chmln/sd/releases/download/v1.1.0/sd-v1.1.0-aarch64-apple-darwin.tar.gz",
+          "sha256": "4bd3c09226376ca0a1d69589c91e86276fae36c5fbaaee669afce583f6682030",
+          "size": 852694,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "sd"
+          ],
+          "man": [
+            "sd.1"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/chmln/sd/releases/download/v1.1.0/sd-v1.1.0-x86_64-unknown-linux-musl.tar.gz",
+          "sha256": "02f00f4777d43e8e95b7b8d49e1a0d6e502fed4b8e79c1c8b8063857a30caa2e",
+          "size": 1049511,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "sd"
+          ],
+          "man": [
+            "sd.1"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/chmln/sd/releases/download/v1.1.0/sd-v1.1.0-aarch64-unknown-linux-musl.tar.gz",
+          "sha256": "ec8c93c0533ff21f4851d11566808d4082544baf063d9b96ea77c27e98b7cd99",
+          "size": 924956,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "sd"
+          ],
+          "man": [
+            "sd.1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "shellcheck",
+      "version": "0.11.0",
+      "description": "A static analysis tool for shell scripts",
+      "homepage": "https://github.com/koalaman/shellcheck",
+      "license": "GPL-3.0",
+      "keywords": [
+        "lint",
+        "shell",
+        "bash"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.darwin.x86_64.tar.gz",
+          "sha256": "c2c15e08df0e8fbc374c335b230a7ee958c313fa5714817a59aa59f1aa594f51",
+          "size": 6700263,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "shellcheck"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.darwin.aarch64.tar.gz",
+          "sha256": "339b930feb1ea764467013cc1f72d09cd6b869ebf1013296ba9055ab2ffbd26f",
+          "size": 11370575,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "shellcheck"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.x86_64.tar.gz",
+          "sha256": "b7af85e41cc99489dcc21d66c6d5f3685138f06d34651e6d34b42ec6d54fe6f6",
+          "size": 3773312,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "shellcheck"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/koalaman/shellcheck/releases/download/v0.11.0/shellcheck-v0.11.0.linux.aarch64.tar.gz",
+          "sha256": "68a8133197a50beb8803f8d42f9908d1af1c5540d4bb05fdfca8c1fa47decefc",
+          "size": 11668131,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "shellcheck"
+          ]
+        }
+      }
+    },
+    {
+      "name": "starship",
+      "version": "1.26.0",
+      "description": "A minimal, blazing-fast and infinitely customisable shell prompt",
+      "homepage": "https://github.com/starship/starship",
+      "license": "ISC",
+      "keywords": [
+        "prompt",
+        "shell"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/starship/starship/releases/download/v1.26.0/starship-x86_64-apple-darwin.tar.gz",
+          "sha256": "5548f406a4b6f5695903bdea83f77ce47ec12c8c0e62dabd33122d8f133e4207",
+          "size": 4375401,
+          "format": "tar.gz",
+          "bin": [
+            "starship"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/starship/starship/releases/download/v1.26.0/starship-aarch64-apple-darwin.tar.gz",
+          "sha256": "c40b27b11f580411e068f2fa6c1be7830a387c0bc47a94d1d37f32b054c5361d",
+          "size": 4053668,
+          "format": "tar.gz",
+          "bin": [
+            "starship"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/starship/starship/releases/download/v1.26.0/starship-x86_64-unknown-linux-musl.tar.gz",
+          "sha256": "b7c232b0e8249d8e55a40beb79c5c43a7d370f3f9408bd215deb0170daeaadf3",
+          "size": 5191063,
+          "format": "tar.gz",
+          "bin": [
+            "starship"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/starship/starship/releases/download/v1.26.0/starship-aarch64-unknown-linux-musl.tar.gz",
+          "sha256": "dc30189378d2f2e287384e8a692d3f95ad1df64cf0e8c36aa9201516028aed6b",
+          "size": 4784551,
+          "format": "tar.gz",
+          "bin": [
+            "starship"
+          ]
+        }
+      },
+      "caveats": "Add the prompt initialiser to the end of your profile:\n\n    eval \"$(starship init zsh)\"    # or bash, fish"
+    },
+    {
+      "name": "subfinder",
+      "version": "2.16.0",
+      "description": "Fast passive subdomain enumeration tool",
+      "homepage": "https://github.com/projectdiscovery/subfinder",
+      "license": "MIT",
+      "keywords": [
+        "dns",
+        "subdomain",
+        "recon"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/projectdiscovery/subfinder/releases/download/v2.16.0/subfinder_2.16.0_macOS_amd64.zip",
+          "sha256": "8300c4d98f75596b7e8460ba6f3322dfeda4674bc2bcbde14d61d098db260b50",
+          "size": 10245741,
+          "format": "zip",
+          "bin": [
+            "subfinder"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/projectdiscovery/subfinder/releases/download/v2.16.0/subfinder_2.16.0_macOS_arm64.zip",
+          "sha256": "af55827c9e6cdc530cca377ad459214ead16daf1b79d90e3dcefa387f644e057",
+          "size": 9603227,
+          "format": "zip",
+          "bin": [
+            "subfinder"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/projectdiscovery/subfinder/releases/download/v2.16.0/subfinder_2.16.0_linux_amd64.zip",
+          "sha256": "1b7f9c608e9a5bd59e609a5e09710d63c5485e92d3d49dc2c16eb4fdbe10cb60",
+          "size": 10011380,
+          "format": "zip",
+          "bin": [
+            "subfinder"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/projectdiscovery/subfinder/releases/download/v2.16.0/subfinder_2.16.0_linux_arm64.zip",
+          "sha256": "c81d49559c0f630177be9e347e502e7a3d474aacc6ff78291ffcb4964367d63d",
+          "size": 9134128,
+          "format": "zip",
+          "bin": [
+            "subfinder"
+          ]
+        }
+      }
+    },
+    {
+      "name": "watchexec",
+      "version": "2.7.2",
+      "description": "Run commands when files change",
+      "homepage": "https://github.com/watchexec/watchexec",
+      "license": "Apache-2.0",
+      "keywords": [
+        "watch",
+        "reload",
+        "files"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/watchexec/watchexec/releases/download/v2.7.2/watchexec-2.7.2-x86_64-apple-darwin.tar.xz",
+          "sha256": "6a5481a14165f30da8826c7ae1ab3501402328834e7e2483d7c8b7ec4e608810",
+          "size": 2415084,
+          "format": "tar.xz",
+          "bin": [
+            "watchexec"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/watchexec/watchexec/releases/download/v2.7.2/watchexec-2.7.2-aarch64-apple-darwin.tar.xz",
+          "sha256": "31e553b7160720796266168987c5e0728c388cc4776a26297b6a9feb00ab6437",
+          "size": 2052916,
+          "format": "tar.xz",
+          "bin": [
+            "watchexec"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/watchexec/watchexec/releases/download/v2.7.2/watchexec-2.7.2-x86_64-unknown-linux-musl.tar.xz",
+          "sha256": "a2c01f82fb4cdafca1fa12cb88e4a1145dec63364dbdf92664efbaac3bb44dd2",
+          "size": 3051220,
+          "format": "tar.xz",
+          "bin": [
+            "watchexec"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/watchexec/watchexec/releases/download/v2.7.2/watchexec-2.7.2-aarch64-unknown-linux-musl.tar.xz",
+          "sha256": "83cbce2ffc85adaab14d6ded09b292f4383358ac6d9a51b4e4e083df0cb7c831",
+          "size": 2596392,
+          "format": "tar.xz",
+          "bin": [
+            "watchexec"
+          ]
+        }
+      }
+    },
+    {
+      "name": "websocat",
+      "version": "1.14.1",
+      "description": "Netcat for WebSockets: connect, serve and pipe ws:// endpoints",
+      "homepage": "https://github.com/vi/websocat",
+      "license": "MIT",
+      "keywords": [
+        "websocket",
+        "netcat",
+        "ws"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/vi/websocat/releases/download/v1.14.1/websocat.x86_64-apple-darwin",
+          "sha256": "45521ba59a6604785543406bf8e398ce7d565d54c09657176afba795dd28f191",
+          "size": 2903076,
+          "format": "raw",
+          "bin": [
+            "websocat"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/vi/websocat/releases/download/v1.14.1/websocat.aarch64-apple-darwin",
+          "sha256": "c7402a1de17aa5446f86a7fe439cf502c49436c1f2df298c16fd8c2bf092a84e",
+          "size": 2823784,
+          "format": "raw",
+          "bin": [
+            "websocat"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/vi/websocat/releases/download/v1.14.1/websocat.x86_64-unknown-linux-musl",
+          "sha256": "66f8dd3a0394761556339117f8bb5123bddefd44e087af2a72ec22b0bd08d514",
+          "size": 7845504,
+          "format": "raw",
+          "bin": [
+            "websocat"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/vi/websocat/releases/download/v1.14.1/websocat.aarch64-unknown-linux-musl",
+          "sha256": "711a69576a2ff473fb01a90ffafb571c2ed019e55479d7ae71b12c2eadeb7011",
+          "size": 6248736,
+          "format": "raw",
+          "bin": [
+            "websocat"
+          ]
+        }
+      }
+    },
+    {
+      "name": "xh",
+      "version": "0.26.2",
+      "description": "A friendly and fast tool for sending HTTP requests",
+      "homepage": "https://github.com/ducaale/xh",
+      "license": "MIT",
+      "keywords": [
+        "http",
+        "curl",
+        "request"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/ducaale/xh/releases/download/v0.26.2/xh-v0.26.2-x86_64-apple-darwin.tar.gz",
+          "sha256": "1f19ae1a2f411c58bd6943c638472cd5c4179ed019fe4f786e524b27da4c14a2",
+          "size": 4413500,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "xh"
+          ],
+          "man": [
+            "doc/xh.1"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/ducaale/xh/releases/download/v0.26.2/xh-v0.26.2-aarch64-apple-darwin.tar.gz",
+          "sha256": "cc5739d061a8469d0011ca0ab92d4a5cd726cc56f0ef30108953b119f54d0719",
+          "size": 4144757,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "xh"
+          ],
+          "man": [
+            "doc/xh.1"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/ducaale/xh/releases/download/v0.26.2/xh-v0.26.2-x86_64-unknown-linux-musl.tar.gz",
+          "sha256": "8c53b6a23435754f9e2ea8ab8c0d0296a1921404b88132cf9b364ff6e8c22a6e",
+          "size": 4609532,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "xh"
+          ],
+          "man": [
+            "doc/xh.1"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/ducaale/xh/releases/download/v0.26.2/xh-v0.26.2-aarch64-unknown-linux-musl.tar.gz",
+          "sha256": "3a44900a8ac53f614aa0cd1d2e54ecf4e93584384c1ad091aa18d7992686d7eb",
+          "size": 4220425,
+          "format": "tar.gz",
+          "strip": 1,
+          "bin": [
+            "xh"
+          ],
+          "man": [
+            "doc/xh.1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "yq",
+      "version": "4.53.6",
+      "description": "A portable command-line YAML, JSON and XML processor",
+      "homepage": "https://github.com/mikefarah/yq",
+      "license": "MIT",
+      "keywords": [
+        "yaml",
+        "json",
+        "query"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/mikefarah/yq/releases/download/v4.53.6/yq_darwin_amd64.tar.gz",
+          "sha256": "cf8304676c6572960a3720a189fd42e7038bf989dc181f0c05019a2883caf540",
+          "size": 5790294,
+          "format": "tar.gz",
+          "bin": [
+            "yq=yq_darwin_amd64"
+          ],
+          "man": [
+            "yq.1"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/mikefarah/yq/releases/download/v4.53.6/yq_darwin_arm64.tar.gz",
+          "sha256": "4e2b18f4242c720965af7919dc0573819474cecf03a71b6cd7656025f2e5162c",
+          "size": 5313594,
+          "format": "tar.gz",
+          "bin": [
+            "yq=yq_darwin_arm64"
+          ],
+          "man": [
+            "yq.1"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/mikefarah/yq/releases/download/v4.53.6/yq_linux_amd64.tar.gz",
+          "sha256": "38b907b21b1b04327fb9481c595331d925a67c6ee1aabd0ef419d0b7d12dfb3d",
+          "size": 5729058,
+          "format": "tar.gz",
+          "bin": [
+            "yq=yq_linux_amd64"
+          ],
+          "man": [
+            "yq.1"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/mikefarah/yq/releases/download/v4.53.6/yq_linux_arm64.tar.gz",
+          "sha256": "d5e7531273d45c5d4b7abb4a1597c47a0fecb5d6b081dfa755064b38ffcc34f4",
+          "size": 5146582,
+          "format": "tar.gz",
+          "bin": [
+            "yq=yq_linux_arm64"
+          ],
+          "man": [
+            "yq.1"
+          ]
+        }
+      }
+    },
+    {
+      "name": "zellij",
+      "version": "0.45.1",
+      "description": "A terminal workspace and multiplexer with batteries included",
+      "homepage": "https://github.com/zellij-org/zellij",
+      "license": "MIT",
+      "keywords": [
+        "terminal",
+        "multiplexer",
+        "tmux"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/zellij-org/zellij/releases/download/v0.45.1/zellij-x86_64-apple-darwin.tar.gz",
+          "sha256": "8e8bea22737d1652278c51fc5c26c7c22c9855d0ebb9634a84b8873823093114",
+          "size": 16044196,
+          "format": "tar.gz",
+          "bin": [
+            "zellij"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/zellij-org/zellij/releases/download/v0.45.1/zellij-aarch64-apple-darwin.tar.gz",
+          "sha256": "c029ba4fe1927b79ad9f0cdd59155c4dff80777863c85857d4d09b88b56f9891",
+          "size": 15390807,
+          "format": "tar.gz",
+          "bin": [
+            "zellij"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/zellij-org/zellij/releases/download/v0.45.1/zellij-x86_64-unknown-linux-musl.tar.gz",
+          "sha256": "40bcc2e03f5d5ae8e054e39f676081fe12ab70871506996ba595834c3718eefc",
+          "size": 18729165,
+          "format": "tar.gz",
+          "bin": [
+            "zellij"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/zellij-org/zellij/releases/download/v0.45.1/zellij-aarch64-unknown-linux-musl.tar.gz",
+          "sha256": "05f0802afadd53f8db9514e7cae53c9ae8432fed1b35b8294aa816ee3044a16b",
+          "size": 17986395,
+          "format": "tar.gz",
+          "bin": [
+            "zellij"
+          ]
+        }
+      }
+    },
+    {
+      "name": "zoxide",
+      "version": "0.10.0",
+      "description": "A smarter cd that learns the directories you use",
+      "homepage": "https://github.com/ajeetdsouza/zoxide",
+      "license": "MIT",
+      "keywords": [
+        "cd",
+        "navigation",
+        "jump"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://github.com/ajeetdsouza/zoxide/releases/download/v0.10.0/zoxide-0.10.0-x86_64-apple-darwin.tar.gz",
+          "sha256": "18ab7ae2633ad6e2ab79a4e665cbba1e95b7c872d44523326efb793202451dad",
+          "size": 517384,
+          "format": "tar.gz",
+          "bin": [
+            "zoxide"
+          ],
+          "man": [
+            "man/man1/zoxide-add.1",
+            "man/man1/zoxide-import.1",
+            "man/man1/zoxide-init.1",
+            "man/man1/zoxide-query.1",
+            "man/man1/zoxide-remove.1",
+            "man/man1/zoxide.1"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://github.com/ajeetdsouza/zoxide/releases/download/v0.10.0/zoxide-0.10.0-aarch64-apple-darwin.tar.gz",
+          "sha256": "b55ae6f2f5f23d0a6ccb3bd4eeb2af9c7e0a6556e5255c82100e40305129bbb0",
+          "size": 482696,
+          "format": "tar.gz",
+          "bin": [
+            "zoxide"
+          ],
+          "man": [
+            "man/man1/zoxide-add.1",
+            "man/man1/zoxide-import.1",
+            "man/man1/zoxide-init.1",
+            "man/man1/zoxide-query.1",
+            "man/man1/zoxide-remove.1",
+            "man/man1/zoxide.1"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://github.com/ajeetdsouza/zoxide/releases/download/v0.10.0/zoxide-0.10.0-x86_64-unknown-linux-musl.tar.gz",
+          "sha256": "2d93385b99f3e82cf2701609a1bffcad863fbeb75aa3fe7eb6be4d29be68b1ae",
+          "size": 591384,
+          "format": "tar.gz",
+          "bin": [
+            "zoxide"
+          ],
+          "man": [
+            "man/man1/zoxide-add.1",
+            "man/man1/zoxide-import.1",
+            "man/man1/zoxide-init.1",
+            "man/man1/zoxide-query.1",
+            "man/man1/zoxide-remove.1",
+            "man/man1/zoxide.1"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://github.com/ajeetdsouza/zoxide/releases/download/v0.10.0/zoxide-0.10.0-aarch64-unknown-linux-musl.tar.gz",
+          "sha256": "f1f16c5d6298d63dee467eedea1cdcd8490e43e493bea43acd416dc9033ef641",
+          "size": 551084,
+          "format": "tar.gz",
+          "bin": [
+            "zoxide"
+          ],
+          "man": [
+            "man/man1/zoxide-add.1",
+            "man/man1/zoxide-import.1",
+            "man/man1/zoxide-init.1",
+            "man/man1/zoxide-query.1",
+            "man/man1/zoxide-remove.1",
+            "man/man1/zoxide.1"
+          ]
+        }
+      },
+      "caveats": "Add the shell hook to your profile:\n\n    eval \"$(zoxide init zsh)\"    # or bash, fish, powershell"
+    }
+  ]
+}
