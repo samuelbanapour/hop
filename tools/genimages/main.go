@@ -87,6 +87,15 @@ func main() {
 		{"fedora-workstation", fedoraWorkstation},
 		{"archlinux-iso", archlinuxISO},
 		{"macos-recovery", macosRecovery},
+		{"openbsd-vm", openbsdVM},
+		{"netbsd-iso", netbsdISO},
+		{"opensuse-tumbleweed", openSUSETumbleweed},
+		{"rocky-linux", rockyLinux},
+		{"void-linux", voidLinux},
+		{"kali-linux", kaliLinux},
+		{"parrot-security", parrotSecurity},
+		{"proxmox-ve", proxmoxVE},
+		{"tails", tails},
 	}
 
 	var built []*recipe
@@ -248,7 +257,7 @@ func debianCloud(client *http.Client) (*recipe, error) {
 	var archs []imageArch
 	for _, arch := range []struct{ hop, debian string }{{"amd64", "amd64"}, {"arm64", "arm64"}} {
 		file := fmt.Sprintf("debian-12-generic-%s.qcow2", arch.debian)
-		hash, ok := findSum(sums, file)
+		hash, ok := findSumLen(sums, file, 128) // Debian's own manifest is SHA-512, not SHA-256
 		if !ok {
 			return nil, fmt.Errorf("manifest has no entry for %s", file)
 		}
@@ -410,6 +419,587 @@ func compareFreeBSDVersion(a, b string) int {
 		return strings.Compare(af[0], bf[0])
 	}
 	return strings.Compare(an, bn)
+}
+
+// ------------------------------------------------------------------ openbsd ----
+
+// openbsdVM resolves the current OpenBSD release's install ISO — a second,
+// genuinely distinct BSD alongside FreeBSD, from OpenBSD's own
+// BSD-style CHECKSUM manifest (the "SHA256 (file) = digest" format,
+// findBSDSum already handles). OpenBSD has no "latest" alias either, so
+// this reuses the same newest-numbered-directory approach as FreeBSD.
+func openbsdVM(client *http.Client) (*recipe, error) {
+	listing, err := fetchText(client, "https://cdn.openbsd.org/pub/OpenBSD/")
+	if err != nil {
+		return nil, err
+	}
+	version, ok := latestOpenBSDVersion(listing)
+	if !ok {
+		return nil, fmt.Errorf("no version directory found")
+	}
+	short := strings.ReplaceAll(version, ".", "") // "7.9" -> "79", matching installNN.iso
+
+	var archs []imageArch
+	for _, a := range []struct{ hop, openbsd string }{{"amd64", "amd64"}, {"arm64", "arm64"}} {
+		dir := fmt.Sprintf("https://cdn.openbsd.org/pub/OpenBSD/%s/%s/", version, a.openbsd)
+		sums, err := fetchText(client, dir+"SHA256")
+		if err != nil {
+			return nil, err
+		}
+		file := fmt.Sprintf("install%s.iso", short)
+		hash, ok := findBSDSum(sums, file)
+		if !ok {
+			return nil, fmt.Errorf("manifest has no entry for %s", file)
+		}
+		archs = append(archs, imageArch{arch: a.hop, url: dir + file, sha256: hash})
+	}
+
+	arts := fanOut(archs, "raw")
+	if err := setSizes(client, arts); err != nil {
+		return nil, err
+	}
+	return &recipe{
+		Name: "openbsd-vm", Version: version, Kind: "image",
+		Description: "OpenBSD " + version + " install ISO — a second, independent BSD",
+		Homepage:    "https://www.openbsd.org",
+		License:     "ISC and BSD-2-Clause (OpenBSD base system)",
+		Keywords:    []string{"vm", "bsd", "openbsd", "iso", "image"},
+		Artifacts:   arts,
+		Caveats: "This is an install ISO, not a command. Find it with:\n\n" +
+			"    hop info openbsd-vm\n\n" +
+			"Boot it with qemu, write it to a USB drive, or mount it in a hypervisor.",
+	}, nil
+}
+
+// latestOpenBSDVersion picks the newest "N.N/" directory from OpenBSD's
+// release index — the same pattern FreeBSD's own listing needs, since
+// neither publishes a "latest" alias.
+func latestOpenBSDVersion(listing string) (string, bool) {
+	best := ""
+	for _, name := range hrefNames(listing) {
+		name = strings.TrimSuffix(name, "/")
+		if !isDottedVersion(name) {
+			continue
+		}
+		if best == "" || compareFreeBSDVersion(name+"-RELEASE", best+"-RELEASE") > 0 {
+			best = name
+		}
+	}
+	return best, best != ""
+}
+
+// isDottedVersion reports whether s looks like "7.9" — digits, one dot,
+// digits, nothing else — filtering out the non-version entries (README,
+// "snapshots/", etc.) mixed into the same directory listing.
+func isDottedVersion(s string) bool {
+	parts := strings.SplitN(s, ".", 2)
+	if len(parts) != 2 {
+		return false
+	}
+	for _, p := range parts {
+		if p == "" {
+			return false
+		}
+		for _, r := range p {
+			if r < '0' || r > '9' {
+				return false
+			}
+		}
+	}
+	return true
+}
+
+// ------------------------------------------------------------------ netbsd ----
+
+// netbsdISO resolves the current NetBSD release's install ISO for amd64 and
+// its arm64 counterpart (NetBSD calls it "evbarm-aarch64" — a different
+// board/port naming convention than every other distro in this index, kept
+// exactly as NetBSD spells it since that's what the real URL needs).
+// NetBSD's own manifest is SHA-512, verified the same BSD-style way as
+// FreeBSD's SHA-256 one.
+func netbsdISO(client *http.Client) (*recipe, error) {
+	listing, err := fetchText(client, "https://cdn.netbsd.org/pub/NetBSD/")
+	if err != nil {
+		return nil, err
+	}
+	version, ok := latestNetBSDVersion(listing)
+	if !ok {
+		return nil, fmt.Errorf("no NetBSD-N.N release directory found")
+	}
+
+	dir := fmt.Sprintf("https://cdn.netbsd.org/pub/NetBSD/NetBSD-%s/images/", version)
+	sums, err := fetchText(client, dir+"SHA512")
+	if err != nil {
+		return nil, err
+	}
+
+	var archs []imageArch
+	for _, a := range []struct{ hop, file string }{
+		{"amd64", fmt.Sprintf("NetBSD-%s-amd64.iso", version)},
+		{"arm64", fmt.Sprintf("NetBSD-%s-evbarm-aarch64.iso", version)},
+	} {
+		hash, ok := findBSDSum(sums, a.file)
+		if !ok {
+			return nil, fmt.Errorf("manifest has no entry for %s", a.file)
+		}
+		archs = append(archs, imageArch{arch: a.hop, url: dir + a.file, sha512: hash})
+	}
+
+	arts := fanOut(archs, "raw")
+	if err := setSizes(client, arts); err != nil {
+		return nil, err
+	}
+	return &recipe{
+		Name: "netbsd-iso", Version: version, Kind: "image",
+		Description: "NetBSD " + version + " install ISO — the BSD built to run on almost anything",
+		Homepage:    "https://www.netbsd.org",
+		License:     "BSD-2-Clause and others (NetBSD base system)",
+		Keywords:    []string{"vm", "bsd", "netbsd", "iso", "image"},
+		Artifacts:   arts,
+		Caveats: "This is an install ISO, not a command. Find it with:\n\n" +
+			"    hop info netbsd-iso\n\n" +
+			"Boot it with qemu, write it to a USB drive, or mount it in a hypervisor.",
+	}, nil
+}
+
+// latestNetBSDVersion picks the newest "NetBSD-N.N/" directory.
+func latestNetBSDVersion(listing string) (string, bool) {
+	best := ""
+	for _, name := range hrefNames(listing) {
+		name = strings.TrimSuffix(name, "/")
+		v := strings.TrimPrefix(name, "NetBSD-")
+		if v == name || !isDottedVersion(v) {
+			continue
+		}
+		if best == "" || compareFreeBSDVersion(v+"-RELEASE", best+"-RELEASE") > 0 {
+			best = v
+		}
+	}
+	return best, best != ""
+}
+
+// -------------------------------------------------------------- opensuse ----
+
+// openSUSETumbleweed resolves openSUSE's rolling-release Tumbleweed DVD
+// installer. "Current.iso" is a stable alias Tumbleweed itself maintains
+// (it always points at today's snapshot); the per-file ".sha256" sidecar
+// redirects through openSUSE's mirror-selection system, so it's fetched
+// with fetchText's own client, which already follows redirects.
+func openSUSETumbleweed(client *http.Client) (*recipe, error) {
+	var archs []imageArch
+	for _, a := range []struct{ hop, suse string }{{"amd64", "x86_64"}, {"arm64", "aarch64"}} {
+		base := "https://download.opensuse.org/tumbleweed/iso/"
+		if a.suse == "aarch64" {
+			base = "https://download.opensuse.org/ports/aarch64/tumbleweed/iso/"
+		}
+		file := fmt.Sprintf("openSUSE-Tumbleweed-DVD-%s-Current.iso", a.suse)
+		sumLine, err := fetchText(client, base+file+".sha256")
+		if err != nil {
+			return nil, err
+		}
+		fields := strings.Fields(sumLine)
+		if len(fields) == 0 {
+			return nil, fmt.Errorf("empty checksum for %s", file)
+		}
+		archs = append(archs, imageArch{arch: a.hop, url: base + file, sha256: fields[0]})
+	}
+
+	arts := fanOut(archs, "raw")
+	if err := setSizes(client, arts); err != nil {
+		return nil, err
+	}
+	return &recipe{
+		Name: "opensuse-tumbleweed", Version: "tumbleweed", Kind: "image",
+		Description: "openSUSE Tumbleweed DVD installer — the rolling-release openSUSE",
+		Homepage:    "https://get.opensuse.org/tumbleweed/",
+		License:     "GPL and others (openSUSE base system)",
+		Keywords:    []string{"iso", "installer", "opensuse", "suse", "linux", "image"},
+		Artifacts:   arts,
+		Caveats: "This is an installer ISO, not a command. Find it with:\n\n" +
+			"    hop info opensuse-tumbleweed\n\n" +
+			"Boot it with qemu, write it to a USB drive, or mount it in a hypervisor.\n\n" +
+			"Tumbleweed is a rolling release: \"Current.iso\" always points at the\n" +
+			"newest snapshot, so this recipe's version is nominal, not point-in-time.",
+	}, nil
+}
+
+// ------------------------------------------------------------------ rocky ----
+
+// rockyLinux resolves the current Rocky Linux 9 minimal installer ISO — a
+// free, community-rebuilt RHEL, real per-file BSD-style CHECKSUM sidecars.
+func rockyLinux(client *http.Client) (*recipe, error) {
+	var archs []imageArch
+	for _, a := range []struct{ hop, rocky string }{{"amd64", "x86_64"}, {"arm64", "aarch64"}} {
+		dir := fmt.Sprintf("https://download.rockylinux.org/pub/rocky/9/isos/%s/", a.rocky)
+		file := fmt.Sprintf("Rocky-9-latest-%s-minimal.iso", a.rocky)
+		sums, err := fetchText(client, dir+file+".CHECKSUM")
+		if err != nil {
+			return nil, err
+		}
+		hash, ok := findBSDSum(sums, file)
+		if !ok {
+			return nil, fmt.Errorf("manifest has no entry for %s", file)
+		}
+		archs = append(archs, imageArch{arch: a.hop, url: dir + file, sha256: hash})
+	}
+
+	arts := fanOut(archs, "raw")
+	if err := setSizes(client, arts); err != nil {
+		return nil, err
+	}
+	return &recipe{
+		Name: "rocky-linux", Version: "9", Kind: "image",
+		Description: "Rocky Linux 9 minimal installer ISO — a free, community-rebuilt RHEL",
+		Homepage:    "https://rockylinux.org",
+		License:     "GPL-2.0 (Rocky Linux base system)",
+		Keywords:    []string{"iso", "installer", "rhel", "enterprise", "linux", "image"},
+		Artifacts:   arts,
+		Caveats: "This is an installer ISO, not a command. Find it with:\n\n" +
+			"    hop info rocky-linux\n\n" +
+			"Boot it with qemu, write it to a USB drive, or mount it in a hypervisor.",
+	}, nil
+}
+
+// -------------------------------------------------------------- void linux ----
+
+// voidLinux resolves the current Void Linux live ISO (glibc base variant)
+// — an independent Linux distribution with its own package manager (xbps)
+// and an init system that isn't systemd, genuinely distinct from every
+// other Linux in this index. Void's manifest is BSD-style, one combined
+// file covering every image it publishes for that architecture.
+func voidLinux(client *http.Client) (*recipe, error) {
+	const dir = "https://repo-default.voidlinux.org/live/current/"
+	sums, err := fetchText(client, dir+"sha256sum.txt")
+	if err != nil {
+		return nil, err
+	}
+
+	date, ok := latestVoidDate(sums)
+	if !ok {
+		return nil, fmt.Errorf("could not find a dated void-live-x86_64 ISO in the manifest")
+	}
+
+	var archs []imageArch
+	for _, a := range []struct{ hop, void string }{{"amd64", "x86_64"}, {"arm64", "aarch64"}} {
+		file := fmt.Sprintf("void-live-%s-%s-base.iso", a.void, date)
+		hash, ok := findBSDSum(sums, file)
+		if !ok {
+			return nil, fmt.Errorf("manifest has no entry for %s", file)
+		}
+		archs = append(archs, imageArch{arch: a.hop, url: dir + file, sha256: hash})
+	}
+
+	arts := fanOut(archs, "raw")
+	if err := setSizes(client, arts); err != nil {
+		return nil, err
+	}
+	return &recipe{
+		Name: "void-linux", Version: date, Kind: "image",
+		Description: "Void Linux live ISO (glibc, base) — an independent distro, its own xbps package manager, no systemd",
+		Homepage:    "https://voidlinux.org",
+		License:     "MIT and others (Void base system)",
+		Keywords:    []string{"iso", "installer", "void", "xbps", "linux", "image"},
+		Artifacts:   arts,
+		Caveats: "This is a live/installer ISO, not a command. Find it with:\n\n" +
+			"    hop info void-linux\n\n" +
+			"Boot it with qemu, write it to a USB drive, or mount it in a hypervisor.",
+	}, nil
+}
+
+// latestVoidDate extracts the release date stamp (e.g. "20250202") from a
+// "void-live-x86_64-<date>-base.iso" entry in Void's checksum manifest, so
+// the other architecture's filename can be built from the same release.
+func latestVoidDate(sums string) (string, bool) {
+	const marker = "void-live-x86_64-"
+	i := strings.Index(sums, marker)
+	if i < 0 {
+		return "", false
+	}
+	rest := sums[i+len(marker):]
+	j := strings.IndexByte(rest, '-')
+	if j <= 0 {
+		return "", false
+	}
+	return rest[:j], true
+}
+
+// -------------------------------------------------------------- kali ----
+
+// kaliLinux resolves the current Kali Linux installer ISO — the
+// Debian-derived security/penetration-testing distribution maintained by
+// Offensive Security. Entirely legitimate, freely distributed open-source
+// software with real official checksums; no different in kind from any
+// other Linux distro in this index. cdimage.kali.org redirects every
+// request to a geographically appropriate mirror — the stable address is
+// this one, and Go's own HTTP client already follows the redirect
+// transparently both here and at real install time.
+func kaliLinux(client *http.Client) (*recipe, error) {
+	const dir = "https://cdimage.kali.org/current/"
+	sums, err := fetchText(client, dir+"SHA256SUMS")
+	if err != nil {
+		return nil, err
+	}
+
+	version, ok := latestKaliVersion(sums)
+	if !ok {
+		return nil, fmt.Errorf("could not find a kali-linux-*-installer-amd64.iso entry in the manifest")
+	}
+
+	var archs []imageArch
+	for _, a := range []struct{ hop, kali string }{{"amd64", "amd64"}, {"arm64", "arm64"}} {
+		file := fmt.Sprintf("kali-linux-%s-installer-%s.iso", version, a.kali)
+		hash, ok := findSum(sums, file)
+		if !ok {
+			return nil, fmt.Errorf("manifest has no entry for %s", file)
+		}
+		archs = append(archs, imageArch{arch: a.hop, url: dir + file, sha256: hash})
+	}
+
+	arts := fanOut(archs, "raw")
+	if err := setSizes(client, arts); err != nil {
+		return nil, err
+	}
+	return &recipe{
+		Name: "kali-linux", Version: version, Kind: "image",
+		Description: "Kali Linux " + version + " installer ISO — Debian-derived, for security testing",
+		Homepage:    "https://www.kali.org",
+		License:     "GPL and others (Debian/Kali base system)",
+		Keywords:    []string{"iso", "installer", "kali", "security", "linux", "image"},
+		Artifacts:   arts,
+		Caveats: "This is an installer ISO, not a command. Find it with:\n\n" +
+			"    hop info kali-linux\n\n" +
+			"Boot it with qemu, write it to a USB drive, or mount it in a hypervisor.\n\n" +
+			"For authorised security testing and research use, per Kali's own terms.",
+	}, nil
+}
+
+// latestKaliVersion extracts "2026.2" from a
+// "kali-linux-2026.2-installer-amd64.iso" entry in the manifest.
+func latestKaliVersion(sums string) (string, bool) {
+	const prefix, suffix = "kali-linux-", "-installer-amd64.iso"
+	i := strings.Index(sums, prefix)
+	for i >= 0 {
+		rest := sums[i+len(prefix):]
+		if j := strings.Index(rest, suffix); j > 0 {
+			candidate := rest[:j]
+			if !strings.Contains(candidate, " ") && !strings.Contains(candidate, "\n") {
+				return candidate, true
+			}
+		}
+		next := strings.Index(sums[i+1:], prefix)
+		if next < 0 {
+			break
+		}
+		i = i + 1 + next
+	}
+	return "", false
+}
+
+// -------------------------------------------------------------- parrot ----
+
+// parrotSecurity resolves the current Parrot Security ISO — a
+// Debian-derived security/privacy distro alongside Kali, maintained by a
+// different team with a different default toolset and desktop. amd64 only:
+// Parrot's arm64 build ships as a UTM-specific tarball, not a plain ISO, so
+// there's nothing equivalent to fan out to darwin/linux-arm64 here.
+func parrotSecurity(client *http.Client) (*recipe, error) {
+	listing, err := fetchText(client, "https://deb.parrot.sh/parrot/iso/")
+	if err != nil {
+		return nil, err
+	}
+	version, ok := latestParrotVersion(listing)
+	if !ok {
+		return nil, fmt.Errorf("no version directory found")
+	}
+
+	dir := fmt.Sprintf("https://deb.parrot.sh/parrot/iso/%s/", version)
+	file := fmt.Sprintf("Parrot-security-%s_amd64.iso", version)
+	sums, err := fetchText(client, dir+"signed-hashes.txt")
+	if err != nil {
+		return nil, err
+	}
+	hash, ok := findSum(sums, file) // findSum's 64-hex-char check picks the SHA-256 line, not the MD5 or SHA-512 one also present
+	if !ok {
+		return nil, fmt.Errorf("manifest has no SHA-256 entry for %s", file)
+	}
+
+	art := &artifact{URL: dir + file, SHA256: hash, Format: "raw"}
+	if err := setSizes(client, map[string]*artifact{"x": art}); err != nil {
+		return nil, err
+	}
+	return &recipe{
+		Name: "parrot-security", Version: version, Kind: "image",
+		Description: "Parrot Security " + version + " installer ISO (x86_64 only) — Debian-derived, for security testing",
+		Homepage:    "https://parrotsec.org",
+		License:     "GPL and others (Debian/Parrot base system)",
+		Keywords:    []string{"iso", "installer", "parrot", "security", "linux", "image"},
+		Artifacts:   map[string]*artifact{"darwin-amd64": art, "linux-amd64": art},
+		Caveats: "This is an installer ISO, not a command. Find it with:\n\n" +
+			"    hop info parrot-security\n\n" +
+			"Boot it with qemu, write it to a USB drive, or mount it in a hypervisor.\n\n" +
+			"x86_64 only: Parrot's arm64 build ships as a UTM-specific tarball, not a plain ISO.\n" +
+			"For authorised security testing and research use, per Parrot's own terms.",
+	}, nil
+}
+
+// latestParrotVersion picks the newest "N.N/" directory from Parrot's
+// release index, skipping the non-numeric "caine/" and "latest/" entries
+// mixed into the same listing.
+func latestParrotVersion(listing string) (string, bool) {
+	best := ""
+	for _, name := range hrefNames(listing) {
+		name = strings.TrimSuffix(name, "/")
+		if !isDottedVersion(name) {
+			continue
+		}
+		if best == "" || compareFreeBSDVersion(name+"-RELEASE", best+"-RELEASE") > 0 {
+			best = name
+		}
+	}
+	return best, best != ""
+}
+
+// -------------------------------------------------------------- proxmox ----
+
+// proxmoxVE resolves the current Proxmox VE installer ISO — a
+// Debian-derived type-1 hypervisor, a genuinely different category
+// (virtualization platform, not a general-purpose desktop/server distro)
+// from everything else in this index.
+func proxmoxVE(client *http.Client) (*recipe, error) {
+	listing, err := fetchText(client, "https://enterprise.proxmox.com/iso/")
+	if err != nil {
+		return nil, err
+	}
+	version, ok := latestProxmoxVersion(listing)
+	if !ok {
+		return nil, fmt.Errorf("no proxmox-ve_N.N-N.iso entry found")
+	}
+
+	const base = "https://enterprise.proxmox.com/iso/"
+	var archs []imageArch
+	for _, a := range []struct {
+		hop, file string
+	}{
+		{"amd64", fmt.Sprintf("proxmox-ve_%s.iso", version)},
+		{"arm64", fmt.Sprintf("proxmox-ve_%s-arm64.iso", version)},
+	} {
+		sumLine, err := fetchText(client, base+a.file+".sha256")
+		if err != nil {
+			continue // an arm64 build isn't published for every point release
+		}
+		fields := strings.Fields(sumLine)
+		if len(fields) == 0 {
+			continue
+		}
+		archs = append(archs, imageArch{arch: a.hop, url: base + a.file, sha256: fields[0]})
+	}
+	if len(archs) == 0 {
+		return nil, fmt.Errorf("no artifact resolved for any platform")
+	}
+
+	arts := fanOut(archs, "raw")
+	if err := setSizes(client, arts); err != nil {
+		return nil, err
+	}
+	return &recipe{
+		Name: "proxmox-ve", Version: version, Kind: "image",
+		Description: "Proxmox VE " + version + " installer ISO — a Debian-derived type-1 hypervisor",
+		Homepage:    "https://www.proxmox.com/en/proxmox-virtual-environment/overview",
+		License:     "AGPL-3.0 (Proxmox VE)",
+		Keywords:    []string{"iso", "installer", "proxmox", "hypervisor", "virtualization", "image"},
+		Artifacts:   arts,
+		Caveats: "This is an installer ISO, not a command. Find it with:\n\n" +
+			"    hop info proxmox-ve\n\n" +
+			"Boot it with qemu, write it to a USB drive, or mount it directly on server\n" +
+			"hardware — Proxmox VE is a hypervisor, meant to be installed as the host OS.",
+	}, nil
+}
+
+// latestProxmoxVersion extracts the newest "N.N-N" version from a
+// "proxmox-ve_N.N-N.iso" entry — deliberately excluding "-arm64" suffixed
+// and other Proxmox product ISOs (Backup Server, Mail Gateway, Datacenter
+// Manager) also listed in the same directory.
+func latestProxmoxVersion(listing string) (string, bool) {
+	best := ""
+	for _, name := range hrefNames(listing) {
+		name = strings.TrimPrefix(name, "./") // Proxmox's own listing hrefs are relative, e.g. "./proxmox-ve_9.2-1.iso"
+		if !strings.HasPrefix(name, "proxmox-ve_") || !strings.HasSuffix(name, ".iso") {
+			continue
+		}
+		v := strings.TrimSuffix(strings.TrimPrefix(name, "proxmox-ve_"), ".iso")
+		if strings.Contains(v, "-arm64") {
+			continue
+		}
+		if best == "" || compareFreeBSDVersion(v+"-RELEASE", best+"-RELEASE") > 0 {
+			best = v
+		}
+	}
+	return best, best != ""
+}
+
+// -------------------------------------------------------------- tails ----
+
+// tails resolves the current Tails release — an amnesic, privacy-focused
+// live OS that routes all traffic through Tor by design and leaves no
+// trace on the host it ran from, genuinely distinct in purpose from every
+// other Linux in this index.
+//
+// Tails publishes only a PGP signature (.sig) for its image, not a plain
+// checksum file hop can verify a digest against — hop has no OpenPGP
+// verifier, and building one is a materially different, larger undertaking
+// than reading a manifest. This recipe is trust-on-first-use, the same
+// honest fallback already used for the pre-catalog macOS installers that
+// have no published digest either, rather than a checksum invented to fill
+// the field.
+func tails(client *http.Client) (*recipe, error) {
+	const redirector = "https://download.tails.net/tails/stable/"
+	listing, err := fetchText(client, redirector)
+	if err != nil {
+		return nil, err
+	}
+	version, ok := latestTailsVersion(listing)
+	if !ok {
+		return nil, fmt.Errorf("no tails-amd64-N.N directory found")
+	}
+
+	url := fmt.Sprintf("%stails-amd64-%s/tails-amd64-%s.iso", redirector, version, version)
+	art := &artifact{URL: url, Format: "raw"}
+	if err := setSizes(client, map[string]*artifact{"x": art}); err != nil {
+		return nil, err
+	}
+	return &recipe{
+		Name: "tails", Version: version, Kind: "image",
+		Description: "Tails " + version + " (x86_64 only) — amnesic live OS, routes all traffic through Tor",
+		Homepage:    "https://tails.net",
+		License:     "GPL and others (Debian/Tails base system)",
+		Keywords:    []string{"iso", "installer", "tails", "privacy", "tor", "linux", "image"},
+		Artifacts:   map[string]*artifact{"darwin-amd64": art, "linux-amd64": art},
+		Caveats: "This is a live-USB ISO, not a command. Find it with:\n\n" +
+			"    hop info tails\n\n" +
+			"Write it to a USB drive (Tails is meant to boot from removable media, not a\n" +
+			"virtual disk) or mount it in a hypervisor for testing.\n\n" +
+			"Tails publishes only a PGP signature for this image, not a plain checksum,\n" +
+			"so hop cannot pre-verify it the way it does everything else in this index —\n" +
+			"the digest is recorded on first install (trust-on-first-use) instead.\n" +
+			"Verify the signature yourself against Tails' signing key if that matters for\n" +
+			"your use case: https://tails.net/tails-signing.key",
+	}, nil
+}
+
+// latestTailsVersion picks the newest "tails-amd64-N.N/" directory.
+func latestTailsVersion(listing string) (string, bool) {
+	best := ""
+	for _, name := range hrefNames(listing) {
+		name = strings.TrimSuffix(name, "/")
+		v := strings.TrimPrefix(name, "tails-amd64-")
+		if v == name || !isDottedVersion(v) {
+			continue
+		}
+		if best == "" || compareFreeBSDVersion(v+"-RELEASE", best+"-RELEASE") > 0 {
+			best = v
+		}
+	}
+	return best, best != ""
 }
 
 // -------------------------------------------------------------- raspberry pi ----
@@ -1077,13 +1667,21 @@ func humanBytes(n int64) string {
 // findSum parses a "<hex>  <filename>" or "<hex> *<filename>" checksum
 // manifest line for the named file.
 func findSum(manifest, file string) (string, bool) {
+	return findSumLen(manifest, file, 64) // sha256sum is always exactly 64 hex chars
+}
+
+// findSumLen is findSum with an explicit expected hash length, for a
+// manifest that lists more than one algorithm per file (Parrot publishes
+// MD5, SHA-256 and SHA-512 for the same filename on three separate lines;
+// without a length check, the first — weakest — one would win).
+func findSumLen(manifest, file string, hexLen int) (string, bool) {
 	for _, line := range strings.Split(manifest, "\n") {
 		line = strings.TrimSpace(line)
 		if line == "" {
 			continue
 		}
 		fields := strings.Fields(line)
-		if len(fields) != 2 {
+		if len(fields) != 2 || len(fields[0]) != hexLen {
 			continue
 		}
 		name := strings.TrimPrefix(fields[1], "*")

@@ -49,6 +49,7 @@ type brewFormula struct {
 	Executables []string `json:"executables"`
 	Deprecated  bool     `json:"deprecated"`
 	Disabled    bool     `json:"disabled"`
+	Revision    int      `json:"revision"`
 	Versions    struct {
 		Stable string `json:"stable"`
 		Bottle bool   `json:"bottle"`
@@ -74,6 +75,34 @@ var seedFormulae = []string{
 	"entr", "fswatch", "pv", "fzy", "peco", "most",
 	"colordiff", "highlight", "shellharden", "vale", "dos2unix",
 	"jless", "miller", "csvkit",
+
+	// networking and system diagnostics
+	"nmap", "iperf3", "mtr", "speedtest-cli", "rclone", "httpie",
+
+	// media and document tooling
+	"yt-dlp", "exiftool", "ghostscript", "mediainfo", "imagemagick", "ffmpeg",
+
+	// dev environment and version managers
+	"direnv", "asdf", "pyenv", "rbenv", "git-lfs", "shfmt", "watchman",
+
+	// GNU utilities, for the version many scripts actually expect
+	"gawk", "gnu-sed", "findutils", "grep", "curl", "git",
+
+	// terminal fun, because a package index shouldn't take itself too seriously.
+	// lolcat is deliberately not here: it's a Ruby gem, and Homebrew's own
+	// ruby bottle bakes literal (non-placeholder) absolute paths like
+	// "/opt/homebrew/Cellar/ruby/4.0.6_1" directly into libruby.dylib for
+	// its VM bootstrap — verified via `strings` on the extracted dylib —
+	// rather than using the @@HOMEBREW_...@@ tokens every other relocatable
+	// bottle uses. Those aren't placeholders hop's relocation can patch:
+	// hop's store path is a different length than Homebrew's short fixed
+	// prefix, so even a same-length in-place binary patch is impossible.
+	// Confirmed by actually running hop's own extracted ruby standalone
+	// (`ruby -e 'puts RUBY_VERSION'`), which fails with the exact same
+	// LoadError lolcat did. python@3.14, by contrast, computes its prefix
+	// relative to its own executable at runtime and was verified to work
+	// correctly (sys.prefix, ssl, sqlite3 all resolve inside hop's store).
+	"cowsay", "figlet", "sl", "cmatrix", "fastfetch", "asciinema",
 }
 
 // artifact/recipe/index mirror internal/core's JSON shape. Duplicated rather
@@ -347,7 +376,7 @@ func buildRecipe(f *brewFormula) (*recipe, error) {
 
 	return &recipe{
 		Name:        f.Name,
-		Version:     f.Versions.Stable,
+		Version:     pkgVersion(f),
 		Description: desc,
 		Homepage:    f.Homepage,
 		License:     f.License,
@@ -359,12 +388,37 @@ func buildRecipe(f *brewFormula) (*recipe, error) {
 	}, nil
 }
 
+// pkgVersion is the version string a Homebrew bottle's own Cellar tree is
+// laid out under internally — "1.11.1" normally, but "1.11.1_4" whenever the
+// formula carries a nonzero revision (a bottle rebuilt without a version
+// bump, e.g. after a dependency's ABI changed). hop's recipe Version must
+// match this exactly: it becomes both the store path this package is
+// installed under and, via depLoc in apply.go, the path relocateHomebrewBottle
+// substitutes into every other bottle's placeholder references to this
+// formula. Using the bare stable version here silently mismatches every
+// revisioned formula's actual on-disk directory, producing an
+// install-succeeds-but-binary-won't-run failure that only surfaces when the
+// binary actually runs.
+func pkgVersion(f *brewFormula) string {
+	if f.Revision > 0 {
+		return fmt.Sprintf("%s_%d", f.Versions.Stable, f.Revision)
+	}
+	return f.Versions.Stable
+}
+
 // ociTokenURL builds ghcr.io's anonymous pull-token endpoint for a
 // homebrew/core repository. Requesting it needs no credentials: anyone can
 // obtain a read-only token for a public repository, which is what lets hop
 // fetch a public bottle without an account of its own.
 func ociTokenURL(formula string) string {
-	return fmt.Sprintf("https://ghcr.io/token?scope=repository:homebrew/core/%s:pull&service=ghcr.io", formula)
+	// A versioned formula name like "openssl@3" is not the real ghcr.io
+	// repository path — Homebrew publishes it as "homebrew/core/openssl/3"
+	// (the "@" becomes a path separator), since "@" isn't valid in an OCI
+	// repository name at all. Requesting a token for the literal formula
+	// name gets a 400 from the registry; this has to match the actual
+	// artifact URL's own repository path.
+	repo := strings.Replace(formula, "@", "/", 1)
+	return fmt.Sprintf("https://ghcr.io/token?scope=repository:homebrew/core/%s:pull&service=ghcr.io", repo)
 }
 
 func depsOrNone(deps []string) string {

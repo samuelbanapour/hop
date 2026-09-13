@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"strings"
 )
 
@@ -42,10 +43,34 @@ func relocateHomebrewBottle(root, selfFormula, selfVersion, selfStorePath string
 	// bottle at all; this cheap scan means paying nothing extra for those,
 	// and turns a missing toolchain into one clear error only when
 	// relocation is actually needed rather than a confusing per-file one.
-	if !probeForPlaceholders(root) {
+	needsMachO, needsText := probeForPlaceholders(root)
+	// A "#!/usr/bin/env ruby"-style shebang carries no @@HOMEBREW_...@@
+	// token at all, so probeForPlaceholders never sees it — but it has the
+	// exact same failure mode: hop deliberately keeps a dependency-only
+	// package like ruby off the user's PATH (only the formula that was
+	// actually requested gets PATH-linked), so `env` falls through to
+	// whatever ruby happens to be ambient on the machine instead of the
+	// exact version this package was built against. Homebrew's own
+	// installer rewrites these shebangs to an absolute path for the same
+	// reason. Only worth the extra scan when there is a dependency closure
+	// at all to resolve such a shebang against.
+	// A relative symlink like
+	// "../../../../../opt/python@3.14/bin/python3.14" (yt-dlp's bundled
+	// venv, notably) assumes Homebrew's own fixed Cellar tree, where every
+	// formula lives as a sibling under one shared prefix and "opt/<formula>"
+	// is a version-independent symlink-farm entry pointing at whichever
+	// version is current. hop extracts each formula into its own separate,
+	// non-sibling store directory, so a symlink like this is dangling the
+	// moment it's extracted — the same failure class as the
+	// @@HOMEBREW_...@@ placeholders, just expressed as a symlink target
+	// rather than embedded text.
+	if len(deps) > 0 && !needsText {
+		needsText = hasShebangCandidate(root) || hasRelocatableSymlink(root)
+	}
+	if !needsMachO && !needsText {
 		return nil
 	}
-	if !hasInstallNameTool() {
+	if needsMachO && !hasInstallNameTool() {
 		return fmt.Errorf("this bottle needs relocation but install_name_tool is not on PATH " +
 			"(install Xcode's command-line tools: xcode-select --install)")
 	}
@@ -55,44 +80,312 @@ func relocateHomebrewBottle(root, selfFormula, selfVersion, selfStorePath string
 		if err != nil || d.IsDir() {
 			return nil
 		}
+		if d.Type()&os.ModeSymlink != 0 {
+			// os.Readlink never follows the link, so this is safe even when
+			// the target is (or resolves through) a directory — unlike the
+			// os.ReadFile calls below, which is exactly why a symlink can't
+			// simply fall through to the same text-file handling.
+			if err := relocateSymlink(path, selfFormula, selfVersion, selfStorePath, deps); err != nil {
+				walkErr = fmt.Errorf("%s: %w", path, err)
+			}
+			return nil
+		}
 		info, err := d.Info()
 		if err != nil || info.Size() < 4 {
 			return nil
 		}
-		if !looksLikeMachO(path) {
+		if looksLikeMachO(path) {
+			if err := relocateOne(path, selfFormula, selfVersion, selfStorePath, deps); err != nil {
+				// One file failing to patch shouldn't sink an otherwise-working
+				// install; record it and let the caller decide how loud to be.
+				walkErr = fmt.Errorf("%s: %w", path, err)
+			}
 			return nil
 		}
-		if err := relocateOne(path, selfFormula, selfVersion, selfStorePath, deps); err != nil {
-			// One file failing to patch shouldn't sink an otherwise-working
-			// install; record it and let the caller decide how loud to be.
-			walkErr = fmt.Errorf("%s: %w", path, err)
+		// Not a compiled binary: Homebrew also bakes the same placeholder
+		// tokens into plain-text wrapper scripts (a pure-Ruby/Python gem's
+		// bin/<name> launcher setting GEM_HOME or exec'ing an interpreter by
+		// absolute path is the common case — lolcat, among others). Those
+		// need a straight string substitution instead of install_name_tool,
+		// and unlike a Mach-O file the substitution is free to change the
+		// file's length.
+		if info.Size() <= maxTextRelocateSize {
+			if err := relocateTextFile(path, info.Mode(), selfFormula, selfVersion, selfStorePath, deps); err != nil {
+				walkErr = fmt.Errorf("%s: %w", path, err)
+			}
 		}
 		return nil
 	})
 	return walkErr
 }
 
+// maxTextRelocateSize bounds the text-placeholder pass to files a wrapper
+// script could plausibly be. A file larger than this is either a real
+// Mach-O binary (already handled above) or something Homebrew's own
+// installer wouldn't text-relocate either, so skipping it keeps the pass
+// cheap for the common case of a tree with a handful of large binaries and
+// no scripts at all.
+const maxTextRelocateSize = 2 << 20
+
+// placeholderPattern matches a full placeholder reference — the token plus
+// whatever path-like characters follow it — so relocateTextFile can find and
+// replace occurrences embedded anywhere inside a script, not just ones
+// otool would have reported as a load command.
+var placeholderPattern = regexp.MustCompile(`@@HOMEBREW_(?:PREFIX|CELLAR)@@[A-Za-z0-9_./+-]*`)
+
+// relocateTextFile rewrites both kinds of text-level indirection Homebrew
+// bottles carry: literal @@HOMEBREW_...@@ placeholder references (a
+// shell/Ruby/Python wrapper script, a .pc file, etc.) and "#!/usr/bin/env
+// <interp>" shebang lines that need pinning to this package's own
+// dependency closure. Either, both, or neither may apply to a given file.
+func relocateTextFile(path string, mode os.FileMode, selfFormula, selfVersion, selfStorePath string, deps map[string]depLocation) error {
+	data, err := os.ReadFile(path)
+	if err != nil {
+		// An unreadable file (Ruby gem test fixtures occasionally ship
+		// mode-0000 files on purpose, e.g. to exercise permission-denied
+		// behavior) can't be a placeholder-carrying script either — if it
+		// can't be read, it can't be interpreted as a script at runtime, so
+		// skipping it costs nothing.
+		return nil
+	}
+	changed := false
+
+	if bytes.Contains(data, []byte(prefixToken)) || bytes.Contains(data, []byte(cellarToken)) {
+		data = placeholderPattern.ReplaceAllFunc(data, func(m []byte) []byte {
+			formula, rest, ok := parsePlaceholder(string(m))
+			if !ok {
+				return m
+			}
+			var resolved string
+			if formula == selfFormula {
+				resolved = filepath.Join(selfStorePath, selfFormula, selfVersion, rest)
+			} else if dep, ok := deps[formula]; ok {
+				resolved = filepath.Join(dep.storePath, formula, dep.version, rest)
+			} else {
+				return m // unresolvable, leave as-is rather than guessed at
+			}
+			changed = true
+			return []byte(resolved)
+		})
+	}
+
+	if newData, ok := rewriteShebang(data, selfFormula, selfVersion, selfStorePath, deps); ok {
+		data = newData
+		changed = true
+	}
+
+	if !changed {
+		return nil
+	}
+	// Homebrew ships some wrapper scripts read-only (r-xr-xr-x — lolcat's
+	// bin/lolcat, notably), which blocks the write below even for its
+	// owner: Unix permission bits are enforced against the owner too. Grant
+	// owner-write just long enough to rewrite it, then put the original
+	// mode back so the file's permissions end up exactly as extracted.
+	if mode&0o200 == 0 {
+		if err := os.Chmod(path, mode|0o200); err != nil {
+			return err
+		}
+		defer os.Chmod(path, mode)
+	}
+	return os.WriteFile(path, data, mode)
+}
+
+// shebangEnvPattern matches a standard "#!/usr/bin/env [-S] <interpreter>"
+// shebang line, capturing just the interpreter name — the one piece needed
+// to look it up in this package's own dependency closure.
+var shebangEnvPattern = regexp.MustCompile(`^#!\s*/usr/bin/env\s+(?:-S\s+)?(\S+)`)
+
+// optSymlinkPattern and cellarSymlinkPattern match a relative symlink target
+// that climbs out of a formula's own version directory to reach Homebrew's
+// shared "opt/<formula>" symlink-farm entry or another formula's Cellar
+// entry directly — the pattern Homebrew's own bottles use for cross-formula
+// references that aren't in a Mach-O load command or embedded text (a
+// Python-based CLI's bundled venv interpreter symlink, notably).
+var optSymlinkPattern = regexp.MustCompile(`^(?:\.\./)+opt/([^/]+)/(.*)$`)
+var cellarSymlinkPattern = regexp.MustCompile(`^(?:\.\./)+Cellar/([^/]+)/[^/]+/(.*)$`)
+
+// hasRelocatableSymlink does a cheap Readlink-only scan across a tree for
+// any symlink matching the Homebrew sibling-Cellar pattern, used to decide
+// whether relocateHomebrewBottle's full walk is worth paying for when no
+// literal placeholder or env shebang was found either.
+func hasRelocatableSymlink(root string) bool {
+	found := false
+	filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
+		if found || err != nil || d.Type()&os.ModeSymlink == 0 {
+			return nil
+		}
+		target, err := os.Readlink(path)
+		if err != nil {
+			return nil
+		}
+		if optSymlinkPattern.MatchString(target) || cellarSymlinkPattern.MatchString(target) {
+			found = true
+		}
+		return nil
+	})
+	return found
+}
+
+// relocateSymlink rewrites a Homebrew sibling-Cellar-relative symlink
+// target to an absolute path inside hop's own store, the same resolution
+// rules used everywhere else in this file. A target that doesn't match
+// either pattern is left exactly as extracted — it's either a legitimate
+// same-directory link (lolcat's bin/python -> python3.14 pattern, still
+// correct under hop's layout since both ends move together) or something
+// this pass doesn't understand, and guessing at it would be worse than
+// leaving it dangling in an already-broken way.
+func relocateSymlink(path, selfFormula, selfVersion, selfStorePath string, deps map[string]depLocation) error {
+	target, err := os.Readlink(path)
+	if err != nil {
+		return nil
+	}
+	var formula, rest string
+	if m := optSymlinkPattern.FindStringSubmatch(target); m != nil {
+		formula, rest = m[1], m[2]
+	} else if m := cellarSymlinkPattern.FindStringSubmatch(target); m != nil {
+		formula, rest = m[1], m[2]
+	} else {
+		return nil
+	}
+
+	var resolved string
+	if formula == selfFormula {
+		resolved = filepath.Join(selfStorePath, selfFormula, selfVersion, rest)
+	} else if dep, ok := deps[formula]; ok {
+		resolved = filepath.Join(dep.storePath, formula, dep.version, rest)
+	} else {
+		return nil // unresolvable, leave as-is rather than guessed at
+	}
+
+	if err := os.Remove(path); err != nil {
+		return err
+	}
+	return os.Symlink(resolved, path)
+}
+
+// hasShebangCandidate does a cheap first-bytes-only scan across a tree for
+// any file that might carry an env shebang, used purely to decide whether
+// relocateHomebrewBottle's full walk is worth paying for at all when no
+// literal @@HOMEBREW_...@@ placeholder was found either.
+func hasShebangCandidate(root string) bool {
+	found := false
+	filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
+		if found || err != nil || d.IsDir() || d.Type()&os.ModeSymlink != 0 {
+			return nil
+		}
+		info, err := d.Info()
+		if err != nil || info.Size() < 15 || info.Size() > maxTextRelocateSize {
+			return nil
+		}
+		f, err := os.Open(path)
+		if err != nil {
+			return nil
+		}
+		var buf [64]byte
+		n, _ := f.Read(buf[:])
+		f.Close()
+		if bytes.HasPrefix(buf[:n], []byte("#!/usr/bin/env ")) || bytes.HasPrefix(buf[:n], []byte("#! /usr/bin/env ")) {
+			found = true
+		}
+		return nil
+	})
+	return found
+}
+
+// rewriteShebang resolves a "#!/usr/bin/env <interpreter>" line to an
+// absolute path when <interpreter> is a binary this package's own
+// dependency closure (or the package itself) actually provides — mirroring
+// what Homebrew's own installer does for every Ruby/Python/Perl-gem-based
+// formula it pours. Relying on PATH here would pick up whatever
+// interpreter, if any, happens to be ambient on the user's machine rather
+// than the exact version this package was built and tested against: hop
+// deliberately keeps a dependency-only package off the user's PATH (only
+// the formula actually requested gets PATH-linked), so an unrewritten `env`
+// shebang would silently run against a different — or entirely absent —
+// interpreter than the one this package needs.
+func rewriteShebang(data []byte, selfFormula, selfVersion, selfStorePath string, deps map[string]depLocation) ([]byte, bool) {
+	nl := bytes.IndexByte(data, '\n')
+	line := data
+	if nl >= 0 {
+		line = data[:nl]
+	}
+	loc := shebangEnvPattern.FindSubmatchIndex(line)
+	if loc == nil {
+		return data, false
+	}
+	interp := string(line[loc[2]:loc[3]])
+
+	resolve := func(storePath, formula, version string) (string, bool) {
+		p := filepath.Join(storePath, formula, version, "bin", interp)
+		if fi, err := os.Stat(p); err == nil && !fi.IsDir() {
+			return p, true
+		}
+		return "", false
+	}
+
+	resolved, ok := resolve(selfStorePath, selfFormula, selfVersion)
+	if !ok {
+		for formula, dep := range deps {
+			if p, found := resolve(dep.storePath, formula, dep.version); found {
+				resolved = p
+				ok = true
+				break
+			}
+		}
+	}
+	if !ok {
+		return data, false // no dependency provides this interpreter; leave as-is rather than guessed at
+	}
+
+	out := make([]byte, 0, len(data)+len(resolved))
+	out = append(out, "#!"...)
+	out = append(out, resolved...)
+	out = append(out, line[loc[1]:]...) // any trailing args on the shebang line, preserved verbatim
+	if nl >= 0 {
+		out = append(out, data[nl:]...)
+	}
+	return out, true
+}
+
 // looksLikeMachO checks the file's magic number rather than trusting a file
 // extension or executable bit, both of which a bottle's non-binary files
 // (scripts, docs) can also carry.
+//
+// 0xCAFEBABE is famously ambiguous: it's both Mach-O's FAT_MAGIC (a
+// universal binary's header) and the unrelated magic number every Java
+// .class file starts with — and Homebrew bottles that touch Java (nmap's
+// bundled NSE scripts, notably) really do ship .class files. A real fat
+// Mach-O header's next four bytes are nfat_arch — the number of
+// architecture slices, always small (2-6 in practice; no real universal
+// binary has more than a handful) — while a class file's are its
+// major/minor version, and Java's major version alone has started at 45
+// since JDK 1.1, comfortably clear of any real nfat_arch. Ten is a
+// deliberately generous cutoff between the two.
 func looksLikeMachO(path string) bool {
 	f, err := os.Open(path)
 	if err != nil {
 		return false
 	}
 	defer f.Close()
-	var magic [4]byte
-	if _, err := f.Read(magic[:]); err != nil {
+	var header [8]byte
+	n, err := f.Read(header[:])
+	if err != nil || n < 4 {
 		return false
 	}
-	switch [4]byte(magic) {
+	magic := [4]byte{header[0], header[1], header[2], header[3]}
+	switch magic {
 	case [4]byte{0xfe, 0xed, 0xfa, 0xce}, // MH_MAGIC (32-bit, big-endian header on disk)
 		[4]byte{0xce, 0xfa, 0xed, 0xfe}, // MH_CIGAM
 		[4]byte{0xfe, 0xed, 0xfa, 0xcf}, // MH_MAGIC_64
-		[4]byte{0xcf, 0xfa, 0xed, 0xfe}, // MH_CIGAM_64
-		[4]byte{0xca, 0xfe, 0xba, 0xbe}, // FAT_MAGIC (universal binary)
-		[4]byte{0xbe, 0xba, 0xfe, 0xca}: // FAT_CIGAM
+		[4]byte{0xcf, 0xfa, 0xed, 0xfe}: // MH_CIGAM_64
 		return true
+	case [4]byte{0xca, 0xfe, 0xba, 0xbe}: // FAT_MAGIC — on-disk Mach-O fat headers are always big-endian, so FAT_CIGAM never appears here
+		if n < 8 {
+			return false
+		}
+		nfatArch := uint32(header[4])<<24 | uint32(header[5])<<16 | uint32(header[6])<<8 | uint32(header[7])
+		return nfatArch <= 10
 	}
 	return false
 }
@@ -239,24 +532,37 @@ func hasInstallNameTool() bool {
 // probeForPlaceholders does a fast pre-check across a tree, used to decide
 // whether relocation (and its toolchain requirement) is needed at all — the
 // overwhelming majority of artifacts hop installs are not Homebrew bottles
-// and contain no placeholder, so this must stay cheap.
-func probeForPlaceholders(root string) bool {
-	found := false
+// and contain no placeholder, so this must stay cheap. It reports the two
+// kinds of file relocateHomebrewBottle knows how to patch separately, since
+// only the Mach-O case needs install_name_tool on PATH.
+func probeForPlaceholders(root string) (needsMachO, needsText bool) {
 	filepath.WalkDir(root, func(path string, d os.DirEntry, err error) error {
-		if found || err != nil || d.IsDir() {
+		if needsMachO && needsText {
 			return nil
 		}
-		if !looksLikeMachO(path) {
+		if err != nil || d.IsDir() || d.Type()&os.ModeSymlink != 0 {
 			return nil
+		}
+		info, err := d.Info()
+		if err != nil {
+			return nil
+		}
+		isMachO := looksLikeMachO(path)
+		if !isMachO && info.Size() > maxTextRelocateSize {
+			return nil // too large to be a wrapper script, and not a binary this probes
 		}
 		data, err := os.ReadFile(path)
 		if err != nil {
 			return nil
 		}
 		if bytes.Contains(data, []byte(prefixToken)) || bytes.Contains(data, []byte(cellarToken)) {
-			found = true
+			if isMachO {
+				needsMachO = true
+			} else {
+				needsText = true
+			}
 		}
 		return nil
 	})
-	return found
+	return needsMachO, needsText
 }

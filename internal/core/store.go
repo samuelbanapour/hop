@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strings"
 )
@@ -463,6 +464,17 @@ func stripComponents(name string, n int) string {
 	return strings.Join(parts[n:], "/")
 }
 
+// homebrewSiblingSymlinkPattern matches a relative symlink target that
+// climbs out of a formula's own version directory to reach Homebrew's
+// shared "opt/<formula>" symlink-farm entry, or another formula's Cellar
+// entry directly — the one recognized shape of "escapes dest" symlink that
+// untar's path-traversal guard below lets through rather than silently
+// dropping. It's declared here rather than alongside the platform-specific
+// relocation code in relocate_darwin.go/relocate_linux.go because untar
+// itself has no build tag and needs it on every platform, including the
+// relocate_other.go no-op stub's.
+var homebrewSiblingSymlinkPattern = regexp.MustCompile(`^(?:\.\./)+(?:opt|Cellar)/[^/]+/`)
+
 // untar extracts a tar stream. It rejects path traversal, skips device nodes
 // and AppleDouble sidecars, and defers symlinks until all regular files exist
 // so link targets resolve regardless of member order.
@@ -472,8 +484,8 @@ func untar(r io.Reader, dest string, strip int) error {
 	var entries int
 
 	type pending struct {
-		path, target string
-		hard         bool
+		path, name, target string
+		hard               bool
 	}
 	var links []pending
 
@@ -527,9 +539,9 @@ func untar(r io.Reader, dest string, strip int) error {
 				return err
 			}
 		case tar.TypeSymlink:
-			links = append(links, pending{path, h.Linkname, false})
+			links = append(links, pending{path, name, h.Linkname, false})
 		case tar.TypeLink:
-			links = append(links, pending{path, h.Linkname, true})
+			links = append(links, pending{path, name, h.Linkname, true})
 		default:
 			// Skip FIFOs, char/block devices: no legitimate CLI tarball needs them.
 			continue
@@ -556,8 +568,30 @@ func untar(r io.Reader, dest string, strip int) error {
 		if filepath.IsAbs(ln.target) {
 			continue
 		}
-		if _, err := safeJoin(filepath.Dir(ln.path), ln.target); err != nil {
-			continue // link points outside the store; drop it
+		// The target is resolved against dest — the overall extraction
+		// root — not against the symlink's own containing directory.
+		// Climbing "../" out of a symlink's own directory into a sibling
+		// that's still inside dest (Python's own "bin/python3.14 ->
+		// ../Frameworks/.../bin/python3.14", notably) is completely normal
+		// and must not be rejected; only a target that escapes dest itself
+		// is unsafe. Resolving against the symlink's own directory instead
+		// (as opposed to dest) would flag that entirely ordinary case as an
+		// escape merely for climbing out of its own immediate directory.
+		resolvedRel := filepath.Join(filepath.Dir(ln.name), ln.target)
+		if _, err := safeJoin(dest, resolvedRel); err != nil {
+			if !homebrewSiblingSymlinkPattern.MatchString(ln.target) {
+				continue // link points outside the store and isn't a recognized, relocatable reference; drop it
+			}
+			// A Homebrew bottle's own bundled-venv interpreter symlink
+			// (yt-dlp's libexec/bin/python3.14, notably) legitimately
+			// climbs out to "../../../opt/<formula>/..." — Homebrew's
+			// shared symlink farm, which doesn't exist once this formula
+			// is extracted alone into its own store directory. It escapes
+			// dest exactly like a malicious tar-slip target would, but
+			// relocateHomebrewBottle runs immediately after extraction for
+			// every non-image artifact and rewrites this exact pattern
+			// into a safe absolute path — so it's let through here on
+			// purpose, unlike any other target this check would still drop.
 		}
 		_ = os.Symlink(ln.target, ln.path)
 	}
@@ -638,7 +672,11 @@ func unzip(archive, dest string, strip int) error {
 			if err != nil || filepath.IsAbs(string(target)) {
 				continue
 			}
-			if _, err := safeJoin(filepath.Dir(path), string(target)); err != nil {
+			// Resolved against dest, not against the symlink's own
+			// directory — see the matching comment in untar for why:
+			// climbing "../" into a sibling that's still inside dest is
+			// normal and must not be rejected.
+			if _, err := safeJoin(dest, filepath.Join(filepath.Dir(name), string(target))); err != nil {
 				continue
 			}
 			_ = os.MkdirAll(filepath.Dir(path), 0o755)
