@@ -14,11 +14,16 @@
 package main
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/json"
+	"encoding/xml"
 	"fmt"
+	"io"
 	"net/http"
 	"os"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -29,6 +34,7 @@ type artifact struct {
 	URL    string `json:"url"`
 	SHA256 string `json:"sha256,omitempty"`
 	SHA512 string `json:"sha512,omitempty"`
+	SHA1   string `json:"sha1,omitempty"`
 	Size   int64  `json:"size,omitempty"`
 	Format string `json:"format,omitempty"`
 }
@@ -93,6 +99,19 @@ func main() {
 		logf("%-20s %-10s %d %s", r.Name, r.Version, len(r.Artifacts), plural(len(r.Artifacts), "artifact", "artifacts"))
 		built = append(built, r)
 	}
+
+	// macOS installers are the one source that legitimately yields several
+	// recipes (one per version reachable at all) rather than exactly one,
+	// so it runs outside the single-recipe specs loop above.
+	installers, err := macosInstallers(client)
+	if err != nil {
+		warn("macos installers: %v", err)
+	}
+	for _, r := range installers {
+		logf("%-20s %-10s %d %s", r.Name, r.Version, len(r.Artifacts), plural(len(r.Artifacts), "artifact", "artifacts"))
+		built = append(built, r)
+	}
+
 	if len(built) == 0 {
 		die("nothing resolved; nothing written")
 	}
@@ -692,6 +711,312 @@ func macosRecovery(client *http.Client) (*recipe, error) {
 	}, nil
 }
 
+// macosInstallerCandidate is one full-installer product found in the live
+// catalog, before being turned into a recipe.
+type macosInstallerCandidate struct {
+	name, version, build, url, digest string
+	size                              int64
+}
+
+// macosInstallers resolves every full macOS installer hop can legitimately
+// reach — the same multi-gigabyte "Install macOS <Name>.app" package the
+// Mac App Store hands you, not the low-level recovery firmware
+// macos-recovery already covers — spanning as much real version history as
+// Apple's own infrastructure actually still serves.
+//
+// Two sources, both Apple's own, both already verified live rather than
+// guessed:
+//
+//  1. The live software-update catalog (swscan.apple.com), the same
+//     infrastructure macOS itself uses to check for updates — no
+//     authentication, no bot-detection, nothing gated. It does not publish
+//     inline which macOS version a given product is; that requires fetching
+//     the product's own English ".dist" installer script and reading
+//     version strings out of it, the same technique the long-standing
+//     open-source tool mist-cli uses (Sources/Mist/Helpers/HTTP.swift). In
+//     practice this catalog only carries recent-generation installers
+//     (roughly High Sierra 10.13 onward) — Apple simply doesn't keep older
+//     ones in current serving infrastructure.
+//  2. For everything the live catalog no longer carries, a short list of
+//     specific historical Apple CDN URLs — Lion 10.7.5 through Sierra
+//     10.12.6 — that mist-cli's own maintainers have spent years verifying
+//     still resolve, re-checked live here rather than trusted blind (each
+//     one is HEAD-requested for a real Content-Length before being kept).
+//
+// That combination is the actual limit of what's legitimately available:
+// nothing before Lion exists anywhere in Apple's own infrastructure —
+// Mac OS X Server 10.1 through Snow Leopard 10.6 predate the Mac App
+// Store/catalog system by years, shipped only on physical media, and were
+// never re-hosted by Apple in any digital form. Even mist-cli, a project
+// entirely dedicated to hunting down every Apple-hosted macOS URL still
+// alive, has never found one from that era — which is itself the evidence
+// that none exists to find.
+func macosInstallers(client *http.Client) ([]*recipe, error) {
+	live, err := macosInstallersFromCatalog(client)
+	if err != nil {
+		warn("macos-installer (live catalog): %v", err)
+	}
+	legacy := macosInstallersLegacy(client)
+
+	all := append(live, legacy...)
+	if len(all) == 0 {
+		return nil, fmt.Errorf("no macOS installer resolved from any source")
+	}
+	return all, nil
+}
+
+// macosInstallersFromCatalog walks Apple's live catalog and returns one
+// recipe per distinct major version found — the catalog often retains
+// several recent generations at once, not just the newest.
+func macosInstallersFromCatalog(client *http.Client) ([]*recipe, error) {
+	// mist-cli's Catalog.swift enumerates several of these (customer/
+	// developer/beta seeds); "standard" is the one that carries public
+	// releases, which is the only one an index meant for everyone should
+	// point at.
+	const catalogURL = "https://swscan.apple.com/content/catalogs/others/" +
+		"index-26-15-14-13-12-10.16-10.15-10.14-10.13-10.12-10.11-10.10-10.9-" +
+		"mountainlion-lion-snowleopard-leopard.merged-1.sucatalog.gz"
+
+	body, err := fetchBinary(client, catalogURL, 32<<20)
+	if err != nil {
+		return nil, err
+	}
+	raw, err := gunzipOrSelf(body)
+	if err != nil {
+		return nil, err
+	}
+	root, err := parsePlist(raw)
+	if err != nil {
+		return nil, fmt.Errorf("parsing software update catalog: %w", err)
+	}
+	products, _ := root["Products"].(map[string]any)
+	if products == nil {
+		return nil, fmt.Errorf("catalog has no Products dictionary")
+	}
+
+	// Keep the newest build per major version (the integer before the first
+	// dot: "15" from "15.6.1"), so a catalog carrying several point
+	// releases of the same generation yields one recipe, not several.
+	bestByMajor := map[string]*macosInstallerCandidate{}
+
+	for _, raw := range products {
+		product, _ := raw.(map[string]any)
+		if product == nil {
+			continue
+		}
+		// A full-installer product is marked by carrying
+		// InstallAssistantPackageIdentifiers under ExtendedMetaInfo — every
+		// other catalog entry (security updates, CLTools, firmware) lacks it.
+		meta, _ := product["ExtendedMetaInfo"].(map[string]any)
+		if meta == nil {
+			continue
+		}
+		if _, ok := meta["InstallAssistantPackageIdentifiers"]; !ok {
+			continue
+		}
+		distributions, _ := product["Distributions"].(map[string]any)
+		distURL, _ := distributions["English"].(string)
+		if distURL == "" {
+			continue
+		}
+		packages, _ := product["Packages"].([]any)
+		var pkgURL, pkgDigest string
+		var pkgSize int64
+		for _, p := range packages {
+			pkg, _ := p.(map[string]any)
+			u, _ := pkg["URL"].(string)
+			if !strings.HasSuffix(u, "/InstallAssistant.pkg") {
+				continue
+			}
+			pkgURL = u
+			pkgDigest, _ = pkg["Digest"].(string)
+			if sz, ok := pkg["Size"].(int64); ok {
+				pkgSize = sz
+			}
+		}
+		if pkgURL == "" || pkgDigest == "" {
+			continue // this product bundles no full installer payload
+		}
+
+		dist, err := fetchTextN(client, distURL, 8<<20)
+		if err != nil {
+			continue // a handful of stale catalog entries 404; skip, don't fail the run
+		}
+		version := plistDistField(dist, "VERSION")
+		build := plistDistField(dist, "BUILD")
+		name := distSuDisabledGroupID(dist)
+		if version == "" || build == "" {
+			continue
+		}
+		// mist-cli's own definition of "beta": a build ID ending in a
+		// lowercase letter. Skip those for the index everyone installs from.
+		if len(build) > 0 && build[len(build)-1] >= 'a' && build[len(build)-1] <= 'z' {
+			continue
+		}
+
+		major := strings.SplitN(version, ".", 2)[0]
+		c := &macosInstallerCandidate{name: name, version: version, build: build, url: pkgURL, digest: pkgDigest, size: pkgSize}
+		if prev, ok := bestByMajor[major]; !ok ||
+			compareFreeBSDVersion(c.version+"-RELEASE", prev.version+"-RELEASE") > 0 ||
+			(c.version == prev.version && c.build > prev.build) {
+			bestByMajor[major] = c
+		}
+	}
+
+	var out []*recipe
+	for _, c := range bestByMajor {
+		out = append(out, macosInstallerRecipe(c.name, c.version, c.build, c.url, c.digest, "", c.size, true))
+	}
+	return out, nil
+}
+
+// legacyMacOSInstaller is one historical release no longer in the live
+// catalog, with a specific Apple CDN URL mist-cli's maintainers have kept
+// verified across years of the project's history.
+type legacyMacOSInstaller struct {
+	name, version, build, url string
+}
+
+// legacyMacOSInstallers is deliberately short: it is exactly what
+// mist-cli's own hand-maintained legacy list contains, nothing extrapolated
+// beyond it. That list stops at Lion 10.7.5 because that is where Apple's
+// own re-hostable archive of installer media stops — nothing earlier has
+// ever been found, by this project or any other.
+var legacyMacOSInstallers = []legacyMacOSInstaller{
+	{"OS X Lion", "10.7.5", "11G63", "https://updates.cdn-apple.com/2021/macos/041-7683-20210614-E610947E-C7CE-46EB-8860-D26D71F0D3EA/InstallMacOSX.dmg"},
+	{"OS X Mountain Lion", "10.8.5", "12F45", "https://updates.cdn-apple.com/2021/macos/031-0627-20210614-90D11F33-1A65-42DD-BBEA-E1D9F43A6B3F/InstallMacOSX.dmg"},
+	{"OS X Yosemite", "10.10.5", "14F27", "https://updates.cdn-apple.com/2019/cert/061-41343-20191023-02465f92-3ab5-4c92-bfe2-b725447a070d/InstallMacOSX.dmg"},
+	{"OS X El Capitan", "10.11.6", "15G31", "https://updates.cdn-apple.com/2019/cert/061-41424-20191024-218af9ec-cf50-4516-9011-228c78eda3d2/InstallMacOSX.dmg"},
+	{"macOS Sierra", "10.12.6", "16G29", "https://updates.cdn-apple.com/2019/cert/061-39476-20191023-48f365f4-0015-4c41-9f44-39d3d2aca067/InstallOS.dmg"},
+}
+
+// macosInstallersLegacy HEAD-checks every entry in legacyMacOSInstallers and
+// returns a recipe only for the ones that still actually resolve right now
+// — Apple could take any of these down at any time, and this must never
+// silently ship a dead link.
+func macosInstallersLegacy(client *http.Client) []*recipe {
+	var out []*recipe
+	for _, l := range legacyMacOSInstallers {
+		req, err := http.NewRequest(http.MethodHead, l.url, nil)
+		if err != nil {
+			continue
+		}
+		req.Header.Set("User-Agent", "hop-genimages")
+		resp, err := client.Do(req)
+		if err != nil {
+			warn("macos-%s: HEAD failed: %v", slugify(l.name), err)
+			continue
+		}
+		resp.Body.Close()
+		if resp.StatusCode != http.StatusOK {
+			warn("macos-%s: no longer available (%s) — Apple has taken this one down", slugify(l.name), resp.Status)
+			continue
+		}
+		// These predate Apple publishing any digest at all for installer
+		// media of this vintage; hop records the checksum it observes on
+		// first install (trust-on-first-use), same as any other unpinned
+		// artifact, rather than pretending to a precision the source
+		// doesn't offer.
+		out = append(out, macosInstallerRecipe(l.name, l.version, l.build, l.url, "", "dmg", resp.ContentLength, false))
+	}
+	return out
+}
+
+// macosInstallerRecipe builds one recipe from a resolved installer,
+// live-catalog or legacy. digest is a SHA-1 "Digest" when the catalog
+// supplied one, empty for the legacy entries the catalog no longer lists.
+func macosInstallerRecipe(name, version, build, url, digest, format string, size int64, current bool) *recipe {
+	if name == "" {
+		name = "macOS " + version
+	}
+	if format == "" {
+		format = "raw"
+	}
+	slug := slugify(name)
+
+	art := &artifact{URL: url, SHA1: digest, Format: format, Size: size}
+	kind := "installer package"
+	expand := "expand it with `pkgutil --expand-full` to reach the app bundle, or"
+	if format == "dmg" {
+		kind = "disk image"
+		expand = "mount it (`hdiutil attach`) to reach the installer app inside, or"
+	}
+
+	r := &recipe{
+		Name: "macos-" + slug, Version: version, Kind: "image",
+		Description: fmt.Sprintf("%s (build %s) full installer, straight from Apple's own infrastructure", name, build),
+		Homepage:    "https://support.apple.com/guide/mac-help/reinstall-macos-mchl46d531d6/mac",
+		License:     "Apple Software License Agreement (macOS itself; running it is subject to Apple's terms)",
+		Keywords:    []string{"macos", "apple", "installer", "image"},
+		// The installer package itself is architecture-agnostic (it bundles
+		// payloads for every Mac the release supports); expose it under both
+		// darwin host keys since either can legitimately fetch and store it.
+		Artifacts: map[string]*artifact{"darwin-amd64": art, "darwin-arm64": art},
+		Caveats: fmt.Sprintf(
+			"This is the %s for %s, not a command. Find it with:\n\n"+
+				"    hop info macos-%s\n\n"+
+				"It's what \"Install %s.app\" is built from — %s use it\n"+
+				"directly with a macOS VM tool such as UTM's installer-creation flow.\n\n"+
+				"Resolved from Apple's own infrastructure — the live software update\n"+
+				"catalog for recent releases, or a specific historical Apple CDN URL,\n"+
+				"HEAD-checked live, for anything the live catalog no longer carries.",
+			kind, name, slug, name, expand),
+	}
+	if current {
+		r.Description += " (current)"
+	}
+	return r
+}
+
+// slugify turns a display name into a recipe-name-safe slug:
+// "OS X El Capitan" -> "el-capitan", "macOS Sequoia" -> "sequoia".
+func slugify(name string) string {
+	name = strings.TrimPrefix(name, "macOS ")
+	name = strings.TrimPrefix(name, "OS X ")
+	name = strings.TrimPrefix(name, "Mac OS X ")
+	name = strings.ToLower(name)
+	name = strings.ReplaceAll(name, " ", "-")
+	return name
+}
+
+// plistDistField extracts a scalar from a distribution script's embedded
+// plist fragment: "<key>NAME</key>\n<string>VALUE</string>".
+func plistDistField(dist, key string) string {
+	marker := "<key>" + key + "</key>"
+	i := strings.Index(dist, marker)
+	if i < 0 {
+		return ""
+	}
+	rest := dist[i+len(marker):]
+	j := strings.Index(rest, "<string>")
+	if j < 0 {
+		return ""
+	}
+	rest = rest[j+len("<string>"):]
+	k := strings.Index(rest, "</string>")
+	if k < 0 {
+		return ""
+	}
+	return strings.TrimSpace(rest[:k])
+}
+
+// distSuDisabledGroupID extracts the installer's display name from its
+// suDisabledGroupID attribute, e.g. suDisabledGroupID="Install macOS Tahoe"
+// -> "macOS Tahoe". mist-cli reads the same attribute the same way.
+func distSuDisabledGroupID(dist string) string {
+	const marker = `suDisabledGroupID="`
+	i := strings.Index(dist, marker)
+	if i < 0 {
+		return ""
+	}
+	rest := dist[i+len(marker):]
+	j := strings.IndexByte(rest, '"')
+	if j < 0 {
+		return ""
+	}
+	return strings.TrimPrefix(rest[:j], "Install ")
+}
+
 // ---------------------------------------------------------------- helpers ----
 
 // fetchText fetches a small text manifest, refusing anything over 4MB —
@@ -824,3 +1149,224 @@ func plural(n int, one, many string) string {
 func logf(f string, a ...any) { fmt.Fprintf(os.Stdout, f+"\n", a...) }
 func warn(f string, a ...any) { fmt.Fprintf(os.Stderr, "  ! "+f+"\n", a...) }
 func die(f string, a ...any)  { fmt.Fprintf(os.Stderr, "error: "+f+"\n", a...); os.Exit(1) }
+
+// fetchBinary fetches a URL's raw bytes, up to limit. Used for the (gzipped)
+// software update catalog, which is a small binary blob, not text.
+func fetchBinary(client *http.Client, url string, limit int64) ([]byte, error) {
+	req, err := http.NewRequest(http.MethodGet, url, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", "hop-genimages")
+	resp, err := client.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("GET %s: %s", url, resp.Status)
+	}
+	return io.ReadAll(io.LimitReader(resp.Body, limit))
+}
+
+// gunzipOrSelf decompresses b if it looks gzipped, else returns it as-is —
+// Apple serves the catalog gzip-encoded regardless of the ".gz" suffix
+// sometimes being handled transparently by the HTTP layer already.
+func gunzipOrSelf(b []byte) ([]byte, error) {
+	if len(b) < 2 || b[0] != 0x1f || b[1] != 0x8b {
+		return b, nil
+	}
+	zr, err := gzip.NewReader(bytes.NewReader(b))
+	if err != nil {
+		return nil, fmt.Errorf("not valid gzip: %w", err)
+	}
+	defer zr.Close()
+	return io.ReadAll(io.LimitReader(zr, 256<<20))
+}
+
+// ------------------------------------------------------------------ plist ----
+
+// parsePlist decodes just enough of Apple's XML property list format to
+// walk a software update catalog: <dict>, <array>, <key>, <string>,
+// <integer>, <real>, <date>, <true/>, <false/> and <data>. Values decode to
+// map[string]any / []any / string / int64 / float64 / bool / time.Time,
+// mirroring encoding/json's untyped decoding so callers can type-assert the
+// same way. Go's standard library has no plist decoder; this is a small,
+// purpose-built one rather than a dependency, in keeping with the rest of
+// hop's zero-dependency tooling.
+func parsePlist(data []byte) (map[string]any, error) {
+	dec := xml.NewDecoder(bytes.NewReader(data))
+	for {
+		tok, err := dec.Token()
+		if err != nil {
+			return nil, fmt.Errorf("reading plist: %w", err)
+		}
+		if se, ok := tok.(xml.StartElement); ok && se.Name.Local == "plist" {
+			break
+		}
+	}
+	v, err := plistValue(dec)
+	if err != nil {
+		return nil, err
+	}
+	root, ok := v.(map[string]any)
+	if !ok {
+		return nil, fmt.Errorf("plist root is not a dictionary")
+	}
+	return root, nil
+}
+
+// plistValue finds the decoder's next StartElement (a dict, array, or
+// scalar) and decodes it through its matching EndElement. Used only for the
+// document's single root value; every nested value goes through
+// plistValueFromStart instead, since plistDict/plistArray already have the
+// StartElement in hand from their own token loop.
+func plistValue(dec *xml.Decoder) (any, error) {
+	for {
+		tok, err := dec.Token()
+		if err != nil {
+			return nil, err
+		}
+		if se, ok := tok.(xml.StartElement); ok {
+			return plistValueFromStart(dec, se)
+		}
+	}
+}
+
+// plistDict decodes a <dict> body: alternating <key> and value elements.
+func plistDict(dec *xml.Decoder) (map[string]any, error) {
+	out := map[string]any{}
+	var pendingKey string
+	haveKey := false
+
+	for {
+		tok, err := dec.Token()
+		if err != nil {
+			return nil, err
+		}
+		switch t := tok.(type) {
+		case xml.StartElement:
+			if t.Name.Local == "key" {
+				k, err := plistTextBody(dec, "key")
+				if err != nil {
+					return nil, err
+				}
+				pendingKey, haveKey = k, true
+				continue
+			}
+			v, err := plistValueFromStart(dec, t)
+			if err != nil {
+				return nil, err
+			}
+			if haveKey {
+				out[pendingKey] = v
+				haveKey = false
+			}
+		case xml.EndElement:
+			if t.Name.Local == "dict" {
+				return out, nil
+			}
+		}
+	}
+}
+
+// plistArray decodes an <array> body: a sequence of value elements.
+func plistArray(dec *xml.Decoder) ([]any, error) {
+	var out []any
+	for {
+		tok, err := dec.Token()
+		if err != nil {
+			return nil, err
+		}
+		switch t := tok.(type) {
+		case xml.StartElement:
+			v, err := plistValueFromStart(dec, t)
+			if err != nil {
+				return nil, err
+			}
+			out = append(out, v)
+		case xml.EndElement:
+			if t.Name.Local == "array" {
+				return out, nil
+			}
+		}
+	}
+}
+
+// plistValueFromStart decodes one value given its already-consumed opening
+// tag — the counterpart to plistValue for callers (plistDict, plistArray)
+// that read the StartElement themselves to distinguish it from <key>/</dict>.
+func plistValueFromStart(dec *xml.Decoder, se xml.StartElement) (any, error) {
+	switch se.Name.Local {
+	case "dict":
+		return plistDict(dec)
+	case "array":
+		return plistArray(dec)
+	case "string", "data":
+		return plistTextBody(dec, se.Name.Local)
+	case "integer":
+		s, err := plistTextBody(dec, "integer")
+		if err != nil {
+			return nil, err
+		}
+		return strconv.ParseInt(s, 10, 64)
+	case "real":
+		s, err := plistTextBody(dec, "real")
+		if err != nil {
+			return nil, err
+		}
+		return strconv.ParseFloat(s, 64)
+	case "true":
+		return true, consumeSelfOrEnd(dec, se)
+	case "false":
+		return false, consumeSelfOrEnd(dec, se)
+	case "date":
+		s, err := plistTextBody(dec, "date")
+		if err != nil {
+			return nil, err
+		}
+		t, _ := time.Parse(time.RFC3339, s)
+		return t, nil
+	default:
+		if err := dec.Skip(); err != nil {
+			return nil, err
+		}
+		return nil, nil
+	}
+}
+
+// plistTextBody reads character data up to the given element's EndElement.
+// <true/> and <false/> are self-closing with no body, handled separately by
+// consumeSelfOrEnd.
+func plistTextBody(dec *xml.Decoder, name string) (string, error) {
+	var b strings.Builder
+	for {
+		tok, err := dec.Token()
+		if err != nil {
+			return "", err
+		}
+		switch t := tok.(type) {
+		case xml.CharData:
+			b.Write(t)
+		case xml.EndElement:
+			if t.Name.Local == name {
+				return b.String(), nil
+			}
+		}
+	}
+}
+
+// consumeSelfOrEnd absorbs a self-closing element's implicit end. Go's
+// encoding/xml always emits a matching EndElement token even for tags
+// written as <true/>, so this just reads and discards it.
+func consumeSelfOrEnd(dec *xml.Decoder, se xml.StartElement) error {
+	for {
+		tok, err := dec.Token()
+		if err != nil {
+			return err
+		}
+		if end, ok := tok.(xml.EndElement); ok && end.Name.Local == se.Name.Local {
+			return nil
+		}
+	}
+}

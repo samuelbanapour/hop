@@ -1,0 +1,396 @@
+// Command genbrew adds real Homebrew formulae to hop's built-in index,
+// fetched as OCI registry blobs directly from ghcr.io/homebrew/core — the
+// exact same bottles `brew install` itself downloads.
+//
+// Homebrew's own JSON API (formulae.brew.sh/api/formula.json) is a single
+// public, unauthenticated manifest covering every formula in homebrew/core:
+// stable version, per-platform bottle URL, per-platform SHA-256, declared
+// executables, and the runtime dependency graph. genbrew reads it once and
+// builds recipes straight from that data — no re-download-and-rehash step,
+// since Homebrew's own manifest already is the authoritative, signed record
+// (the same trust a system package manager places in its own repository
+// index).
+//
+// A Homebrew bottle is a tar.gz of a Cellar/<formula>/<version>/ tree, not a
+// single flat binary, so hop's ordinary bin-discovery (searching the
+// extracted tree by name) does the rest — genbrew supplies the exact
+// executable names from Homebrew's own "executables" field rather than
+// guessing.
+//
+// Because a bottle can depend on other bottles at runtime (shared
+// libraries), genbrew computes the full transitive dependency closure of
+// whatever formulae are requested and includes all of it — a partial
+// dependency graph would produce an installable-looking recipe that
+// actually fails to run.
+//
+//	go run ./tools/genbrew                      # the built-in curated seed list
+//	go run ./tools/genbrew -formula ripgrep,jq  # just these (+ their closure)
+package main
+
+import (
+	"encoding/json"
+	"fmt"
+	"io"
+	"net/http"
+	"os"
+	"sort"
+	"strings"
+	"time"
+)
+
+const bulkURL = "https://formulae.brew.sh/api/formula.json"
+
+// brewFormula is the slice of Homebrew's JSON API this tool needs.
+type brewFormula struct {
+	Name        string   `json:"name"`
+	Desc        string   `json:"desc"`
+	License     string   `json:"license"`
+	Homepage    string   `json:"homepage"`
+	Executables []string `json:"executables"`
+	Deprecated  bool     `json:"deprecated"`
+	Disabled    bool     `json:"disabled"`
+	Versions    struct {
+		Stable string `json:"stable"`
+		Bottle bool   `json:"bottle"`
+	} `json:"versions"`
+	Dependencies []string `json:"dependencies"`
+	Bottle       struct {
+		Stable struct {
+			Files map[string]struct {
+				URL    string `json:"url"`
+				SHA256 string `json:"sha256"`
+			} `json:"files"`
+		} `json:"stable"`
+	} `json:"bottle"`
+}
+
+// seedFormulae are hand-picked, well-known standalone CLI tools not already
+// covered by hop's GitHub-release-based recipes. Their transitive runtime
+// dependencies are pulled in automatically alongside them.
+var seedFormulae = []string{
+	"htop", "tmux", "neovim", "tree", "wget", "pandoc", "graphviz", "gnupg",
+	"moreutils", "parallel", "ncdu", "tig", "glances", "watch",
+	"the_silver_searcher", "universal-ctags", "multitail", "byobu",
+	"entr", "fswatch", "pv", "fzy", "peco", "most",
+	"colordiff", "highlight", "shellharden", "vale", "dos2unix",
+	"jless", "miller", "csvkit",
+}
+
+// artifact/recipe/index mirror internal/core's JSON shape. Duplicated rather
+// than imported so this generator can never be broken by an engine refactor.
+type artifact struct {
+	URL           string   `json:"url"`
+	SHA256        string   `json:"sha256,omitempty"`
+	OCITokenURL   string   `json:"oci_token_url,omitempty"`
+	Size          int64    `json:"size,omitempty"`
+	Format        string   `json:"format,omitempty"`
+	Bin           []string `json:"bin,omitempty"`
+	NoExecutables bool     `json:"no_executables,omitempty"`
+}
+
+type recipe struct {
+	Name        string               `json:"name"`
+	Version     string               `json:"version"`
+	Description string               `json:"description,omitempty"`
+	Homepage    string               `json:"homepage,omitempty"`
+	License     string               `json:"license,omitempty"`
+	Keywords    []string             `json:"keywords,omitempty"`
+	Deps        []string             `json:"deps,omitempty"`
+	Artifacts   map[string]*artifact `json:"artifacts"`
+	Caveats     string               `json:"caveats,omitempty"`
+}
+
+type index struct {
+	Schema    int       `json:"schema"`
+	Source    string    `json:"source"`
+	Generated time.Time `json:"generated"`
+	Recipes   []*recipe `json:"recipes"`
+}
+
+func main() {
+	var only string
+	for i, a := range os.Args {
+		if a == "-formula" && i+1 < len(os.Args) {
+			only = os.Args[i+1]
+		}
+	}
+	seeds := seedFormulae
+	if only != "" {
+		seeds = splitList(only)
+	}
+
+	logf("fetching %s ...", bulkURL)
+	all, err := fetchAllFormulae()
+	if err != nil {
+		die("%v", err)
+	}
+	logf("loaded %s", plural(len(all), "formula", "formulae"))
+
+	byName := map[string]*brewFormula{}
+	for i := range all {
+		byName[all[i].Name] = &all[i]
+	}
+
+	closure, missing, err := transitiveClosure(byName, seeds)
+	if err != nil {
+		die("%v", err)
+	}
+	if len(missing) > 0 {
+		warn("not found in homebrew/core: %s", strings.Join(missing, ", "))
+	}
+
+	var built []*recipe
+	var skipped []string
+	for _, name := range closure {
+		f := byName[name]
+		r, err := buildRecipe(f)
+		if err != nil {
+			skipped = append(skipped, fmt.Sprintf("%s (%v)", name, err))
+			continue
+		}
+		built = append(built, r)
+	}
+	sort.Slice(built, func(i, j int) bool { return built[i].Name < built[j].Name })
+
+	for _, r := range built {
+		logf("%-20s %-10s %d %s, deps: %s", r.Name, r.Version, len(r.Artifacts),
+			plural(len(r.Artifacts), "platform", "platforms"), depsOrNone(r.Deps))
+	}
+	if len(skipped) > 0 {
+		warn("skipped: %s", strings.Join(skipped, "; "))
+	}
+
+	const outPath = "internal/core/data/index.json"
+	b, err := os.ReadFile(outPath)
+	if err != nil {
+		die("reading %s: %v", outPath, err)
+	}
+	var ix index
+	if err := json.Unmarshal(b, &ix); err != nil {
+		die("parsing %s: %v", outPath, err)
+	}
+
+	have := map[string]bool{}
+	for _, r := range built {
+		have[r.Name] = true
+	}
+	kept := ix.Recipes[:0]
+	for _, r := range ix.Recipes {
+		if !have[r.Name] {
+			kept = append(kept, r)
+		}
+	}
+	ix.Recipes = append(kept, built...)
+	sort.Slice(ix.Recipes, func(i, j int) bool { return ix.Recipes[i].Name < ix.Recipes[j].Name })
+	ix.Generated = time.Now().UTC().Truncate(time.Second)
+
+	out, err := json.MarshalIndent(&ix, "", "  ")
+	if err != nil {
+		die("encoding index: %v", err)
+	}
+	if err := os.WriteFile(outPath, append(out, '\n'), 0o644); err != nil {
+		die("writing %s: %v", outPath, err)
+	}
+
+	arts := 0
+	for _, r := range ix.Recipes {
+		arts += len(r.Artifacts)
+	}
+	logf("")
+	logf("wrote %s: %d recipes, %d artifacts (%d from homebrew/core)", outPath, len(ix.Recipes), arts, len(built))
+}
+
+func fetchAllFormulae() ([]brewFormula, error) {
+	req, err := http.NewRequest(http.MethodGet, bulkURL, nil)
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("User-Agent", "hop-genbrew")
+	resp, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("GET %s: %s", bulkURL, resp.Status)
+	}
+	body, err := io.ReadAll(io.LimitReader(resp.Body, 128<<20))
+	if err != nil {
+		return nil, err
+	}
+	var all []brewFormula
+	if err := json.Unmarshal(body, &all); err != nil {
+		return nil, fmt.Errorf("parsing %s: %w", bulkURL, err)
+	}
+	return all, nil
+}
+
+// transitiveClosure walks each seed's runtime dependency graph (never
+// build/test-only dependencies, which the installed bottle doesn't need at
+// run time) and returns every formula reached, dependencies before their
+// dependents so the resulting recipe list is already in a safe install
+// order for anyone reading it by eye.
+func transitiveClosure(byName map[string]*brewFormula, seeds []string) (order, missing []string, err error) {
+	seen := map[string]bool{}
+	var visiting []string // cycle detection path, for a clear error rather than infinite recursion
+
+	var visit func(name string) error
+	visit = func(name string) error {
+		if seen[name] {
+			return nil
+		}
+		f, ok := byName[name]
+		if !ok {
+			missing = append(missing, name)
+			return nil
+		}
+		for _, v := range visiting {
+			if v == name {
+				return fmt.Errorf("dependency cycle: %s -> %s", strings.Join(visiting, " -> "), name)
+			}
+		}
+		if f.Deprecated || f.Disabled {
+			// A deprecated *dependency* would break everything that needs
+			// it; a deprecated *seed* is simply not worth adding. Either
+			// way, skip rather than silently ship something Homebrew itself
+			// no longer supports.
+			return nil
+		}
+		visiting = append(visiting, name)
+		for _, dep := range f.Dependencies {
+			if err := visit(dep); err != nil {
+				return err
+			}
+		}
+		visiting = visiting[:len(visiting)-1]
+
+		seen[name] = true
+		order = append(order, name)
+		return nil
+	}
+
+	for _, s := range seeds {
+		if err := visit(s); err != nil {
+			return nil, nil, err
+		}
+	}
+	return order, missing, nil
+}
+
+// platformBottle picks the best bottle key for a hop platform. Homebrew
+// tags macOS bottles by OS codename (newest first here) and a formula with
+// no compiled, platform-specific content at all ships a single "all" key
+// instead — colordiff and parallel, notably.
+var macArmKeys = []string{"arm64_golden_gate", "arm64_tahoe", "arm64_sequoia", "arm64_sonoma", "arm64_ventura", "arm64_monterey", "arm64_big_sur"}
+var macIntelKeys = []string{"golden_gate", "tahoe", "sequoia", "sonoma", "ventura", "monterey", "big_sur", "catalina"}
+
+func platformBottle(f *brewFormula, plat string) (url, sha256 string, ok bool) {
+	files := f.Bottle.Stable.Files
+	if all, ok := files["all"]; ok {
+		return all.URL, all.SHA256, true
+	}
+	var keys []string
+	switch plat {
+	case "darwin-arm64":
+		keys = macArmKeys
+	case "darwin-amd64":
+		keys = macIntelKeys
+	case "linux-arm64":
+		keys = []string{"arm64_linux"}
+	case "linux-amd64":
+		keys = []string{"x86_64_linux"}
+	}
+	for _, k := range keys {
+		if f, ok := files[k]; ok {
+			return f.URL, f.SHA256, true
+		}
+	}
+	return "", "", false
+}
+
+func buildRecipe(f *brewFormula) (*recipe, error) {
+	if !f.Versions.Bottle || len(f.Bottle.Stable.Files) == 0 {
+		return nil, fmt.Errorf("no bottle published")
+	}
+	// A formula with no declared executables is a pure library — most of
+	// homebrew/core, and most of what ends up in any real dependency
+	// closure. It still has to become a recipe: leaving it out would mean
+	// every formula that depends on it fails to resolve at all. It just
+	// puts nothing on PATH.
+	isLibrary := len(f.Executables) == 0
+
+	arts := map[string]*artifact{}
+	for _, plat := range []string{"darwin-arm64", "darwin-amd64", "linux-arm64", "linux-amd64"} {
+		url, sha, ok := platformBottle(f, plat)
+		if !ok {
+			continue
+		}
+		arts[plat] = &artifact{
+			URL:           url,
+			SHA256:        sha,
+			OCITokenURL:   ociTokenURL(f.Name),
+			Format:        "tar.gz",
+			Bin:           f.Executables,
+			NoExecutables: isLibrary,
+		}
+	}
+	if len(arts) == 0 {
+		return nil, fmt.Errorf("no usable bottle for any hop platform")
+	}
+
+	keywords := []string{"homebrew"}
+	desc := f.Desc
+	if isLibrary {
+		keywords = append(keywords, "library")
+		desc += " (library — pulled in only as a dependency; nothing on PATH)"
+	}
+
+	return &recipe{
+		Name:        f.Name,
+		Version:     f.Versions.Stable,
+		Description: desc,
+		Homepage:    f.Homepage,
+		License:     f.License,
+		Keywords:    keywords,
+		Deps:        f.Dependencies,
+		Artifacts:   arts,
+		Caveats: "Installed from Homebrew's own bottle (the same binary `brew install` " +
+			f.Name + " would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes.",
+	}, nil
+}
+
+// ociTokenURL builds ghcr.io's anonymous pull-token endpoint for a
+// homebrew/core repository. Requesting it needs no credentials: anyone can
+// obtain a read-only token for a public repository, which is what lets hop
+// fetch a public bottle without an account of its own.
+func ociTokenURL(formula string) string {
+	return fmt.Sprintf("https://ghcr.io/token?scope=repository:homebrew/core/%s:pull&service=ghcr.io", formula)
+}
+
+func depsOrNone(deps []string) string {
+	if len(deps) == 0 {
+		return "none"
+	}
+	return strings.Join(deps, ", ")
+}
+
+func splitList(s string) []string {
+	var out []string
+	for _, p := range strings.Split(s, ",") {
+		if p = strings.TrimSpace(p); p != "" {
+			out = append(out, p)
+		}
+	}
+	return out
+}
+
+func plural(n int, one, many string) string {
+	if n == 1 {
+		return one
+	}
+	return many
+}
+
+func logf(f string, a ...any) { fmt.Fprintf(os.Stdout, f+"\n", a...) }
+func warn(f string, a ...any) { fmt.Fprintf(os.Stderr, "  ! "+f+"\n", a...) }
+func die(f string, a ...any)  { fmt.Fprintf(os.Stderr, "error: "+f+"\n", a...); os.Exit(1) }

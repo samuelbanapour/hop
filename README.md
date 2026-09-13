@@ -151,16 +151,86 @@ practical, so this one recipe's checksum is taken from Apple's own
 manifest rather than independently re-derived — the same trust a package
 manager places in any signed upstream repository index.
 
-**hop does not, and will not, pull Windows install images.** Microsoft's
-official ISOs are served through an interactive, EULA-gated web flow with
-no stable public checksum manifest and no scriptable download URL — every
-other recipe in this index exists because its publisher deliberately
-built infrastructure for exactly this kind of automated, verifiable
-access, and Windows' does not. Circumventing that would mean working
-around an access control Microsoft put there on purpose, which is outside
-what hop does. If you need a Windows VM, get it from Microsoft's own
-[Windows Dev Virtual Machines](https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/)
-program directly.
+### Every macOS release Apple's own infrastructure still serves
+
+Beyond the current-release recovery/installer images, hop's index carries
+one recipe per macOS version reachable at all — `macos-lion` (10.7.5, 2012)
+through `macos-tahoe` (26, current), eleven versions spanning fourteen
+years:
+
+```bash
+hop search macos             # every version hop can resolve
+hop install macos-sequoia    # a specific historical release
+```
+
+Two sources, both Apple's own: the live software-update catalog for recent
+generations (using the same technique the open-source tool
+[mist-cli](https://github.com/ninxsoft/mist-cli) pioneered — fetch each
+product's own installer script and read its embedded version string, since
+the catalog itself doesn't list versions inline), and a short list of
+specific historical Apple CDN URLs for Lion through Sierra, which the live
+catalog no longer carries but mist-cli's maintainers have spent years
+confirming still resolve — genindex re-verifies each one live (a real HEAD
+request) before ever including it, never trusting a URL just because it
+worked once.
+
+**Nothing older than Lion 10.7.5 exists in this index, and none ever
+will.** Mac OS X Server 10.1 through Snow Leopard 10.6 predate the Mac App
+Store/catalog system entirely, shipped only on physical CD/DVD, and Apple
+has never re-hosted them in any digital form since. Even mist-cli — a
+project entirely dedicated to hunting down every Apple-hosted macOS URL
+still alive — has never found one from that era. That absence, from the
+project most likely to have found it, is itself the evidence there isn't
+one to find.
+
+**hop does not, and will not, pull Windows install images**, at any
+version. This was tested concretely, not assumed: walking the actual
+multi-step flow tools like Fido and CrystalFetch use (session init → SKU
+lookup → download link), the final step — the one that actually matters —
+comes back rejected by Microsoft's own named bot-detection system:
+`"Sentinel marked this request as rejected"`. A second channel, Microsoft's
+own [Windows Dev Virtual
+Machines](https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/)
+page, loads Arkose Labs' CAPTCHA challenge script in its own security
+policy. Two separate official channels, both deliberately gated against
+exactly this kind of automated access — working around either would mean
+defeating bot-detection Microsoft put there on purpose, which is outside
+what hop does, regardless of what any other tool attempts. If you need a
+Windows VM, get one from that Windows Dev VMs page yourself; hop can't
+automate the parts Microsoft has explicitly fenced off.
+
+## Homebrew bottles, relocated properly
+
+hop can also pull formulae straight from Homebrew's own bottle
+infrastructure — the same prebuilt binaries `brew install` itself
+downloads, fetched directly from `ghcr.io/homebrew/core` as OCI registry
+blobs (the real Docker-registry token-then-blob protocol: an anonymous pull
+token, then the blob, verified against the exact SHA-256 Homebrew's own API
+publishes):
+
+```bash
+hop install htop     # pulls htop + its real dependency, ncurses
+hop install tig      # ncurses + pcre2 + readline, resolved transitively
+```
+
+A Homebrew bottle is compiled with placeholder tokens
+(`@@HOMEBREW_PREFIX@@`) baked into its Mach-O load commands, standing in
+for wherever it ends up installed — `brew install` itself patches these
+with `install_name_tool` at pour time, which is exactly why a bottle simply
+extracted elsewhere doesn't run: dyld can't resolve a literal
+`@@HOMEBREW_PREFIX@@/opt/ncurses/lib/libncursesw.6.dylib`. hop performs the
+same patch into its own content-addressed store paths instead of a shared
+Homebrew prefix, then ad-hoc re-signs whatever it touched (a modified
+signature is otherwise invalid). This was verified for real, not assumed:
+`htop` crashed with `Symbol not found: _COLORS` before this existed, and
+`tig` — three levels of real dependencies deep (`ncurses`, `pcre2`,
+`readline`) — runs correctly, with every linked library confirmed pointing
+at its actual hop store path, after it.
+
+A pure-library dependency (`readline`, `openssl@3`, and most of what a real
+formula's dependency graph pulls in) still becomes a recipe — it just puts
+nothing on `PATH`, which is exactly correct for something only ever loaded
+as a shared library.
 
 ## Reproducible project environments
 

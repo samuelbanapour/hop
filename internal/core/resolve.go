@@ -318,7 +318,7 @@ func (r *Resolver) PlanInstall(names []string, force bool) (*Plan, error) {
 		})
 		upsert(Installed{
 			Name: s.recipe.Name, Version: s.recipe.Version, Kind: s.recipe.Kind,
-			SHA256: s.artifact.SHA256, SHA512: s.artifact.SHA512,
+			SHA256: s.artifact.SHA256, SHA512: s.artifact.SHA512, SHA1: s.artifact.SHA1,
 			Platform: s.plat, Source: s.artifact.URL, Deps: s.recipe.Deps,
 			Explicit: s.explicit,
 		})
@@ -333,7 +333,7 @@ func (r *Resolver) PlanInstall(names []string, force bool) (*Plan, error) {
 					s.recipe.Name, r.Platform))
 			}
 		}
-		if s.artifact.SHA256 == "" && s.artifact.SHA512 == "" {
+		if s.artifact.SHA256 == "" && s.artifact.SHA512 == "" && s.artifact.SHA1 == "" {
 			plan.Warnings = append(plan.Warnings, fmt.Sprintf(
 				"%s has no pinned checksum; hop will record the digest it observes (trust on first use)",
 				s.recipe.Name))
@@ -523,7 +523,7 @@ func (r *Resolver) PlanUpgrade(names []string) (*Plan, error) {
 		})
 		upsert(Installed{
 			Name: s.recipe.Name, Version: s.recipe.Version, Kind: s.recipe.Kind,
-			SHA256: s.artifact.SHA256, SHA512: s.artifact.SHA512,
+			SHA256: s.artifact.SHA256, SHA512: s.artifact.SHA512, SHA1: s.artifact.SHA1,
 			Platform: s.plat, Source: s.artifact.URL, Deps: s.recipe.Deps,
 			Explicit: s.explicit,
 		})
@@ -620,7 +620,7 @@ func (r *Resolver) PlanSync(want map[string]string, prune bool) (*Plan, error) {
 		})
 		final = append(final, Installed{
 			Name: s.recipe.Name, Version: s.recipe.Version, Kind: s.recipe.Kind,
-			SHA256: s.artifact.SHA256, SHA512: s.artifact.SHA512,
+			SHA256: s.artifact.SHA256, SHA512: s.artifact.SHA512, SHA1: s.artifact.SHA1,
 			Platform: s.plat, Source: s.artifact.URL, Deps: s.recipe.Deps,
 			Explicit: s.explicit,
 		})

@@ -300,6 +300,8 @@ func runInfo(a *App, args []string) error {
 			pairs = append(pairs, [2]string{"SHA-256", ui.Grey(art.SHA256)})
 		case art.SHA512 != "":
 			pairs = append(pairs, [2]string{"SHA-512", ui.Grey(art.SHA512)})
+		case art.SHA1 != "":
+			pairs = append(pairs, [2]string{"SHA-1", ui.Grey(art.SHA1) + ui.Grey("  (publisher's own digest format)")})
 		default:
 			pairs = append(pairs, [2]string{"Checksum", ui.Yellow("not pinned (trust on first use)")})
 		}

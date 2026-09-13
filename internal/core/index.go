@@ -26,10 +26,31 @@ type Artifact struct {
 	URL    string `json:"url"`
 	SHA256 string `json:"sha256,omitempty"`
 	// SHA512 verifies an artifact whose upstream publishes only a SHA-512
-	// manifest (Debian's cloud images, notably). Exactly one of SHA256 or
-	// SHA512 is expected to be set; SHA256 wins if a recipe somehow sets both.
+	// manifest (Debian's cloud images, notably).
 	SHA512 string `json:"sha512,omitempty"`
-	Size   int64  `json:"size,omitempty"`
+	// SHA1 verifies an artifact whose upstream manifest predates SHA-256
+	// becoming standard (Apple's software update catalog, notably, still
+	// publishes only a SHA-1 "Digest" for every package). Weak as a defence
+	// against a determined adversary, but it still catches a corrupted or
+	// substituted download — the actual threat model here — and it is what
+	// the publisher itself signs, so hop pins what they actually published.
+	// Exactly one of SHA256/SHA512/SHA1 is expected to be set, checked in
+	// that order of preference if a recipe somehow sets more than one.
+	SHA1 string `json:"sha1,omitempty"`
+	Size int64  `json:"size,omitempty"`
+
+	// OCITokenURL marks URL as an OCI Distribution API blob (the format
+	// Homebrew's own bottles are hosted in, on ghcr.io) rather than a plain
+	// HTTP download. Fetching one is a two-step protocol, not a GET: hop
+	// first fetches this URL, which returns anonymously (no credentials) a
+	// short-lived JSON {"token": "..."}, then sends that token as a Bearer
+	// Authorization header on the request to URL itself. The registry
+	// responds with a redirect to a separately pre-signed, short-lived CDN
+	// URL — which is exactly why a plain static URL can't be pinned here the
+	// way every other artifact in the index is: only the registry blob
+	// address and its token endpoint stay stable long enough to compile into
+	// a released binary; the actual signed download link is minutes-lived.
+	OCITokenURL string `json:"oci_token_url,omitempty"`
 
 	// Format overrides detection from the URL: tar.gz, tar.xz, tar.bz2, tar,
 	// zip, gz or raw.
@@ -45,6 +66,15 @@ type Artifact struct {
 	// yq_darwin_arm64 and friends require. A bare name is searched for if the
 	// path does not exist, tolerating upstreams that move their layout.
 	Bin []string `json:"bin,omitempty"`
+
+	// NoExecutables marks a bin-kind artifact that legitimately puts nothing
+	// on PATH at all — a pure shared library, pulled in only because
+	// something else depends on it at runtime (Homebrew's dependency graph
+	// is full of these: readline, gettext, openssl and the like). Without
+	// this, an empty Bin list is indistinguishable from "not declared,
+	// please auto-discover", and auto-discovery correctly errors when a
+	// library archive contains no executable at all.
+	NoExecutables bool `json:"no_executables,omitempty"`
 
 	// Man lists manpages to link into <profile>/share/man.
 	Man []string `json:"man,omitempty"`

@@ -96,7 +96,17 @@ func HaveStorePath(dir string) bool {
 // Materialise extracts artifact into the store for the given recipe, or reuses
 // an existing identical tree. The write is staged in a sibling temp directory
 // and renamed into place, so the store only ever contains complete packages.
-func Materialise(l *Layout, r *Recipe, a *Artifact, plat Platform, archivePath, contentHash string) (*StoreEntry, error) {
+//
+// deps carries the store location and version of every already-materialised
+// dependency of r, keyed by formula/package name. It exists for one reason:
+// a Homebrew bottle's binaries reference their runtime dependencies by an
+// unresolved build-time placeholder (@@HOMEBREW_PREFIX@@/opt/<name>/...)
+// that has to be rewritten to hop's own store path for that dependency
+// before the binary will actually run — see relocateHomebrewBottle. Every
+// other artifact kind ignores deps entirely; it costs them nothing since
+// the relocation step itself no-ops the instant it finds no such
+// placeholder in the extracted tree.
+func Materialise(l *Layout, r *Recipe, a *Artifact, plat Platform, archivePath, contentHash string, deps map[string]depLocation) (*StoreEntry, error) {
 	dir := l.StorePath(r.Name, r.Version, contentHash)
 	isImage := r.Kind == KindImage
 
@@ -145,6 +155,16 @@ func Materialise(l *Layout, r *Recipe, a *Artifact, plat Platform, archivePath, 
 		}
 	} else if err := extract(archivePath, stage, DetectFormat(a), a.Strip, defaultRawName(r, a)); err != nil {
 		return nil, fmt.Errorf("extracting %s: %w", r.Name, err)
+	}
+
+	if !isImage {
+		// dir, not stage, is deliberate: a relocated binary's load commands
+		// must name the path the tree will actually live at once renamed
+		// into place below, not the temporary staging path it's sitting in
+		// while being patched.
+		if err := relocateHomebrewBottle(stage, r.Name, r.Version, dir, deps); err != nil {
+			return nil, fmt.Errorf("relocating %s: %w", r.Name, err)
+		}
 	}
 
 	e := &StoreEntry{Path: stage, Platform: plat}
@@ -214,6 +234,10 @@ func placeImageFile(archivePath, stage string, a *Artifact) error {
 // paths that upstream has since moved, are searched for across the tree.
 func (e *StoreEntry) discover(a *Artifact) error {
 	e.Bins, e.Mans = nil, nil
+
+	if a.NoExecutables {
+		return nil // a pure library, present only to satisfy a dependent's runtime linking
+	}
 
 	want := a.Bin
 	if len(want) == 0 {

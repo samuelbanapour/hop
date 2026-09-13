@@ -2,9 +2,11 @@ package core
 
 import (
 	"context"
+	"crypto/sha1"
 	"crypto/sha256"
 	"crypto/sha512"
 	"encoding/hex"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
@@ -88,12 +90,25 @@ var DiscardSink Sink = discardSink{}
 type FetchRequest struct {
 	Name string // package name, used as the progress label
 	URL  string
-	// SHA256 and SHA512 are the expected digest; at most one is normally set
-	// (SHA256 wins if both are, e.g. from a badly hand-edited recipe). Both
-	// empty means trust-on-first-use.
+	// SHA256, SHA512 and SHA1 are the expected digest; at most one is
+	// normally set (checked in that preference order if a recipe somehow
+	// sets more than one). All empty means trust-on-first-use.
 	SHA256 string
 	SHA512 string
+	SHA1   string
 	Size   int64 // expected size, for the progress bar before headers arrive
+
+	// OCITokenURL, if set, means URL is an OCI registry blob address (as
+	// used by Homebrew's bottles on ghcr.io): fetch a Bearer token from this
+	// URL first, anonymously, then present it on the request to URL.
+	OCITokenURL string
+}
+
+// digests holds every hash download and hashFileBoth compute in one pass,
+// so verifying against whichever algorithm a recipe happens to pin never
+// costs a second read of the file.
+type digests struct {
+	sha256, sha512, sha1 string
 }
 
 // pinnedDigest returns the digest this request pins and which algorithm it
@@ -104,21 +119,41 @@ func (r *FetchRequest) pinnedDigest() (algo, want string) {
 		return "sha256", r.SHA256
 	case r.SHA512 != "":
 		return "sha512", r.SHA512
+	case r.SHA1 != "":
+		return "sha1", r.SHA1
 	default:
 		return "", ""
 	}
 }
 
+// get returns the digest for the named algorithm.
+func (d digests) get(algo string) string {
+	switch algo {
+	case "sha512":
+		return d.sha512
+	case "sha1":
+		return d.sha1
+	default:
+		return d.sha256
+	}
+}
+
 // FetchResult is the outcome of one download.
 type FetchResult struct {
-	Req    *FetchRequest
-	Path   string // local file in the download cache
-	SHA256 string // digests actually observed, both always computed
-	SHA512 string
-	Size   int64
-	Cached bool
-	Err    error
+	Req     *FetchRequest
+	Path    string  // local file in the download cache
+	Digests digests // every digest actually observed; all always computed
+	Size    int64
+	Cached  bool
+	Err     error
 }
+
+// SHA256 is a convenience accessor: the digest most callers want, for
+// recording in a manifest regardless of which algorithm a recipe pinned.
+func (f *FetchResult) SHA256() string { return f.Digests.sha256 }
+
+// SHA512 is a convenience accessor, mirroring SHA256.
+func (f *FetchResult) SHA512() string { return f.Digests.sha512 }
 
 // downloadPath is the cache location for a request. Artifacts with a declared
 // digest are keyed by content, so the same file shared by several recipes is
@@ -201,13 +236,9 @@ func fetchOne(ctx context.Context, client *http.Client, l *Layout, r *FetchReque
 
 	// Cache hit: only trust it if we can prove the contents.
 	if fi, err := os.Stat(dst); err == nil && fi.Size() > 0 {
-		if sha256hex, sha512hex, err := hashFileBoth(dst); err == nil {
-			got := sha256hex
-			if algo == "sha512" {
-				got = sha512hex
-			}
-			if want == "" || strings.EqualFold(got, want) {
-				return &FetchResult{Req: r, Path: dst, SHA256: sha256hex, SHA512: sha512hex, Size: fi.Size(), Cached: true}
+		if d, err := hashFileAll(dst); err == nil {
+			if want == "" || strings.EqualFold(d.get(algo), want) {
+				return &FetchResult{Req: r, Path: dst, Digests: d, Size: fi.Size(), Cached: true}
 			}
 		}
 		_ = os.Remove(dst) // corrupt or superseded
@@ -228,12 +259,9 @@ func fetchOne(ctx context.Context, client *http.Client, l *Layout, r *FetchReque
 			}
 		}
 
-		sha256hex, sha512hex, size, err := download(ctx, client, r, dst, bar)
+		d, size, err := download(ctx, client, r, dst, bar)
 		if err == nil {
-			got := sha256hex
-			if algo == "sha512" {
-				got = sha512hex
-			}
+			got := d.get(algo)
 			if want != "" && !strings.EqualFold(got, want) {
 				// A digest mismatch is never retried: the bytes on the server
 				// are not the bytes the recipe was written against.
@@ -242,7 +270,7 @@ func fetchOne(ctx context.Context, client *http.Client, l *Layout, r *FetchReque
 					Name: r.Name, URL: r.URL, Algo: algo, Want: want, Got: got,
 				}}
 			}
-			return &FetchResult{Req: r, Path: dst, SHA256: sha256hex, SHA512: sha512hex, Size: size}
+			return &FetchResult{Req: r, Path: dst, Digests: d, Size: size}
 		}
 		lastErr = err
 		if !retryable(err) || ctx.Err() != nil {
@@ -253,27 +281,41 @@ func fetchOne(ctx context.Context, client *http.Client, l *Layout, r *FetchReque
 	return &FetchResult{Req: r, Err: lastErr}
 }
 
-// download streams one attempt to a temp file, hashing as it writes — both
-// SHA-256 and SHA-512 in the same pass, since upstreams disagree on which
-// one they publish — so the artifact is never read twice.
-func download(ctx context.Context, client *http.Client, r *FetchRequest, dst string, bar BarHandle) (sha256hex, sha512hex string, size int64, err error) {
+// download streams one attempt to a temp file, hashing as it writes — every
+// algorithm hop supports, in the same pass, since upstreams disagree on
+// which one they publish — so the artifact is never read twice.
+func download(ctx context.Context, client *http.Client, r *FetchRequest, dst string, bar BarHandle) (d digests, size int64, err error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, r.URL, nil)
 	if err != nil {
-		return "", "", 0, fmt.Errorf("invalid URL %q: %w", r.URL, err)
+		return digests{}, 0, fmt.Errorf("invalid URL %q: %w", r.URL, err)
 	}
 	req.Header.Set("User-Agent", userAgent())
 	// Artifacts are already compressed; asking for gzip only wastes CPU and
 	// would break Content-Length accounting for the progress bar.
 	req.Header.Set("Accept-Encoding", "identity")
 
+	if r.OCITokenURL != "" {
+		token, err := ociToken(ctx, client, r.OCITokenURL)
+		if err != nil {
+			return digests{}, 0, fmt.Errorf("authenticating with the registry: %w", err)
+		}
+		req.Header.Set("Authorization", "Bearer "+token)
+		// GHCR serves a blob only when the Accept header matches how it was
+		// pushed; anything else can come back as a manifest instead of the
+		// actual bytes. This covers every media type Homebrew's bottles and
+		// ordinary OCI image layers use.
+		req.Header.Set("Accept", "application/vnd.oci.image.layer.v1.tar+gzip, "+
+			"application/vnd.docker.image.rootfs.diff.tar.gzip, application/octet-stream, */*")
+	}
+
 	resp, err := client.Do(req)
 	if err != nil {
-		return "", "", 0, err
+		return digests{}, 0, err
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode != http.StatusOK {
-		return "", "", 0, &HTTPError{URL: r.URL, Status: resp.StatusCode, StatusText: resp.Status}
+		return digests{}, 0, &HTTPError{URL: r.URL, Status: resp.StatusCode, StatusText: resp.Status}
 	}
 	if resp.ContentLength > 0 {
 		bar.SetTotal(resp.ContentLength)
@@ -281,7 +323,7 @@ func download(ctx context.Context, client *http.Client, r *FetchRequest, dst str
 
 	tmp, err := os.CreateTemp(filepath.Dir(dst), ".dl-*")
 	if err != nil {
-		return "", "", 0, err
+		return digests{}, 0, err
 	}
 	tmpName := tmp.Name()
 	defer func() {
@@ -292,31 +334,73 @@ func download(ctx context.Context, client *http.Client, r *FetchRequest, dst str
 	// Preflight: refuse to start a download that cannot possibly fit.
 	if resp.ContentLength > 0 {
 		if free, err := freeSpace(filepath.Dir(dst)); err == nil && free > 0 && resp.ContentLength+(64<<20) > free {
-			return "", "", 0, fmt.Errorf("need %s but only %s is free on %s",
+			return digests{}, 0, fmt.Errorf("need %s but only %s is free on %s",
 				humanBytes(resp.ContentLength), humanBytes(free), filepath.Dir(dst))
 		}
 	}
 
-	h256, h512 := sha256.New(), sha512.New()
-	w := io.MultiWriter(tmp, h256, h512, bar)
+	h256, h512, h1 := sha256.New(), sha512.New(), sha1.New()
+	w := io.MultiWriter(tmp, h256, h512, h1, bar)
 	n, err := io.Copy(w, io.LimitReader(resp.Body, maxDownloadBytes))
 	if err != nil {
-		return "", "", 0, err
+		return digests{}, 0, err
 	}
 	if resp.ContentLength > 0 && n != resp.ContentLength {
-		return "", "", 0, fmt.Errorf("truncated download: got %s of %s",
+		return digests{}, 0, fmt.Errorf("truncated download: got %s of %s",
 			humanBytes(n), humanBytes(resp.ContentLength))
 	}
 	if err := tmp.Sync(); err != nil {
-		return "", "", 0, err
+		return digests{}, 0, err
 	}
 	if err := tmp.Close(); err != nil {
-		return "", "", 0, err
+		return digests{}, 0, err
 	}
 	if err := os.Rename(tmpName, dst); err != nil {
-		return "", "", 0, err
+		return digests{}, 0, err
 	}
-	return hex.EncodeToString(h256.Sum(nil)), hex.EncodeToString(h512.Sum(nil)), n, nil
+	return digests{
+		sha256: hex.EncodeToString(h256.Sum(nil)),
+		sha512: hex.EncodeToString(h512.Sum(nil)),
+		sha1:   hex.EncodeToString(h1.Sum(nil)),
+	}, n, nil
+}
+
+// ociToken fetches a short-lived anonymous Bearer token from an OCI
+// Distribution API token endpoint (ghcr.io's `/token?scope=...` — the same
+// endpoint `docker pull`/`docker run` hit before every layer fetch). No
+// credentials are involved: anyone can request a read-only pull token for a
+// public repository, which is exactly what lets hop fetch a public
+// Homebrew bottle without any account of its own.
+func ociToken(ctx context.Context, client *http.Client, tokenURL string) (string, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, tokenURL, nil)
+	if err != nil {
+		return "", fmt.Errorf("invalid token URL %q: %w", tokenURL, err)
+	}
+	req.Header.Set("User-Agent", userAgent())
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		return "", fmt.Errorf("registry token endpoint returned %s", resp.Status)
+	}
+
+	var body struct {
+		Token       string `json:"token"`
+		AccessToken string `json:"access_token"`
+	}
+	if err := json.NewDecoder(io.LimitReader(resp.Body, 1<<20)).Decode(&body); err != nil {
+		return "", fmt.Errorf("decoding token response: %w", err)
+	}
+	if body.Token != "" {
+		return body.Token, nil
+	}
+	if body.AccessToken != "" {
+		return body.AccessToken, nil
+	}
+	return "", fmt.Errorf("token endpoint response had no token")
 }
 
 // retryable distinguishes a flaky network from a wrong URL. Retrying a 404

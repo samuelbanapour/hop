@@ -91,11 +91,13 @@ func Apply(ctx context.Context, l *Layout, cur *Generation, plan *Plan, opts App
 	reqs := make([]*FetchRequest, 0, len(dl))
 	for _, s := range dl {
 		reqs = append(reqs, &FetchRequest{
-			Name:   s.Name,
-			URL:    s.Artifact.URL,
-			SHA256: s.Artifact.SHA256,
-			SHA512: s.Artifact.SHA512,
-			Size:   s.Artifact.Size,
+			Name:        s.Name,
+			URL:         s.Artifact.URL,
+			SHA256:      s.Artifact.SHA256,
+			SHA512:      s.Artifact.SHA512,
+			SHA1:        s.Artifact.SHA1,
+			Size:        s.Artifact.Size,
+			OCITokenURL: s.Artifact.OCITokenURL,
 		})
 	}
 
@@ -132,6 +134,25 @@ func Apply(ctx context.Context, l *Layout, cur *Generation, plan *Plan, opts App
 	// Store paths are keyed by the digest we actually observed, so a package
 	// whose upstream artifact changed gets a distinct path and cannot corrupt
 	// the tree an older generation still points at.
+	//
+	// depLoc tracks where every already-resolved package actually lives, for
+	// one reason: a Homebrew bottle references its own runtime dependencies
+	// by an unresolved build-time placeholder that Materialise has to
+	// rewrite into a real hop store path (see relocateHomebrewBottle). It is
+	// seeded from whatever is already installed, then grows as this
+	// transaction materialises each package — dl is walked in
+	// dependency-first order (resolve.go's expand() guarantees it), so a
+	// dependency is always in depLoc before anything that might need to
+	// relocate against it.
+	depLoc := map[string]depLocation{}
+	if cur != nil {
+		for _, p := range cur.Packages {
+			if p.StorePath != "" {
+				depLoc[p.Name] = depLocation{storePath: p.StorePath, version: p.Version}
+			}
+		}
+	}
+
 	materialised := map[string]*StoreEntry{}
 	for _, s := range dl {
 		f := byName[strings.ToLower(s.Name)]
@@ -139,15 +160,16 @@ func Apply(ctx context.Context, l *Layout, cur *Generation, plan *Plan, opts App
 			failures = append(failures, StepFailure{Name: s.Name, Err: errors.New("internal: download result missing")})
 			continue
 		}
-		entry, err := Materialise(l, s.Recipe, s.Artifact, s.Platform, f.Path, f.SHA256)
+		entry, err := Materialise(l, s.Recipe, s.Artifact, s.Platform, f.Path, f.SHA256(), depLoc)
 		if err != nil {
 			failures = append(failures, StepFailure{Name: s.Name, Err: err})
 			continue
 		}
 		materialised[strings.ToLower(s.Name)] = entry
+		depLoc[s.Recipe.Name] = depLocation{storePath: entry.Path, version: s.Recipe.Version}
 
-		if s.Artifact.SHA256 == "" && s.Artifact.SHA512 == "" {
-			res.Recorded[s.Name] = f.SHA256
+		if s.Artifact.SHA256 == "" && s.Artifact.SHA512 == "" && s.Artifact.SHA1 == "" {
+			res.Recorded[s.Name] = f.SHA256()
 		}
 		if s.Recipe.Caveats != "" {
 			res.Caveats[s.Name] = s.Recipe.Caveats
@@ -169,8 +191,9 @@ func Apply(ctx context.Context, l *Layout, cur *Generation, plan *Plan, opts App
 			want.Size = entry.Size
 			want.Platform = entry.Platform
 			if f := byName[key]; f != nil {
-				want.SHA256 = f.SHA256
-				want.SHA512 = f.SHA512
+				want.SHA256 = f.SHA256()
+				want.SHA512 = f.SHA512()
+				want.SHA1 = f.Digests.sha1
 			}
 			want.At = time.Now()
 			final = append(final, want)

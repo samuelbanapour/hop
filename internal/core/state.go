@@ -20,6 +20,7 @@ type Installed struct {
 	Kind      Kind      `json:"kind,omitempty"`
 	SHA256    string    `json:"sha256,omitempty"`
 	SHA512    string    `json:"sha512,omitempty"`
+	SHA1      string    `json:"sha1,omitempty"`
 	Deps      []string  `json:"deps,omitempty"`
 	Bins      []BinLink `json:"bins,omitempty"`
 	Mans      []string  `json:"mans,omitempty"`
