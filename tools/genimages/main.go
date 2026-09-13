@@ -76,6 +76,8 @@ func main() {
 		{"ubuntu-cloud", ubuntuCloud},
 		{"debian-cloud", debianCloud},
 		{"alpine-minirootfs", alpineMinirootfs},
+		{"freebsd-vm", freebsdVM},
+		{"raspios-lite", raspiosLite},
 	}
 
 	var built []*recipe
@@ -292,6 +294,213 @@ func alpineMinirootfs(client *http.Client) (*recipe, error) {
 	}, nil
 }
 
+// ------------------------------------------------------------------ freebsd ----
+
+// freebsdVM resolves the current FreeBSD RELEASE's plain VM image — a
+// non-Linux, non-cloud-init general-purpose bootable disk image, from
+// FreeBSD's own CHECKSUM.SHA256 for each architecture.
+func freebsdVM(client *http.Client) (*recipe, error) {
+	version, err := latestFreeBSDRelease(client)
+	if err != nil {
+		return nil, err
+	}
+
+	var archs []imageArch
+	for _, a := range []struct{ hop, freebsd string }{{"amd64", "amd64"}, {"arm64", "aarch64"}} {
+		dir := fmt.Sprintf("https://download.freebsd.org/releases/VM-IMAGES/%s/%s/Latest/", version, a.freebsd)
+		sums, err := fetchText(client, dir+"CHECKSUM.SHA256")
+		if err != nil {
+			return nil, err
+		}
+		file := fmt.Sprintf("FreeBSD-%s-%s-ufs.qcow2.xz", version, a.freebsd)
+		if a.hop == "arm64" {
+			file = fmt.Sprintf("FreeBSD-%s-arm64-aarch64-ufs.qcow2.xz", version)
+		}
+		hash, ok := findBSDSum(sums, file)
+		if !ok {
+			return nil, fmt.Errorf("manifest has no entry for %s", file)
+		}
+		archs = append(archs, imageArch{arch: a.hop, url: dir + file, sha256: hash})
+	}
+
+	arts := fanOut(archs, "xz")
+	if err := setSizes(client, arts); err != nil {
+		return nil, err
+	}
+	return &recipe{
+		Name: "freebsd-vm", Version: version, Kind: "image",
+		Description: "FreeBSD " + version + " general-purpose VM image (qcow2, xz-compressed)",
+		Homepage:    "https://www.freebsd.org",
+		License:     "BSD-2-Clause (FreeBSD base system)",
+		Keywords:    []string{"vm", "bsd", "freebsd", "qemu", "image"},
+		Artifacts:   arts,
+		Caveats: "This is a disk image, not a command. Find it with:\n\n" +
+			"    hop info freebsd-vm\n\n" +
+			"It's xz-compressed: decompress before booting —\n" +
+			"    xz -d <image path>\n\n" +
+			"Then boot it with qemu, or import it into your hypervisor of choice.",
+	}, nil
+}
+
+// latestFreeBSDRelease finds the newest non-beta, non-RC entry under
+// VM-IMAGES/. FreeBSD's directory listing has no "latest" alias, unlike
+// Ubuntu and Debian, so this reads the index and picks the newest RELEASE.
+func latestFreeBSDRelease(client *http.Client) (string, error) {
+	body, err := fetchText(client, "https://download.freebsd.org/releases/VM-IMAGES/")
+	if err != nil {
+		return "", err
+	}
+	var best string
+	for _, line := range strings.Split(body, "\n") {
+		i := strings.Index(line, `href="`)
+		if i < 0 {
+			continue
+		}
+		rest := line[i+len(`href="`):]
+		j := strings.Index(rest, `"`)
+		if j < 0 {
+			continue
+		}
+		name := strings.TrimSuffix(rest[:j], "/")
+		if !strings.HasSuffix(name, "-RELEASE") {
+			continue // skip BETA/RC/ALPHA snapshots
+		}
+		if best == "" || compareFreeBSDVersion(name, best) > 0 {
+			best = name
+		}
+	}
+	if best == "" {
+		return "", fmt.Errorf("no *-RELEASE directory found")
+	}
+	return best, nil
+}
+
+// compareFreeBSDVersion compares "15.1-RELEASE"-style names numerically by
+// their leading major.minor, falling back to a string compare on ties.
+func compareFreeBSDVersion(a, b string) int {
+	an, bn := strings.TrimSuffix(a, "-RELEASE"), strings.TrimSuffix(b, "-RELEASE")
+	af := strings.SplitN(an, ".", 2)
+	bf := strings.SplitN(bn, ".", 2)
+	if len(af) > 0 && len(bf) > 0 && af[0] != bf[0] {
+		if len(af[0]) != len(bf[0]) {
+			return len(af[0]) - len(bf[0]) // "15" > "9" as numbers, not strings
+		}
+		return strings.Compare(af[0], bf[0])
+	}
+	return strings.Compare(an, bn)
+}
+
+// -------------------------------------------------------------- raspberry pi ----
+
+// raspiosLite resolves the current Raspberry Pi OS Lite (arm64) image — a
+// real, non-cloud, flash-to-SD-card OS with no x86_64 build at all, since it
+// targets Raspberry Pi hardware exclusively. hop reports that honestly:
+// installing it on an amd64 host correctly fails with "no artifact for this
+// platform" rather than pretending an x86 build exists.
+func raspiosLite(client *http.Client) (*recipe, error) {
+	const listURL = "https://downloads.raspberrypi.com/raspios_lite_arm64/images/"
+	listing, err := fetchText(client, listURL)
+	if err != nil {
+		return nil, err
+	}
+	dirName, ok := latestHrefDir(listing, "raspios_lite_arm64-")
+	if !ok {
+		return nil, fmt.Errorf("no dated release directory found")
+	}
+	dir := listURL + dirName + "/"
+
+	inner, err := fetchText(client, dir)
+	if err != nil {
+		return nil, err
+	}
+	file, ok := latestHrefFile(inner, ".img.xz")
+	if !ok {
+		return nil, fmt.Errorf("no .img.xz in %s", dir)
+	}
+	sumText, err := fetchText(client, dir+file+".sha256")
+	if err != nil {
+		return nil, err
+	}
+	fields := strings.Fields(sumText)
+	if len(fields) == 0 {
+		return nil, fmt.Errorf("empty checksum for %s", file)
+	}
+
+	// Version is the date embedded in the filename, e.g. 2026-06-18.
+	version := file
+	if len(file) >= 10 {
+		version = file[:10]
+	}
+
+	arts := map[string]*artifact{
+		"darwin-arm64": {URL: dir + file, SHA256: fields[0], Format: "xz"},
+		"linux-arm64":  {URL: dir + file, SHA256: fields[0], Format: "xz"},
+	}
+	if err := setSizes(client, arts); err != nil {
+		return nil, err
+	}
+	return &recipe{
+		Name: "raspios-lite", Version: version, Kind: "image",
+		Description: "Raspberry Pi OS Lite (arm64), for flashing to an SD card — no desktop environment",
+		Homepage:    "https://www.raspberrypi.com/software/",
+		License:     "GPL and others (Debian-derived base system)",
+		Keywords:    []string{"raspberry-pi", "sbc", "arm", "image"},
+		Artifacts:   arts,
+		Caveats: "This is a disk image, not a command. Find it with:\n\n" +
+			"    hop info raspios-lite\n\n" +
+			"It's xz-compressed: decompress before flashing —\n" +
+			"    xz -d <image path>\n\n" +
+			"Then write it to an SD card with `rpi-imager` or `dd`.\n\n" +
+			"Raspberry Pi hardware is arm64-only, so hop has no build for amd64 hosts to boot directly.",
+	}, nil
+}
+
+// latestHrefDir returns the lexicographically last href in an Apache-style
+// listing whose name starts with prefix and ends in "/" — Raspberry Pi's
+// directories are date-stamped, so the last one sorted is the newest.
+func latestHrefDir(listing, prefix string) (string, bool) {
+	var best string
+	for _, name := range hrefNames(listing) {
+		name = strings.TrimSuffix(name, "/")
+		if strings.HasPrefix(name, prefix) && name > best {
+			best = name
+		}
+	}
+	return best, best != ""
+}
+
+// latestHrefFile returns the href ending in suffix, for a directory that
+// holds exactly one image (Raspberry Pi's dated folders do).
+func latestHrefFile(listing, suffix string) (string, bool) {
+	for _, name := range hrefNames(listing) {
+		if strings.HasSuffix(name, suffix) {
+			return name, true
+		}
+	}
+	return "", false
+}
+
+func hrefNames(listing string) []string {
+	var out []string
+	for _, line := range strings.Split(listing, "\n") {
+		i := strings.Index(line, `href="`)
+		if i < 0 {
+			continue
+		}
+		rest := line[i+len(`href="`):]
+		j := strings.Index(rest, `"`)
+		if j < 0 {
+			continue
+		}
+		name := rest[:j]
+		if name == "" || strings.HasPrefix(name, "?") || strings.HasPrefix(name, "/") {
+			continue
+		}
+		out = append(out, name)
+	}
+	return out
+}
+
 // ---------------------------------------------------------------- helpers ----
 
 func fetchText(client *http.Client, url string) (string, error) {
@@ -339,6 +548,22 @@ func findSum(manifest, file string) (string, bool) {
 		if name == file {
 			return fields[0], true
 		}
+	}
+	return "", false
+}
+
+// findBSDSum parses the BSD-style checksum line format FreeBSD publishes —
+// "SHA256 (filename) = hexdigest" — which is nothing like the GNU
+// coreutils "hexdigest  filename" format findSum handles.
+func findBSDSum(manifest, file string) (string, bool) {
+	want := "(" + file + ") ="
+	for _, line := range strings.Split(manifest, "\n") {
+		line = strings.TrimSpace(line)
+		i := strings.Index(line, want)
+		if i < 0 {
+			continue
+		}
+		return strings.TrimSpace(line[i+len(want):]), true
 	}
 	return "", false
 }

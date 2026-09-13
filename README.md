@@ -112,11 +112,25 @@ meant to be handed to `qemu`, `docker import`, or a hypervisor exactly as
 downloaded, not unpacked. `hop info <name>` prints the file's real path once
 it's installed.
 
-The built-in index ships `ubuntu-cloud` (24.04 LTS), `debian-cloud`
-(bookworm) and `alpine-minirootfs` (3.20), each resolved from the distro's
-own official checksum manifest — Debian only publishes SHA-512, which is why
-hop's artifact format accepts either SHA-256 or SHA-512, verified with
-exactly the same rigor as everything else in the index.
+It isn't limited to Linux cloud images, either — `freebsd-vm` is a real,
+non-Linux BSD image, and `raspios-lite` is a flash-to-SD-card OS with no
+cloud-init in sight (and, honestly, no `amd64` build at all: Raspberry Pi
+hardware is arm64-only, so hop says so rather than pretending otherwise).
+
+| Package | What it is |
+|---|---|
+| `ubuntu-cloud` | Ubuntu 24.04 LTS server cloud image |
+| `debian-cloud` | Debian 12 (bookworm) generic cloud image |
+| `alpine-minirootfs` | Alpine Linux minimal root filesystem, for containers |
+| `freebsd-vm` | FreeBSD's general-purpose VM image — not Linux, not cloud-init |
+| `raspios-lite` | Raspberry Pi OS Lite, arm64 only, for real SD-card hardware |
+
+Each is resolved straight from its own distro's official checksum manifest —
+Ubuntu and Alpine publish SHA-256, Debian only publishes SHA-512 (which is
+why hop's artifact format accepts either), and FreeBSD uses its own
+`SHA256 (file) = digest` format rather than the GNU `sha256sum` convention.
+All of it is verified with exactly the same rigor as everything else in the
+index — nothing here is trusted just because it "looks official."
 
 ## Reproducible project environments
 

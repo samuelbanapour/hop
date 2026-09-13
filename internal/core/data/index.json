@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "source": "builtin",
-  "generated": "2026-09-12T20:04:04Z",
+  "generated": "2026-09-13T01:12:34Z",
   "recipes": [
     {
       "name": "age",
@@ -740,6 +740,48 @@
           "format": "tar.gz"
         }
       }
+    },
+    {
+      "name": "freebsd-vm",
+      "version": "15.1-RELEASE",
+      "description": "FreeBSD 15.1-RELEASE general-purpose VM image (qcow2, xz-compressed)",
+      "homepage": "https://www.freebsd.org",
+      "license": "BSD-2-Clause (FreeBSD base system)",
+      "keywords": [
+        "vm",
+        "bsd",
+        "freebsd",
+        "qemu",
+        "image"
+      ],
+      "kind": "image",
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://download.freebsd.org/releases/VM-IMAGES/15.1-RELEASE/amd64/Latest/FreeBSD-15.1-RELEASE-amd64-ufs.qcow2.xz",
+          "sha256": "25ad16e9d0c037f40a43c6f3c474b5c1ba62eaf9204dbd7f034fdbffe2c3dae5",
+          "size": 664540212,
+          "format": "xz"
+        },
+        "darwin-arm64": {
+          "url": "https://download.freebsd.org/releases/VM-IMAGES/15.1-RELEASE/aarch64/Latest/FreeBSD-15.1-RELEASE-arm64-aarch64-ufs.qcow2.xz",
+          "sha256": "b61e4f47886332aaff9eb88cfd40c4202132a5c7bf8b56d5b4221f29b683eac2",
+          "size": 593717852,
+          "format": "xz"
+        },
+        "linux-amd64": {
+          "url": "https://download.freebsd.org/releases/VM-IMAGES/15.1-RELEASE/amd64/Latest/FreeBSD-15.1-RELEASE-amd64-ufs.qcow2.xz",
+          "sha256": "25ad16e9d0c037f40a43c6f3c474b5c1ba62eaf9204dbd7f034fdbffe2c3dae5",
+          "size": 664540212,
+          "format": "xz"
+        },
+        "linux-arm64": {
+          "url": "https://download.freebsd.org/releases/VM-IMAGES/15.1-RELEASE/aarch64/Latest/FreeBSD-15.1-RELEASE-arm64-aarch64-ufs.qcow2.xz",
+          "sha256": "b61e4f47886332aaff9eb88cfd40c4202132a5c7bf8b56d5b4221f29b683eac2",
+          "size": 593717852,
+          "format": "xz"
+        }
+      },
+      "caveats": "This is a disk image, not a command. Find it with:\n\n    hop info freebsd-vm\n\nIt's xz-compressed: decompress before booting —\n    xz -d \u003cimage path\u003e\n\nThen boot it with qemu, or import it into your hypervisor of choice."
     },
     {
       "name": "fx",
@@ -1694,6 +1736,35 @@
           "format": "zip"
         }
       }
+    },
+    {
+      "name": "raspios-lite",
+      "version": "2026-06-18",
+      "description": "Raspberry Pi OS Lite (arm64), for flashing to an SD card — no desktop environment",
+      "homepage": "https://www.raspberrypi.com/software/",
+      "license": "GPL and others (Debian-derived base system)",
+      "keywords": [
+        "raspberry-pi",
+        "sbc",
+        "arm",
+        "image"
+      ],
+      "kind": "image",
+      "artifacts": {
+        "darwin-arm64": {
+          "url": "https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2026-06-19/2026-06-18-raspios-trixie-arm64-lite.img.xz",
+          "sha256": "acff736ca7945e3b305f07cda4abdb870910e12634991da69783611756e381b3",
+          "size": 524875608,
+          "format": "xz"
+        },
+        "linux-arm64": {
+          "url": "https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2026-06-19/2026-06-18-raspios-trixie-arm64-lite.img.xz",
+          "sha256": "acff736ca7945e3b305f07cda4abdb870910e12634991da69783611756e381b3",
+          "size": 524875608,
+          "format": "xz"
+        }
+      },
+      "caveats": "This is a disk image, not a command. Find it with:\n\n    hop info raspios-lite\n\nIt's xz-compressed: decompress before flashing —\n    xz -d \u003cimage path\u003e\n\nThen write it to an SD card with `rpi-imager` or `dd`.\n\nRaspberry Pi hardware is arm64-only, so hop has no build for amd64 hosts to boot directly."
     },
     {
       "name": "ripgrep",

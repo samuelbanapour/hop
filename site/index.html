@@ -517,11 +517,11 @@
     <div class="section-head reveal">
       <span class="kicker">The index</span>
       <h2>Every recipe, checksum-verified by inspection</h2>
-      <p>The built-in index isn't hand-typed. A generator resolves each package's latest GitHub release, downloads the real artifact, and derives its checksum, its archive layout and its exact binary path by opening it — nothing here is guessed. That includes OS images now too: <code>ubuntu-cloud</code>, <code>debian-cloud</code> and <code>alpine-minirootfs</code> are pulled, verified and content-addressed exactly like a CLI tool — just never extracted or put on PATH, since a disk image is meant to be handed to qemu intact.</p>
+      <p>The built-in index isn't hand-typed. A generator resolves each package's latest GitHub release, downloads the real artifact, and derives its checksum, its archive layout and its exact binary path by opening it — nothing here is guessed. That includes OS images now too, and not just Linux cloud images: <code>freebsd-vm</code> is a real, non-Linux BSD build, and <code>raspios-lite</code> is a flash-to-SD-card OS with no cloud-init in sight (and honestly, no <code>amd64</code> build at all — Pi hardware is arm64-only, so hop says so). All of it is pulled, verified and content-addressed exactly like a CLI tool — just never extracted or put on PATH, since a disk image is meant to be handed to qemu intact.</p>
     </div>
 
     <div class="catalog-meta">
-      <span class="catalog-count">65 recipes · 248 verified artifacts · darwin-arm64, darwin-amd64, linux-amd64, linux-arm64</span>
+      <span class="catalog-count">67 recipes · 254 verified artifacts · darwin-arm64, darwin-amd64, linux-amd64, linux-arm64</span>
       <a href="#install" class="btn btn-ghost" style="padding:7px 14px; font-size:12.5px;">hop search &lt;name&gt;</a>
     </div>
 
@@ -611,6 +611,8 @@
     ["ubuntu-cloud","24.04","Ubuntu 24.04 LTS server cloud image, for qemu and VM provisioning",4],
     ["debian-cloud","12","Debian 12 (bookworm) generic cloud image, for qemu and VM provisioning",4],
     ["alpine-minirootfs","3.20","Alpine Linux minimal root filesystem, for containers and chroots",4],
+    ["freebsd-vm","15.1-RELEASE","FreeBSD's general-purpose VM image — not Linux, not cloud-init",4],
+    ["raspios-lite","2026-06-18","Raspberry Pi OS Lite, arm64 only — real SD-card hardware, no cloud",2],
     ["ripgrep","15.2.0","Recursively search directories for a regex pattern, respecting .gitignore",4],
     ["fd","10.5.0","A fast, user-friendly alternative to find",4],
     ["bat","0.26.1","A cat clone with syntax highlighting and git integration",4],
