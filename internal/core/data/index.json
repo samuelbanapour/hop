@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "source": "builtin",
-  "generated": "2026-09-13T01:12:34Z",
+  "generated": "2026-09-13T01:25:26Z",
   "recipes": [
     {
       "name": "age",
@@ -82,6 +82,36 @@
         }
       },
       "caveats": "This is a root filesystem tarball, not a command. Find it with:\n\n    hop info alpine-minirootfs\n\nExtract it into a chroot, or `docker import` it as a base image."
+    },
+    {
+      "name": "archlinux-iso",
+      "version": "latest",
+      "description": "Arch Linux install ISO (x86_64 only — Arch publishes no official arm64 build)",
+      "homepage": "https://archlinux.org",
+      "license": "GPL and others (Arch base system)",
+      "keywords": [
+        "iso",
+        "installer",
+        "arch",
+        "linux",
+        "image"
+      ],
+      "kind": "image",
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://geo.mirror.pkgbuild.com/iso/latest/archlinux-x86_64.iso",
+          "sha256": "be8458032f8105e60ee2a3067f950b6e3c007ee51b38dac50e8b48e765561c91",
+          "size": 1608286208,
+          "format": "raw"
+        },
+        "linux-amd64": {
+          "url": "https://geo.mirror.pkgbuild.com/iso/latest/archlinux-x86_64.iso",
+          "sha256": "be8458032f8105e60ee2a3067f950b6e3c007ee51b38dac50e8b48e765561c91",
+          "size": 1608286208,
+          "format": "raw"
+        }
+      },
+      "caveats": "This is an installer ISO, not a command. Find it with:\n\n    hop info archlinux-iso\n\nBoot it with qemu, write it to a USB drive, or mount it in a hypervisor.\n\nx86_64 only: Arch itself publishes no official arm64 ISO."
     },
     {
       "name": "bandwhich",
@@ -702,6 +732,48 @@
           "format": "tar.gz"
         }
       }
+    },
+    {
+      "name": "fedora-workstation",
+      "version": "44",
+      "description": "Fedora Workstation 44 Live ISO installer",
+      "homepage": "https://fedoraproject.org",
+      "license": "GPL and others (Fedora base system)",
+      "keywords": [
+        "iso",
+        "installer",
+        "fedora",
+        "linux",
+        "image"
+      ],
+      "kind": "image",
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://download.fedoraproject.org/pub/fedora/linux/releases/44/Workstation/x86_64/iso/Fedora-Workstation-Live-44-1.7.x86_64.iso",
+          "sha256": "1620295f6a00c27c3208f0c00b8ece4eab1ec69b9002152d97488bf26a426ddf",
+          "size": 2851612672,
+          "format": "raw"
+        },
+        "darwin-arm64": {
+          "url": "https://download.fedoraproject.org/pub/fedora/linux/releases/44/Workstation/aarch64/iso/Fedora-Workstation-Live-44-1.7.aarch64.iso",
+          "sha256": "162ba3c552a2d241c7c63ec26777af0255ee1b5a135adc0be986ceed999933ef",
+          "size": 2689781760,
+          "format": "raw"
+        },
+        "linux-amd64": {
+          "url": "https://download.fedoraproject.org/pub/fedora/linux/releases/44/Workstation/x86_64/iso/Fedora-Workstation-Live-44-1.7.x86_64.iso",
+          "sha256": "1620295f6a00c27c3208f0c00b8ece4eab1ec69b9002152d97488bf26a426ddf",
+          "size": 2851612672,
+          "format": "raw"
+        },
+        "linux-arm64": {
+          "url": "https://download.fedoraproject.org/pub/fedora/linux/releases/44/Workstation/aarch64/iso/Fedora-Workstation-Live-44-1.7.aarch64.iso",
+          "sha256": "162ba3c552a2d241c7c63ec26777af0255ee1b5a135adc0be986ceed999933ef",
+          "size": 2689781760,
+          "format": "raw"
+        }
+      },
+      "caveats": "This is an installer ISO, not a command. Find it with:\n\n    hop info fedora-workstation\n\nBoot it with qemu, write it to a USB drive, or mount it in a hypervisor."
     },
     {
       "name": "flyctl",
@@ -1565,6 +1637,31 @@
           "format": "tar.gz"
         }
       }
+    },
+    {
+      "name": "macos-recovery",
+      "version": "26.6.2",
+      "description": "macOS 26.6.2 full restore image (Apple Silicon), for provisioning a macOS VM",
+      "homepage": "https://support.apple.com/guide/vt/welcome/web",
+      "license": "Apple Software License Agreement (macOS itself; running it is subject to Apple's terms)",
+      "keywords": [
+        "macos",
+        "apple",
+        "vm",
+        "recovery",
+        "ipsw",
+        "image"
+      ],
+      "kind": "image",
+      "artifacts": {
+        "darwin-arm64": {
+          "url": "https://updates.cdn-apple.com/2026SummerFCS/fullrestores/140-75212/A2A24B94-1FC1-45A3-93F7-C51B02AF1F4D/UniversalMac_26.6.2_25G83_Restore.ipsw",
+          "sha256": "885503b7f4b06609e9a512f2befd40f59730640a3f1233e3892d60affdd51c95",
+          "size": 19772231540,
+          "format": "raw"
+        }
+      },
+      "caveats": "This is a 18.4 GB restore image, not a command. Find it with:\n\n    hop info macos-recovery\n\nFeed it to Apple's own Virtualization.framework (e.g. via Tart or UTM) to\nprovision a macOS VM — the same mechanism Apple Configurator uses.\n\nRunning macOS is subject to Apple's software license agreement, which\npermits it only on Apple hardware (including a VM on an Apple Silicon Mac).\nOnly Apple Silicon builds exist: Intel Macs restore over the network via\nInternet Recovery, not a downloadable image like this one."
     },
     {
       "name": "micro",

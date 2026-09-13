@@ -517,11 +517,11 @@
     <div class="section-head reveal">
       <span class="kicker">The index</span>
       <h2>Every recipe, checksum-verified by inspection</h2>
-      <p>The built-in index isn't hand-typed. A generator resolves each package's latest GitHub release, downloads the real artifact, and derives its checksum, its archive layout and its exact binary path by opening it — nothing here is guessed. That includes OS images now too, and not just Linux cloud images: <code>freebsd-vm</code> is a real, non-Linux BSD build, and <code>raspios-lite</code> is a flash-to-SD-card OS with no cloud-init in sight (and honestly, no <code>amd64</code> build at all — Pi hardware is arm64-only, so hop says so). All of it is pulled, verified and content-addressed exactly like a CLI tool — just never extracted or put on PATH, since a disk image is meant to be handed to qemu intact.</p>
+      <p>The built-in index isn't hand-typed. A generator resolves each package's latest release, downloads the real artifact, and derives its checksum by opening it — nothing here is guessed. Images span more than Linux cloud builds: <code>freebsd-vm</code> is genuinely non-Linux, <code>fedora-workstation</code> and <code>archlinux-iso</code> are real installer ISOs rather than cloud images, and <code>macos-recovery</code> pulls straight from Apple's own signed CDN for an Apple Silicon VM. <code>raspios-lite</code> honestly has no <code>amd64</code> build at all — Pi hardware is arm64-only, so hop says so. Windows isn't here on purpose: Microsoft's ISOs sit behind an interactive, EULA-gated web flow with no stable checksum manifest, which every other entry in this index deliberately has — that's the line hop stays behind.</p>
     </div>
 
     <div class="catalog-meta">
-      <span class="catalog-count">67 recipes · 254 verified artifacts · darwin-arm64, darwin-amd64, linux-amd64, linux-arm64</span>
+      <span class="catalog-count">70 recipes · 261 verified artifacts · darwin-arm64, darwin-amd64, linux-amd64, linux-arm64</span>
       <a href="#install" class="btn btn-ghost" style="padding:7px 14px; font-size:12.5px;">hop search &lt;name&gt;</a>
     </div>
 
@@ -612,6 +612,9 @@
     ["debian-cloud","12","Debian 12 (bookworm) generic cloud image, for qemu and VM provisioning",4],
     ["alpine-minirootfs","3.20","Alpine Linux minimal root filesystem, for containers and chroots",4],
     ["freebsd-vm","15.1-RELEASE","FreeBSD's general-purpose VM image — not Linux, not cloud-init",4],
+    ["fedora-workstation","44","Fedora Workstation Live ISO — an installer, not a cloud image",4],
+    ["archlinux-iso","latest","Arch Linux install ISO, x86_64 only",2],
+    ["macos-recovery","26.6.2","macOS full restore image for Apple Silicon VMs",1],
     ["raspios-lite","2026-06-18","Raspberry Pi OS Lite, arm64 only — real SD-card hardware, no cloud",2],
     ["ripgrep","15.2.0","Recursively search directories for a regex pattern, respecting .gitignore",4],
     ["fd","10.5.0","A fast, user-friendly alternative to find",4],

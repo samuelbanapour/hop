@@ -98,7 +98,7 @@ rootfs tarballs too, and keep them current the same way it keeps everything
 else current:
 
 ```bash
-hop search cloud            # ubuntu-cloud, debian-cloud, …
+hop search iso              # fedora-workstation, archlinux-iso, …
 hop install ubuntu-cloud    # download + verify, never extracted
 hop info ubuntu-cloud       # → exact path to the .img/.qcow2 file
 hop upgrade ubuntu-cloud    # re-resolves when a new point release ships
@@ -124,13 +124,43 @@ hardware is arm64-only, so hop says so rather than pretending otherwise).
 | `alpine-minirootfs` | Alpine Linux minimal root filesystem, for containers |
 | `freebsd-vm` | FreeBSD's general-purpose VM image — not Linux, not cloud-init |
 | `raspios-lite` | Raspberry Pi OS Lite, arm64 only, for real SD-card hardware |
+| `fedora-workstation` | Fedora Workstation Live ISO — an installer, not a cloud image |
+| `archlinux-iso` | Arch Linux install ISO, x86_64 only |
+| `macos-recovery` | macOS full restore image for Apple Silicon VMs |
 
 Each is resolved straight from its own distro's official checksum manifest —
-Ubuntu and Alpine publish SHA-256, Debian only publishes SHA-512 (which is
-why hop's artifact format accepts either), and FreeBSD uses its own
-`SHA256 (file) = digest` format rather than the GNU `sha256sum` convention.
-All of it is verified with exactly the same rigor as everything else in the
-index — nothing here is trusted just because it "looks official."
+Ubuntu, Alpine and Fedora publish SHA-256, Debian only publishes SHA-512
+(which is why hop's artifact format accepts either), and FreeBSD uses its
+own `SHA256 (file) = digest` format rather than the GNU `sha256sum`
+convention. All of it is verified with exactly the same rigor as everything
+else in the index — nothing here is trusted just because it "looks
+official."
+
+`macos-recovery` deserves its own note. It's resolved from
+[api.ipsw.me](https://ipsw.me), a long-standing public aggregator of
+Apple's own signed firmware metadata — the URL and SHA-256 it reports both
+point straight back to `updates.cdn-apple.com`, the same channel Apple
+Configurator and open-source tools like Tart and UTM already use to
+provision macOS VMs under Apple's own Virtualization framework. It's Apple
+Silicon–only (Intel Macs restore over the network, not from a downloadable
+image), the file runs 15–20+ GB, and running it is governed by Apple's own
+software license agreement. Given the size, hop's other image recipes are
+verified by downloading the full artifact and re-hashing it during
+generation; doing that for an 18GB file on every index rebuild wasn't
+practical, so this one recipe's checksum is taken from Apple's own
+manifest rather than independently re-derived — the same trust a package
+manager places in any signed upstream repository index.
+
+**hop does not, and will not, pull Windows install images.** Microsoft's
+official ISOs are served through an interactive, EULA-gated web flow with
+no stable public checksum manifest and no scriptable download URL — every
+other recipe in this index exists because its publisher deliberately
+built infrastructure for exactly this kind of automated, verifiable
+access, and Windows' does not. Circumventing that would mean working
+around an access control Microsoft put there on purpose, which is outside
+what hop does. If you need a Windows VM, get it from Microsoft's own
+[Windows Dev Virtual Machines](https://developer.microsoft.com/en-us/windows/downloads/virtual-machines/)
+program directly.
 
 ## Reproducible project environments
 

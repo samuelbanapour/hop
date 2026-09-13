@@ -305,7 +305,11 @@ func runInfo(a *App, args []string) error {
 		}
 		pairs = append(pairs, [2]string{"Artifact", ui.Grey(art.URL)})
 		if plat.IsRosettaFallback(artPlat) {
-			pairs = append(pairs, [2]string{"Note", ui.Yellow("x86_64 build; runs under Rosetta 2")})
+			if r.Kind == core.KindImage {
+				pairs = append(pairs, [2]string{"Note", ui.Yellow("x86_64 image; that's fine for a static image, unlike a CLI tool")})
+			} else {
+				pairs = append(pairs, [2]string{"Note", ui.Yellow("x86_64 build; runs under Rosetta 2")})
+			}
 		}
 	}
 	ui.KV(pairs...)

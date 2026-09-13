@@ -323,9 +323,15 @@ func (r *Resolver) PlanInstall(names []string, force bool) (*Plan, error) {
 			Explicit: s.explicit,
 		})
 		if r.Platform.IsRosettaFallback(s.plat) {
-			plan.Warnings = append(plan.Warnings, fmt.Sprintf(
-				"%s has no native %s build; installing the x86_64 build to run under Rosetta 2",
-				s.recipe.Name, r.Platform))
+			if s.recipe.Kind == KindImage {
+				plan.Warnings = append(plan.Warnings, fmt.Sprintf(
+					"%s has no arm64 build; using the x86_64 one — that's fine for a static image, unlike a CLI tool",
+					s.recipe.Name))
+			} else {
+				plan.Warnings = append(plan.Warnings, fmt.Sprintf(
+					"%s has no native %s build; installing the x86_64 build to run under Rosetta 2",
+					s.recipe.Name, r.Platform))
+			}
 		}
 		if s.artifact.SHA256 == "" && s.artifact.SHA512 == "" {
 			plan.Warnings = append(plan.Warnings, fmt.Sprintf(

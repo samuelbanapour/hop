@@ -60,6 +60,8 @@ func renderPlan(p *core.Plan, title string) {
 
 		note := ""
 		switch {
+		case s.Rosetta && s.Recipe != nil && s.Recipe.Kind == core.KindImage:
+			note = ui.Yellow("x86_64 build") // a static image is never "run under Rosetta"
 		case s.Rosetta:
 			note = ui.Yellow("via Rosetta")
 		case s.Reason == "requested", s.Reason == "":

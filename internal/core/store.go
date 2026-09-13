@@ -15,8 +15,12 @@ import (
 	"strings"
 )
 
-// maxArchiveBytes caps total extracted size, so a zip bomb cannot fill a disk
-// that is already close to full.
+// maxArchiveBytes caps total *extracted* size, so a zip bomb inside a CLI
+// tool's archive cannot fill a disk that is already close to full. No
+// legitimate CLI tool needs anywhere near this much unpacked; this stays
+// conservative on purpose. It is unrelated to maxDownloadBytes in fetch.go,
+// which bounds the raw network transfer and has to accommodate a real
+// multi-gigabyte OS image that is never extracted at all.
 const maxArchiveBytes = 4 << 30 // 4 GiB
 
 // maxArchiveEntries caps member count for the same reason.

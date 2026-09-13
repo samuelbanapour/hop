@@ -19,13 +19,22 @@ import (
 
 // HTTP tuning. The limits are deliberately generous for large artifacts but
 // finite, so a stalled CDN fails instead of hanging a terminal forever.
+// totalTimeout has to cover a genuinely huge OS image (a full macOS restore
+// image runs well past 10GB) on an ordinary connection, not just a CLI
+// tool's tarball.
 const (
 	dialTimeout     = 15 * time.Second
 	headerTimeout   = 30 * time.Second
 	idleConnTimeout = 90 * time.Second
-	totalTimeout    = 30 * time.Minute
+	totalTimeout    = 3 * time.Hour
 	maxRetries      = 3
 )
+
+// maxDownloadBytes bounds the raw network transfer for a single artifact —
+// deliberately much larger than maxArchiveBytes in store.go, which bounds
+// what an archive is allowed to *extract to*. An OS image artifact is never
+// extracted at all, so it only needs to fit under this cap, not that one.
+const maxDownloadBytes = 64 << 30 // 64 GiB
 
 // NewHTTPClient builds the client hop uses for every network request.
 func NewHTTPClient() *http.Client {
@@ -290,7 +299,7 @@ func download(ctx context.Context, client *http.Client, r *FetchRequest, dst str
 
 	h256, h512 := sha256.New(), sha512.New()
 	w := io.MultiWriter(tmp, h256, h512, bar)
-	n, err := io.Copy(w, io.LimitReader(resp.Body, maxArchiveBytes))
+	n, err := io.Copy(w, io.LimitReader(resp.Body, maxDownloadBytes))
 	if err != nil {
 		return "", "", 0, err
 	}

@@ -78,6 +78,9 @@ func main() {
 		{"alpine-minirootfs", alpineMinirootfs},
 		{"freebsd-vm", freebsdVM},
 		{"raspios-lite", raspiosLite},
+		{"fedora-workstation", fedoraWorkstation},
+		{"archlinux-iso", archlinuxISO},
+		{"macos-recovery", macosRecovery},
 	}
 
 	var built []*recipe
@@ -501,9 +504,207 @@ func hrefNames(listing string) []string {
 	return out
 }
 
+// -------------------------------------------------------------- fedora ----
+
+// fedoraWorkstation resolves the current Fedora Workstation Live ISO — a
+// real installer image, not a cloud image — from Fedora's own official
+// releases.json, which is a clean structured manifest rather than a
+// directory listing to scrape.
+func fedoraWorkstation(client *http.Client) (*recipe, error) {
+	body, err := fetchTextN(client, "https://fedoraproject.org/releases.json", 8<<20)
+	if err != nil {
+		return nil, err
+	}
+	var entries []struct {
+		Version string `json:"version"`
+		Arch    string `json:"arch"`
+		Variant string `json:"variant"`
+		Link    string `json:"link"`
+		SHA256  string `json:"sha256"`
+		Size    string `json:"size"`
+	}
+	if err := json.Unmarshal([]byte(body), &entries); err != nil {
+		return nil, fmt.Errorf("parsing releases.json: %w", err)
+	}
+
+	// Find the newest version with both architectures present as a plain
+	// Live ISO (not an ociarchive or other container-native variant).
+	best := ""
+	byVerArch := map[string]map[string]struct{ url, sha256 string }{}
+	for _, e := range entries {
+		if e.Variant != "Workstation" || !strings.HasSuffix(e.Link, ".iso") {
+			continue
+		}
+		if e.Arch != "x86_64" && e.Arch != "aarch64" {
+			continue
+		}
+		if byVerArch[e.Version] == nil {
+			byVerArch[e.Version] = map[string]struct{ url, sha256 string }{}
+		}
+		byVerArch[e.Version][e.Arch] = struct{ url, sha256 string }{e.Link, e.SHA256}
+		if best == "" || compareFreeBSDVersion(e.Version+"-RELEASE", best+"-RELEASE") > 0 {
+			best = e.Version
+		}
+	}
+	pair, ok := byVerArch[best]
+	x86, hasX86 := pair["x86_64"]
+	arm, hasArm := pair["aarch64"]
+	if !ok || !hasX86 || !hasArm {
+		return nil, fmt.Errorf("no complete x86_64+aarch64 Workstation Live ISO pair found")
+	}
+
+	archs := []imageArch{
+		{arch: "amd64", url: x86.url, sha256: x86.sha256},
+		{arch: "arm64", url: arm.url, sha256: arm.sha256},
+	}
+	arts := fanOut(archs, "raw")
+	if err := setSizes(client, arts); err != nil {
+		return nil, err
+	}
+	return &recipe{
+		Name: "fedora-workstation", Version: best, Kind: "image",
+		Description: "Fedora Workstation " + best + " Live ISO installer",
+		Homepage:    "https://fedoraproject.org",
+		License:     "GPL and others (Fedora base system)",
+		Keywords:    []string{"iso", "installer", "fedora", "linux", "image"},
+		Artifacts:   arts,
+		Caveats: "This is an installer ISO, not a command. Find it with:\n\n" +
+			"    hop info fedora-workstation\n\n" +
+			"Boot it with qemu, write it to a USB drive, or mount it in a hypervisor.",
+	}, nil
+}
+
+// ------------------------------------------------------------ arch linux ----
+
+// archlinuxISO resolves the current Arch Linux install ISO. Arch publishes
+// x86_64 only — there is no official arm64 build (Arch Linux ARM is a
+// separate, differently-run project) — so this recipe honestly has no
+// darwin-arm64/linux-arm64 artifact at all.
+func archlinuxISO(client *http.Client) (*recipe, error) {
+	const base = "https://geo.mirror.pkgbuild.com/iso/latest/"
+	sums, err := fetchText(client, base+"sha256sums.txt")
+	if err != nil {
+		return nil, err
+	}
+	hash, ok := findSum(sums, "archlinux-x86_64.iso")
+	if !ok {
+		return nil, fmt.Errorf("manifest has no entry for archlinux-x86_64.iso")
+	}
+
+	arts := map[string]*artifact{
+		"darwin-amd64": {URL: base + "archlinux-x86_64.iso", SHA256: hash, Format: "raw"},
+		"linux-amd64":  {URL: base + "archlinux-x86_64.iso", SHA256: hash, Format: "raw"},
+	}
+	if err := setSizes(client, arts); err != nil {
+		return nil, err
+	}
+	return &recipe{
+		Name: "archlinux-iso", Version: "latest", Kind: "image",
+		Description: "Arch Linux install ISO (x86_64 only — Arch publishes no official arm64 build)",
+		Homepage:    "https://archlinux.org",
+		License:     "GPL and others (Arch base system)",
+		Keywords:    []string{"iso", "installer", "arch", "linux", "image"},
+		Artifacts:   arts,
+		Caveats: "This is an installer ISO, not a command. Find it with:\n\n" +
+			"    hop info archlinux-iso\n\n" +
+			"Boot it with qemu, write it to a USB drive, or mount it in a hypervisor.\n\n" +
+			"x86_64 only: Arch itself publishes no official arm64 ISO.",
+	}, nil
+}
+
+// -------------------------------------------------------------- macos ----
+
+// macosRecovery resolves the current macOS full restore image for Apple
+// Silicon Macs, via the same public Apple CDN (updates.cdn-apple.com) that
+// Apple Configurator, and open-source macOS-VM tools such as Tart and UTM,
+// already use to provision macOS VMs under Apple's own Virtualization
+// framework — a legitimate, documented distribution channel, distinct from
+// (and much smaller a claim than) redistributing a macOS installer image
+// yourself. The manifest is read from api.ipsw.me, a long-standing public
+// aggregator of Apple's own signed firmware metadata; the URL and SHA-256 it
+// reports both point straight back to apple.com's own infrastructure.
+//
+// Deliberately x86_64-less: Intel Macs restore from Internet Recovery, not
+// a downloadable IPSW, so there is no equivalent artifact to offer there.
+//
+// This restore image runs 15-20+ GB. genindex/genimages verify every other
+// recipe here by downloading the full artifact and hashing the bytes
+// themselves; doing that for this one specifically was judged impractical
+// for a single generator run, so this recipe's checksum is taken from the
+// manifest rather than re-derived locally, same as the trust an OS's own
+// package manager places in a signed repository index.
+func macosRecovery(client *http.Client) (*recipe, error) {
+	const device = "Mac14,2" // MacBook Air M2: a representative, currently-supported Apple Silicon board
+	body, err := fetchTextN(client, "https://api.ipsw.me/v4/device/"+device, 4<<20)
+	if err != nil {
+		return nil, err
+	}
+	var info struct {
+		Firmwares []struct {
+			Version  string `json:"version"`
+			BuildID  string `json:"buildid"`
+			SHA256   string `json:"sha256sum"`
+			URL      string `json:"url"`
+			FileSize int64  `json:"filesize"`
+			Signed   bool   `json:"signed"`
+		} `json:"firmwares"`
+	}
+	if err := json.Unmarshal([]byte(body), &info); err != nil {
+		return nil, fmt.Errorf("parsing ipsw.me response: %w", err)
+	}
+	if len(info.Firmwares) == 0 {
+		return nil, fmt.Errorf("no firmwares listed for %s", device)
+	}
+	// The list is newest-first in practice, but don't assume it: pick the
+	// highest build explicitly, and require it still be Apple-signed —
+	// an unsigned (superseded) restore image will not actually restore.
+	best := info.Firmwares[0]
+	for _, f := range info.Firmwares {
+		if f.Signed && (!best.Signed || f.BuildID > best.BuildID) {
+			best = f
+		}
+	}
+	if !best.Signed {
+		return nil, fmt.Errorf("no currently-signed restore image found for %s", device)
+	}
+
+	art := &artifact{URL: best.URL, SHA256: best.SHA256, Format: "raw", Size: best.FileSize}
+	return &recipe{
+		Name: "macos-recovery", Version: best.Version, Kind: "image",
+		Description: fmt.Sprintf("macOS %s full restore image (Apple Silicon), for provisioning a macOS VM", best.Version),
+		Homepage:    "https://support.apple.com/guide/vt/welcome/web",
+		License:     "Apple Software License Agreement (macOS itself; running it is subject to Apple's terms)",
+		Keywords:    []string{"macos", "apple", "vm", "recovery", "ipsw", "image"},
+		Artifacts: map[string]*artifact{
+			// Apple Silicon only: this restore path doesn't exist for Intel Macs.
+			"darwin-arm64": art,
+		},
+		Caveats: fmt.Sprintf(
+			"This is a %s restore image, not a command. Find it with:\n\n"+
+				"    hop info macos-recovery\n\n"+
+				"Feed it to Apple's own Virtualization.framework (e.g. via Tart or UTM) to\n"+
+				"provision a macOS VM — the same mechanism Apple Configurator uses.\n\n"+
+				"Running macOS is subject to Apple's software license agreement, which\n"+
+				"permits it only on Apple hardware (including a VM on an Apple Silicon Mac).\n"+
+				"Only Apple Silicon builds exist: Intel Macs restore over the network via\n"+
+				"Internet Recovery, not a downloadable image like this one.",
+			humanBytes(best.FileSize)),
+	}, nil
+}
+
 // ---------------------------------------------------------------- helpers ----
 
+// fetchText fetches a small text manifest, refusing anything over 4MB —
+// every manifest genimages reads (checksum files, YAML, small JSON) is
+// tiny, so anything bigger signals something has gone wrong upstream.
 func fetchText(client *http.Client, url string) (string, error) {
+	return fetchTextN(client, url, 4<<20)
+}
+
+// fetchTextN is fetchText with an explicit size limit, for a manifest that
+// is legitimately larger than the usual small checksum file (Fedora's
+// releases.json lists hundreds of variants and runs a few hundred KB).
+func fetchTextN(client *http.Client, url string, limit int) (string, error) {
 	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return "", err
@@ -525,11 +726,27 @@ func fetchText(client *http.Client, url string) (string, error) {
 		if err != nil {
 			break
 		}
-		if len(buf) > 4<<20 { // manifests are tiny; refuse anything absurd
+		if len(buf) > limit {
 			return "", fmt.Errorf("manifest at %s is implausibly large", url)
 		}
 	}
 	return string(buf), nil
+}
+
+// humanBytes formats a byte count for a caveat message.
+func humanBytes(n int64) string {
+	const unit = 1024
+	if n < unit {
+		return fmt.Sprintf("%d B", n)
+	}
+	f := float64(n)
+	for _, u := range []string{"KB", "MB", "GB", "TB"} {
+		f /= unit
+		if f < unit {
+			return fmt.Sprintf("%.1f %s", f, u)
+		}
+	}
+	return fmt.Sprintf("%.1f PB", f/unit)
 }
 
 // findSum parses a "<hex>  <filename>" or "<hex> *<filename>" checksum
