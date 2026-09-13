@@ -504,6 +504,13 @@ func Main(argv []string) int {
 	}
 	app.Layout = layout
 
+	// Started here, before the command's own work, so its network request
+	// (bounded to updateCheckTimeout, and throttled to once a day) overlaps
+	// with whatever the command does rather than adding to it — notifyUpdate
+	// only ever costs whatever time is left over once the real command
+	// finishes.
+	notifyUpdate := maybeCheckForUpdate(app, cmd.Name)
+
 	// Ctrl-C cancels the transaction. Because nothing is activated until every
 	// download has been verified, an interrupt can never leave a broken tree.
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
@@ -513,6 +520,7 @@ func Main(argv []string) int {
 	err = cmd.Run(app, p.args)
 
 	if err == nil {
+		notifyUpdate()
 		return ExitOK
 	}
 

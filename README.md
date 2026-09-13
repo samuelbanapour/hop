@@ -79,7 +79,16 @@ hop remove <pkg>...         # remove it and any now-orphaned dependencies
 hop rollback                # undo the last change — instantly, no download
 hop generations             # see every past state of your install
 hop doctor                  # check PATH, disk, symlinks, integrity
+hop self-update             # update hop itself (not your packages — see below)
 ```
+
+`hop upgrade` and `hop self-update` are deliberately separate: the first
+moves installed *packages* to their newest indexed version, the second
+replaces the `hop` binary itself with the newest GitHub release. Neither
+touches what the other manages. hop also checks for a newer release of
+itself in the background at most once a day — never blocking a command,
+never installing anything on its own — and prints a one-line hint when one
+exists.
 
 ## Coming from Homebrew
 
