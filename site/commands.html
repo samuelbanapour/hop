@@ -1,0 +1,303 @@
+<meta charset="utf-8">
+<title>Commands — HopCLI</title>
+<meta name="description" content="Every hop command: install, remove, upgrade, migrate, self-update, and the rest — usage, flags, and what each one does.">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<script>document.documentElement.classList.add('js');</script>
+<link rel="stylesheet" href="shared.css">
+
+<nav>
+  <div class="nav-row">
+    <a class="brand" href="index.html"><span class="dot"></span>HopCLI</a>
+    <div class="nav-links">
+      <a href="docs.html">Docs</a>
+      <a href="commands.html">Commands</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="relocation.html">Relocation</a>
+      <a href="migrate.html">Migrate guide</a>
+      <a class="gh" href="https://github.com/samuelbanapour/hopcli">on GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <section class="doc-head" style="border-top:none;">
+    <span class="doc-eyebrow">Reference</span>
+    <h1>Every command hop has</h1>
+    <p class="sub">This page is a direct transcript of <code>hop help &lt;command&gt;</code> for every command in the CLI, as of the version this site tracks — nothing here is summarized or paraphrased from memory of what a command does.</p>
+  </section>
+
+  <div class="doc-layout">
+    <aside class="doc-toc">
+      <span class="toc-label">Jump to</span>
+      <ol>
+        <li><a href="#packages">Packages</a></li>
+        <li><a href="#inspect">Inspect</a></li>
+        <li><a href="#projects">Projects</a></li>
+        <li><a href="#history">History</a></li>
+        <li><a href="#maintenance">Maintenance</a></li>
+        <li><a href="#shell">Shell</a></li>
+        <li><a href="#globals">Global flags</a></li>
+      </ol>
+    </aside>
+
+    <div class="doc-body">
+      <div class="plain">
+        <b>In plain terms</b>
+        Every command follows the same shape: <code>hop &lt;command&gt; [flags] [arguments]</code>. Flags in brackets are optional; a name in <code>&lt;angle brackets&gt;</code> is required. The eight global flags at the bottom (<code>--yes</code>, <code>--dry-run</code>, <code>--json</code>, and so on) work on every single command below, so they're listed once rather than repeated forty times.
+      </div>
+
+      <h2 id="packages">Packages</h2>
+      <p>The commands that actually change what's installed. Every one of them is a single transaction: hop downloads and verifies everything first, and only then flips one symlink to make the change live.</p>
+
+      <div class="cmd-card" id="install">
+        <div class="cmd-card-head"><span class="cmd-name">install</span><span class="cmd-alias">aliases: i, add-pkg</span><span class="cmd-group">Packages</span></div>
+        <div class="cmd-usage">hop install [flags] &lt;package&gt;...</div>
+        <p class="cmd-desc">Install one or more packages and everything they depend on. Downloads run in parallel, and an artifact already in the store is reused without touching the network. If anything fails, nothing changes — your environment is left exactly as it was.</p>
+        <dl class="cmd-flags">
+          <dt>-f, --force</dt><dd>reinstall even if already at this version</dd>
+        </dl>
+      </div>
+
+      <div class="cmd-card" id="remove">
+        <div class="cmd-card-head"><span class="cmd-name">remove</span><span class="cmd-alias">aliases: rm, uninstall</span><span class="cmd-group">Packages</span></div>
+        <div class="cmd-usage">hop remove [flags] &lt;package&gt;...</div>
+        <p class="cmd-desc">Remove packages from the active set. Dependencies that nothing else needs are removed too, so uninstalling doesn't leave orphans behind. Removal is bookkeeping only — the package stays in the store until <code>hop gc</code> runs, which is why <code>hop rollback</code> can bring it straight back.</p>
+        <dl class="cmd-flags">
+          <dt>--keep-orphans</dt><dd>do not remove dependencies that are no longer needed</dd>
+        </dl>
+      </div>
+
+      <div class="cmd-card" id="upgrade">
+        <div class="cmd-card-head"><span class="cmd-name">upgrade</span><span class="cmd-alias">alias: up</span><span class="cmd-group">Packages</span></div>
+        <div class="cmd-usage">hop upgrade [flags] [package]...</div>
+        <p class="cmd-desc">Upgrade the named packages, or everything if you name none. Like install, this is one transaction across every package — either they all move, or none do. The previous versions stay in the store, so <code>hop rollback</code> undoes the whole upgrade instantly.</p>
+        <div class="note"><b>Not the same as <code>hop self-update</code>:</b> this upgrades installed <em>packages</em>. <a href="commands.html#self-update">self-update</a> upgrades hop itself. Neither touches what the other manages.</div>
+      </div>
+
+      <div class="cmd-card" id="reinstall">
+        <div class="cmd-card-head"><span class="cmd-name">reinstall</span><span class="cmd-group">Packages</span></div>
+        <div class="cmd-usage">hop reinstall &lt;package&gt;...</div>
+        <p class="cmd-desc">Reinstall packages at their current indexed version — the same store path is re-verified and re-linked, useful if something in a generation looks damaged without wanting to change what version you're on.</p>
+      </div>
+
+      <h2 id="inspect">Inspect</h2>
+      <p>Read-only commands. None of these touch the store, a generation, or the network beyond a search query.</p>
+
+      <div class="cmd-card" id="list">
+        <div class="cmd-card-head"><span class="cmd-name">list</span><span class="cmd-alias">alias: ls</span><span class="cmd-group">Inspect</span></div>
+        <div class="cmd-usage">hop list [flags]</div>
+        <p class="cmd-desc">List installed packages.</p>
+        <dl class="cmd-flags"><dt>-e, --explicit</dt><dd>only packages you asked for, not dependencies</dd></dl>
+      </div>
+
+      <div class="cmd-card" id="search">
+        <div class="cmd-card-head"><span class="cmd-name">search</span><span class="cmd-alias">aliases: s, find</span><span class="cmd-group">Inspect</span></div>
+        <div class="cmd-usage">hop search [flags] [query]</div>
+        <p class="cmd-desc">Search package names, keywords and descriptions. Results are ranked: exact name matches first, then prefixes, then keywords and descriptions — a query with a typo still finds its target.</p>
+        <dl class="cmd-flags"><dt>--limit N</dt><dd>maximum results (default 20, 0 for all)</dd></dl>
+      </div>
+
+      <div class="cmd-card" id="info">
+        <div class="cmd-card-head"><span class="cmd-name">info</span><span class="cmd-alias">alias: show</span><span class="cmd-group">Inspect</span></div>
+        <div class="cmd-usage">hop info &lt;package&gt;</div>
+        <p class="cmd-desc">Show everything known about a package: version, description, dependencies, and which platforms it's built for.</p>
+      </div>
+
+      <div class="cmd-card" id="which">
+        <div class="cmd-card-head"><span class="cmd-name">which</span><span class="cmd-group">Inspect</span></div>
+        <div class="cmd-usage">hop which &lt;command&gt;</div>
+        <p class="cmd-desc">Show which package provides a command — useful when a binary name doesn't obviously match a package name.</p>
+      </div>
+
+      <div class="cmd-card" id="outdated">
+        <div class="cmd-card-head"><span class="cmd-name">outdated</span><span class="cmd-group">Inspect</span></div>
+        <div class="cmd-usage">hop outdated</div>
+        <p class="cmd-desc">List installed packages with newer versions available in the index, without changing anything.</p>
+      </div>
+
+      <div class="cmd-card" id="deps">
+        <div class="cmd-card-head"><span class="cmd-name">deps</span><span class="cmd-group">Inspect</span></div>
+        <div class="cmd-usage">hop deps &lt;package&gt;</div>
+        <p class="cmd-desc">Show a package's dependency tree.</p>
+        <dl class="cmd-flags"><dt>--all</dt><dd>include packages that depend on it too</dd></dl>
+      </div>
+
+      <h2 id="projects">Projects</h2>
+      <p>Per-project reproducibility: a <code>hopfile.toml</code> declares what a project needs, and an optional <code>hop.lock</code> pins the exact resolved versions so a second machine gets identical bytes.</p>
+
+      <div class="cmd-card" id="migrate">
+        <div class="cmd-card-head"><span class="cmd-name">migrate</span><span class="cmd-alias">alias: from-brew</span><span class="cmd-group">Projects</span></div>
+        <div class="cmd-usage">hop migrate [flags]</div>
+        <p class="cmd-desc">Find what Homebrew has installed and reinstall it under hop. Reads Homebrew's Cellar and install receipts directly — brew doesn't have to be running, and nothing about the Homebrew installation is touched. Only formulae installed on request are considered by default; brew's own internal library dependencies are left out, since hop resolves its own. Nothing is removed from Homebrew — hop prints the exact <code>brew uninstall</code> commands to run yourself. Casks (GUI apps) are reported but not migrated.</p>
+        <dl class="cmd-flags">
+          <dt>--all</dt><dd>include brew's auto-installed dependencies too</dd>
+          <dt>--write-hopfile</dt><dd>also record the migrated set in a hopfile</dd>
+          <dt>--prefix DIR</dt><dd>Homebrew prefix (default: auto-detect)</dd>
+        </dl>
+        <div class="note">Full walkthrough: <a href="migrate.html">the migration guide</a>.</div>
+      </div>
+
+      <div class="cmd-card" id="init">
+        <div class="cmd-card-head"><span class="cmd-name">init</span><span class="cmd-group">Projects</span></div>
+        <div class="cmd-usage">hop init [flags]</div>
+        <p class="cmd-desc">Create a hopfile: a declarative list of the tools a project needs. Commit it alongside your code and anyone can reproduce your toolchain with a single <code>hop sync</code>.</p>
+        <dl class="cmd-flags">
+          <dt>--from-installed</dt><dd>seed the file from currently installed packages</dd>
+          <dt>-f, --force</dt><dd>overwrite an existing hopfile</dd>
+        </dl>
+      </div>
+
+      <div class="cmd-card" id="add">
+        <div class="cmd-card-head"><span class="cmd-name">add</span><span class="cmd-group">Projects</span></div>
+        <div class="cmd-usage">hop add &lt;package&gt;...</div>
+        <p class="cmd-desc">Install packages and add them to this project's hopfile — exactly like <code>hop install</code>, except the hopfile is updated so the choice is recorded for everyone else working on the project.</p>
+        <dl class="cmd-flags"><dt>-f, --force</dt><dd>reinstall even if already at this version</dd></dl>
+      </div>
+
+      <div class="cmd-card" id="sync">
+        <div class="cmd-card-head"><span class="cmd-name">sync</span><span class="cmd-group">Projects</span></div>
+        <div class="cmd-usage">hop sync [flags]</div>
+        <p class="cmd-desc">Install, upgrade and remove packages until this machine matches the hopfile. With a <code>hop.lock</code> present, sync installs the exact versions it pins, so two machines end up byte-identical.</p>
+        <dl class="cmd-flags">
+          <dt>--prune</dt><dd>remove packages not in the hopfile (default from the file)</dd>
+          <dt>--locked</dt><dd>require an up-to-date hop.lock; do not re-resolve — for CI</dd>
+        </dl>
+      </div>
+
+      <div class="cmd-card" id="lock">
+        <div class="cmd-card-head"><span class="cmd-name">lock</span><span class="cmd-group">Projects</span></div>
+        <div class="cmd-usage">hop lock</div>
+        <p class="cmd-desc">Write <code>hop.lock</code>, pinning the resolved versions for every package the hopfile names.</p>
+      </div>
+
+      <h2 id="history">History</h2>
+      <p>Every install, upgrade or removal creates a new, numbered generation. Nothing is ever deleted by these two commands — <a href="architecture.html">Architecture</a> covers the mechanism in full.</p>
+
+      <div class="cmd-card" id="generations">
+        <div class="cmd-card-head"><span class="cmd-name">generations</span><span class="cmd-alias">aliases: gens, history</span><span class="cmd-group">History</span></div>
+        <div class="cmd-usage">hop generations</div>
+        <p class="cmd-desc">List every generation of the installed set. Old generations remain on disk, so any of them can be restored instantly with <code>hop rollback &lt;n&gt;</code>.</p>
+      </div>
+
+      <div class="cmd-card" id="rollback">
+        <div class="cmd-card-head"><span class="cmd-name">rollback</span><span class="cmd-alias">alias: undo</span><span class="cmd-group">History</span></div>
+        <div class="cmd-usage">hop rollback [generation]</div>
+        <p class="cmd-desc">Restore a previous generation. With no argument, rollback goes to the generation before the active one. Because every version is still in the store, this is a single symlink swap — microseconds, no download, however large the change. Rolling back is itself just an activation, so running it again returns you to where you were.</p>
+      </div>
+
+      <h2 id="maintenance">Maintenance</h2>
+      <p>Housekeeping: reclaiming disk, checking the installation is healthy, and keeping the index and hop itself current.</p>
+
+      <div class="cmd-card" id="gc">
+        <div class="cmd-card-head"><span class="cmd-name">gc</span><span class="cmd-group">Maintenance</span></div>
+        <div class="cmd-usage">hop gc [flags]</div>
+        <p class="cmd-desc">Delete store paths and cached downloads that no generation needs — a real mark-and-sweep, not "delete anything old." By default every generation is kept, so only genuinely unreachable data is removed. The active generation is never deleted.</p>
+        <dl class="cmd-flags"><dt>--keep N</dt><dd>also discard all but the newest N generations</dd></dl>
+      </div>
+
+      <div class="cmd-card" id="doctor">
+        <div class="cmd-card-head"><span class="cmd-name">doctor</span><span class="cmd-group">Maintenance</span></div>
+        <div class="cmd-usage">hop doctor</div>
+        <p class="cmd-desc">Check the installation for problems: prefix permissions, whether hop's bin directory is on PATH, and whether the active generation is intact.</p>
+      </div>
+
+      <div class="cmd-card" id="verify">
+        <div class="cmd-card-head"><span class="cmd-name">verify</span><span class="cmd-group">Maintenance</span></div>
+        <div class="cmd-usage">hop verify</div>
+        <p class="cmd-desc">Check that installed packages are intact on disk — a deeper check than doctor, walking the actual store contents.</p>
+      </div>
+
+      <div class="cmd-card" id="update">
+        <div class="cmd-card-head"><span class="cmd-name">update</span><span class="cmd-group">Maintenance</span></div>
+        <div class="cmd-usage">hop update</div>
+        <p class="cmd-desc">Refresh the recipe index from <code>HOP_INDEX_URL</code> — one conditional HTTP request, usually a 304, done in milliseconds. With no <code>HOP_INDEX_URL</code> set, hop uses the index built into the binary and this command has nothing to do.</p>
+        <div class="note">This refreshes the <em>recipe index</em> — the catalog of what hop can install. It has nothing to do with hop's own version; see <a href="commands.html#self-update">self-update</a> below.</div>
+      </div>
+
+      <div class="cmd-card" id="self-update">
+        <div class="cmd-card-head"><span class="cmd-name">self-update</span><span class="cmd-alias">alias: self-upgrade</span><span class="cmd-group">Maintenance</span></div>
+        <div class="cmd-usage">hop self-update [flags]</div>
+        <p class="cmd-desc">Check GitHub for hop's latest published release and, if it's newer than the version currently running, download it, verify its checksum against the release's own SHA256SUMS, and replace the running binary in place. The replacement is atomic: the new binary is written alongside the old one and renamed over it, so an interrupted self-update never leaves a half-written executable, and anything already running keeps working off the old file until it exits.</p>
+        <dl class="cmd-flags"><dt>--check</dt><dd>only report whether a newer version exists; do not install it</dd></dl>
+        <div class="plain">
+          <b>In plain terms</b>
+          Every ordinary hop command also quietly checks for a newer release in the background — at most once a day, never slower because of it, never installing anything by itself — and prints a one-line hint if it finds one. <code>hop self-update</code> is what you run when you see that hint.
+        </div>
+      </div>
+
+      <h2 id="shell">Shell</h2>
+      <p>Getting hop itself onto your PATH, and shell integration.</p>
+
+      <div class="cmd-card" id="version">
+        <div class="cmd-card-head"><span class="cmd-name">version</span><span class="cmd-alias">alias: --version</span><span class="cmd-group">Shell</span></div>
+        <div class="cmd-usage">hop version</div>
+        <p class="cmd-desc">Show hop's own version. <code>hop -V</code> and <code>hop --version</code> also work, before any command is even resolved.</p>
+      </div>
+
+      <div class="cmd-card" id="shellenv">
+        <div class="cmd-card-head"><span class="cmd-name">shellenv</span><span class="cmd-group">Shell</span></div>
+        <div class="cmd-usage">eval "$(hop shellenv)"</div>
+        <p class="cmd-desc">Print the shell commands that put hop on PATH — prepends <code>&lt;root&gt;/current/bin</code>. Because that path goes through the "current" symlink, it never changes as you install, upgrade or roll back; your shell config is written once and stays correct.</p>
+      </div>
+
+      <div class="cmd-card" id="completions">
+        <div class="cmd-card-head"><span class="cmd-name">completions</span><span class="cmd-group">Shell</span></div>
+        <div class="cmd-usage">hop completions &lt;bash|zsh|fish&gt;</div>
+        <p class="cmd-desc">Print a shell completion script for the named shell.</p>
+      </div>
+
+      <h2 id="globals">Global flags</h2>
+      <p>Every command above accepts all of these:</p>
+      <dl class="cmd-flags">
+        <dt>-h, --help</dt><dd>show help for this command</dd>
+        <dt>-y, --yes</dt><dd>assume yes; do not prompt</dd>
+        <dt>-n, --dry-run</dt><dd>show what would happen, change nothing</dd>
+        <dt>--json</dt><dd>emit machine-readable JSON</dd>
+        <dt>-q, --quiet</dt><dd>suppress non-error output</dd>
+        <dt>-v, --verbose</dt><dd>show extra detail</dd>
+        <dt>--no-color</dt><dd>disable colour output</dd>
+        <dt>-j, --jobs N</dt><dd>parallel downloads (default: CPU count, max 8)</dd>
+        <dt>--root DIR</dt><dd>hop prefix (default: $HOP_ROOT or ~/.hop)</dd>
+      </dl>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap-wide">
+    <div class="foot-row">
+      <div class="brand" style="font-size:16px;"><span class="dot"></span>HopCLI</div>
+      <div class="foot-links">
+        <a href="index.html">Home</a>
+        <a href="docs.html">Docs</a>
+        <a href="https://github.com/samuelbanapour/hopcli">GitHub</a>
+      </div>
+      <span class="foot-note">generated from hop's own command registry — never hand-guessed</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var toc = document.querySelectorAll('.doc-toc a');
+  var sections = Array.prototype.map.call(toc, function(a){ return document.querySelector(a.getAttribute('href')); });
+  function onScroll(){
+    var y = window.scrollY + 100;
+    var active = 0;
+    sections.forEach(function(s, i){ if (s && s.offsetTop <= y) active = i; });
+    toc.forEach(function(a, i){ a.classList.toggle('active', i === active); });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){ if (entry.isIntersecting) { entry.target.classList.add('in-view'); io.unobserve(entry.target); } });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in-view'); });
+  }
+})();
+</script>

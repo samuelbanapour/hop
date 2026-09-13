@@ -1,0 +1,154 @@
+<meta charset="utf-8">
+<title>Architecture — HopCLI</title>
+<meta name="description" content="How hop's content-addressed store, generations, and atomic transactions work — and why a rollback is a single filesystem rename instead of a reinstall.">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<script>document.documentElement.classList.add('js');</script>
+<link rel="stylesheet" href="shared.css">
+
+<nav>
+  <div class="nav-row">
+    <a class="brand" href="index.html"><span class="dot"></span>HopCLI</a>
+    <div class="nav-links">
+      <a href="docs.html">Docs</a>
+      <a href="commands.html">Commands</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="relocation.html">Relocation</a>
+      <a href="migrate.html">Migrate guide</a>
+      <a class="gh" href="https://github.com/samuelbanapour/hopcli">on GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <section class="doc-head" style="border-top:none;">
+    <span class="doc-eyebrow">How it works</span>
+    <h1>Nothing is ever edited in place</h1>
+    <p class="sub">hop never modifies an installed package. Every change builds a new, complete snapshot and switches to it with one filesystem rename. This page explains the mechanism behind that sentence in full.</p>
+  </section>
+
+  <div class="doc-layout">
+    <aside class="doc-toc">
+      <span class="toc-label">Jump to</span>
+      <ol>
+        <li><a href="#store">The store</a></li>
+        <li><a href="#generations">Generations</a></li>
+        <li><a href="#transaction">A transaction, step by step</a></li>
+        <li><a href="#rollback">Rollback</a></li>
+        <li><a href="#gc">Garbage collection</a></li>
+        <li><a href="#index">The recipe index</a></li>
+      </ol>
+    </aside>
+
+    <div class="doc-body">
+      <div class="plain">
+        <b>In plain terms</b>
+        hop keeps every version of everything it ever installs, forever, in its own labeled folder. "Installing" or "upgrading" just means: build a new list of which folders should be active, then flip one pointer to that list. Nothing gets overwritten, so undoing a change is just flipping the pointer back — no reinstalling, no redownloading.
+      </div>
+
+      <h2 id="store">The content-addressed store</h2>
+      <p>Every package hop installs lands in <code>&lt;root&gt;/store/</code>, in a directory named by its own package name, version, and content hash — for example <code>ripgrep-15.2.0-3750b2e9</code>. That directory is written once, during installation, and never touched again: not by an upgrade, not by a removal, not by anything.</p>
+      <p>"Content-addressed" means the name of the directory is derived from what's inside it, not chosen by the user or an incrementing counter. Two different builds of the exact same version — say, a bottle rebuilt with a different compiler flag — get two different directories, because their hashes differ. An install that turns out to be byte-identical to one already on disk is free: hop recognizes the hash and reuses the existing store path instead of downloading or extracting anything again.</p>
+      <p>Nothing in the store is ever mutated after it's written. This is the property everything else on this page depends on — a generation can safely point at a store path forever, because that path's contents are guaranteed not to change out from under it.</p>
+
+      <h2 id="generations">Generations</h2>
+      <p>A <strong>generation</strong> is the complete, numbered list of what should be on your PATH at a given point in time — which packages, at which versions, symlinked from which store paths. Every install, upgrade, or removal computes an entirely new generation rather than editing the current one.</p>
+      <p>Generations are cheap to create precisely because the store already has everything they might need. Building generation 8 from generation 7 plus "add jq" doesn't require touching any of generation 7's files — it just means writing a new manifest that lists everything generation 7 had, plus jq's store path, and creating a fresh symlink farm (one symlink per exposed binary) pointing into the store.</p>
+      <p>Once a generation is fully built and every artifact it needs is verified on disk, hop does the only thing that actually changes your live environment: it repoints a single symlink, <code>current → profiles/8</code>. Every earlier generation — 1 through 7 — is still sitting on disk afterward, complete and untouched.</p>
+
+      <div class="diagram" style="margin:24px 0;">
+        <svg viewBox="0 0 480 300" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Diagram: the current symlink pointing at generation 7, with generations 5 and 6 kept on disk below it and reachable by rollback">
+          <defs>
+            <marker id="arrow2" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+              <path d="M0,0 L10,5 L0,10 z" fill="var(--accent)"></path>
+            </marker>
+          </defs>
+          <rect x="40" y="210" width="150" height="40" rx="3" fill="var(--bg-sunken)" stroke="var(--line)"></rect>
+          <text x="56" y="228" font-family="IBM Plex Mono,monospace" font-size="12" fill="var(--ink)">generation 5</text>
+          <text x="56" y="242" font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--ink-soft)">rg 14.1 · fd 9.0</text>
+          <rect x="40" y="160" width="150" height="40" rx="3" fill="var(--bg-sunken)" stroke="var(--line)"></rect>
+          <text x="56" y="178" font-family="IBM Plex Mono,monospace" font-size="12" fill="var(--ink)">generation 6</text>
+          <text x="56" y="192" font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--ink-soft)">rg 15.2 · fd 9.0</text>
+          <rect x="40" y="60" width="150" height="46" rx="3" fill="var(--accent-bg)" stroke="var(--accent)" stroke-width="1.5"></rect>
+          <text x="56" y="80" font-family="IBM Plex Mono,monospace" font-size="12" font-weight="700" fill="var(--ink)">generation 7</text>
+          <text x="56" y="96" font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--ink-soft)">rg 15.2 · fd 10.5 · jq 1.8</text>
+          <rect x="280" y="40" width="160" height="220" rx="4" fill="var(--bg-raise)" stroke="var(--line)"></rect>
+          <text x="296" y="62" font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--ink-soft)" style="letter-spacing:.04em;">STORE (by hash)</text>
+          <text x="296" y="90" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--ink)">ripgrep-15.2.0-3750…</text>
+          <text x="296" y="114" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--ink)">fd-10.5.0-b67e18…</text>
+          <text x="296" y="138" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--ink)">fd-9.0.0-a12f90…</text>
+          <text x="296" y="162" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--ink)">jq-1.8.2-2d7534…</text>
+          <text x="296" y="186" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--ink-soft)">rg-14.1.0-9c0021…</text>
+          <line x1="200" y1="83" x2="270" y2="83" stroke="var(--accent)" stroke-width="1.5" marker-end="url(#arrow2)"></line>
+          <text x="200" y="70" font-family="IBM Plex Mono,monospace" font-size="11" fill="var(--accent-ink)" font-weight="600">current →</text>
+          <path d="M 30 83 C 8 83, 8 180, 30 180" stroke="var(--line)" stroke-width="1.5" fill="none" marker-end="url(#arrow2)"></path>
+          <text x="4" y="130" font-family="IBM Plex Mono,monospace" font-size="10" fill="var(--ink-soft)" transform="rotate(-90 14 130)">hop rollback</text>
+        </svg>
+        <p class="diagram-cap">generation 7 is a symlink target — generations 5 and 6 sit untouched, one rename away</p>
+      </div>
+
+      <h2 id="transaction">A transaction, step by step</h2>
+      <p>An <code>install</code>, <code>upgrade</code>, <code>remove</code>, or <code>sync</code> runs through the same sequence, in this order:</p>
+      <ol>
+        <li><strong>Resolve.</strong> hop reads the recipe index and works out the complete set of packages the request implies, including every transitive dependency.</li>
+        <li><strong>Download, in parallel.</strong> Every artifact this generation newly needs is fetched concurrently (bounded by <code>--jobs</code>). Anything already present in the store — matched by content hash — is skipped entirely.</li>
+        <li><strong>Verify.</strong> Each download is checked against its pinned SHA-256 digest before anything is extracted. A mismatch aborts the whole transaction; nothing downloaded gets used.</li>
+        <li><strong>Extract into the store.</strong> Verified artifacts are unpacked into their own content-addressed directories. On Homebrew-sourced packages, this is also where <a href="relocation.html">relocation</a> happens — rewriting the bottle's baked-in paths to point at hop's store instead of Homebrew's.</li>
+        <li><strong>Write the new generation.</strong> A manifest listing every package and store path for the new state is written to a fresh, numbered profile directory.</li>
+        <li><strong>Activate.</strong> The <code>current</code> symlink is repointed at the new profile — the one filesystem rename that is the entire visible effect of the transaction.</li>
+      </ol>
+      <p>If any step before the last one fails — a download times out, a checksum doesn't match, disk fills up mid-extraction — the transaction is aborted and step 6 never runs. The <code>current</code> symlink still points exactly where it did before hop was invoked. There is no partially-applied state to end up in, because nothing that was already live was ever touched.</p>
+
+      <div class="note"><b>Confirmed, not assumed:</b> this is exercised directly by hop's own reproducibility guarantee — <code>hop sync --locked</code> in CI fails loudly rather than silently re-resolving a stale lockfile, precisely because the transaction model makes "did anything actually change" a fact hop can check rather than something it has to infer from a half-finished prefix.</div>
+
+      <h2 id="rollback">Rollback</h2>
+      <p><code>hop rollback</code> is not a special case of install running in reverse — it's the same activation step from above, pointed at an older generation number instead of a new one. That's the entire mechanism: no re-download, because the store paths a previous generation refers to are still sitting exactly where they were; no reinstall, because nothing about them needs redoing.</p>
+      <p>Because rollback is itself just an activation, running it twice in a row returns you to where you started — generation 7 rolls back to 6, and rolling back again goes from 6 to 7.</p>
+
+      <h2 id="gc">Garbage collection</h2>
+      <p>Keeping every generation forever means the store only ever grows — until <code>hop gc</code> runs. It performs a real mark-and-sweep: every store path referenced by any generation's manifest is marked reachable, and everything else is deleted. The active generation's dependencies are always reachable and are never touched; <code>--keep N</code> additionally discards all but the newest N generations, which is what actually frees space after a long history of upgrades.</p>
+
+      <h2 id="index">The recipe index</h2>
+      <p>A recipe is a plain JSON document — a name, a version, and a checksum-pinned artifact URL per platform. hop never executes a recipe; it only downloads and unpacks what it names. The built-in index is compiled directly into the binary, so a fresh machine can search and install with no network access and no separate "update index" step.</p>
+      <p>Nothing in the index is hand-typed. A generator resolves each package's latest upstream release, downloads the real artifact, and derives its checksum by opening the actual bytes — the same discipline that produced the 284 recipes and 1,048 verified artifacts currently in the index.</p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap-wide">
+    <div class="foot-row">
+      <div class="brand" style="font-size:16px;"><span class="dot"></span>HopCLI</div>
+      <div class="foot-links">
+        <a href="index.html">Home</a>
+        <a href="docs.html">Docs</a>
+        <a href="https://github.com/samuelbanapour/hopcli">GitHub</a>
+      </div>
+      <span class="foot-note">ships as one binary, hop — named for the jump between generations</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var toc = document.querySelectorAll('.doc-toc a');
+  var sections = Array.prototype.map.call(toc, function(a){ return document.querySelector(a.getAttribute('href')); });
+  function onScroll(){
+    var y = window.scrollY + 100;
+    var active = 0;
+    sections.forEach(function(s, i){ if (s && s.offsetTop <= y) active = i; });
+    toc.forEach(function(a, i){ a.classList.toggle('active', i === active); });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){ if (entry.isIntersecting) { entry.target.classList.add('in-view'); io.unobserve(entry.target); } });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in-view'); });
+  }
+})();
+</script>

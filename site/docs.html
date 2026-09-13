@@ -1,0 +1,96 @@
+<meta charset="utf-8">
+<title>Docs — HopCLI</title>
+<meta name="description" content="HopCLI documentation: every command, how the store and generations work, how a Homebrew bottle gets relocated, and a full migration guide.">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<script>document.documentElement.classList.add('js');</script>
+<link rel="stylesheet" href="shared.css">
+
+<style>
+  .doc-cards{ display:grid; grid-template-columns:repeat(auto-fit, minmax(240px,1fr)); gap:1px; background:var(--line); border:1px solid var(--line); border-radius:6px; overflow:hidden; margin-top:8px; }
+  .doc-card{ background:var(--bg-raise); padding:22px 22px 20px; display:flex; flex-direction:column; gap:8px; text-decoration:none; color:inherit; transition:background-color .15s ease; }
+  .doc-card:hover{ background:var(--bg-sunken); }
+  .doc-card .n{ font-family:var(--mono-code); font-size:11px; text-transform:uppercase; letter-spacing:.06em; color:var(--accent-ink); }
+  .doc-card h3{ font-family:var(--mono-display); font-size:18px; margin:0; }
+  .doc-card p{ font-size:14px; color:var(--ink-soft); line-height:1.5; margin:0; flex:1; }
+  .doc-card .go{ font-family:var(--mono-code); font-size:12.5px; color:var(--ink-soft); }
+</style>
+
+<nav>
+  <div class="nav-row">
+    <a class="brand" href="index.html"><span class="dot"></span>HopCLI</a>
+    <div class="nav-links">
+      <a href="commands.html">Commands</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="relocation.html">Relocation</a>
+      <a href="migrate.html">Migrate guide</a>
+      <a class="gh" href="https://github.com/samuelbanapour/hopcli">on GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <section class="doc-head" style="border-top:none;">
+    <span class="doc-eyebrow">Documentation</span>
+    <h1>Everything hop does, and why</h1>
+    <p class="sub">Four pages: the full command reference, the mechanism behind atomic installs and rollback, how a Homebrew bottle actually gets rewritten to run from hop's own store, and a complete walkthrough of moving off Homebrew. Each opens with a plain-language summary before it goes deep.</p>
+  </section>
+
+  <section style="border-top:none; padding-top:8px;">
+    <div class="doc-cards reveal">
+      <a class="doc-card" href="commands.html">
+        <span class="n">Reference</span>
+        <h3>Commands</h3>
+        <p>Every command hop has — install, upgrade, rollback, migrate, self-update, and the rest — with usage, flags, and what each one actually does.</p>
+        <span class="go">read →</span>
+      </a>
+      <a class="doc-card" href="architecture.html">
+        <span class="n">How it works</span>
+        <h3>Architecture</h3>
+        <p>The content-addressed store, generations, and why a rollback is a single filesystem rename instead of a reinstall.</p>
+        <span class="go">read →</span>
+      </a>
+      <a class="doc-card" href="relocation.html">
+        <span class="n">Deep dive</span>
+        <h3>Homebrew relocation</h3>
+        <p>How hop takes a bottle built for a fixed system path and rewrites it to run from an arbitrary store location — placeholder tokens, RPATH, and the real bugs that took to get it right.</p>
+        <span class="go">read →</span>
+      </a>
+      <a class="doc-card" href="migrate.html">
+        <span class="n">Guide</span>
+        <h3>Migrating from Homebrew</h3>
+        <p>A full walkthrough of <code>hop migrate</code> — what it reads, what it installs, what it deliberately leaves for you to do yourself.</p>
+        <span class="go">read →</span>
+      </a>
+    </div>
+  </section>
+</div>
+
+<footer>
+  <div class="wrap-wide">
+    <div class="foot-row">
+      <div class="brand" style="font-size:16px;"><span class="dot"></span>HopCLI</div>
+      <div class="foot-links">
+        <a href="index.html">Home</a>
+        <a href="https://github.com/samuelbanapour/hopcli">GitHub</a>
+        <a href="https://github.com/samuelbanapour/hopcli/blob/main/LICENSE">MIT License</a>
+      </div>
+      <span class="foot-note">ships as one binary, hop — named for the jump between generations</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){
+        if (entry.isIntersecting) { entry.target.classList.add('in-view'); io.unobserve(entry.target); }
+      });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in-view'); });
+  }
+})();
+</script>

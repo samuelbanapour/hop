@@ -1,0 +1,127 @@
+<meta charset="utf-8">
+<title>Migrating from Homebrew — HopCLI</title>
+<meta name="description" content="A full walkthrough of hop migrate: what it reads, what it installs, and what it deliberately leaves for you to do yourself.">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<script>document.documentElement.classList.add('js');</script>
+<link rel="stylesheet" href="shared.css">
+
+<nav>
+  <div class="nav-row">
+    <a class="brand" href="index.html"><span class="dot"></span>HopCLI</a>
+    <div class="nav-links">
+      <a href="docs.html">Docs</a>
+      <a href="commands.html">Commands</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="relocation.html">Relocation</a>
+      <a href="migrate.html">Migrate guide</a>
+      <a class="gh" href="https://github.com/samuelbanapour/hopcli">on GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <section class="doc-head" style="border-top:none;">
+    <span class="doc-eyebrow">Guide</span>
+    <h1>Moving off Homebrew, at your own pace</h1>
+    <p class="sub"><code>hop migrate</code> reads what Homebrew has installed and offers to reinstall it under hop — without brew running, without touching your existing Homebrew install, and without removing anything unless you type the command to do it yourself.</p>
+  </section>
+
+  <div class="doc-layout">
+    <aside class="doc-toc">
+      <span class="toc-label">Jump to</span>
+      <ol>
+        <li><a href="#reads">What it reads</a></li>
+        <li><a href="#walkthrough">A walkthrough</a></li>
+        <li><a href="#classification">How packages get classified</a></li>
+        <li><a href="#casks">Casks</a></li>
+        <li><a href="#cleanup">Retiring Homebrew's copies</a></li>
+        <li><a href="#hopfile">Recording the result</a></li>
+      </ol>
+    </aside>
+
+    <div class="doc-body">
+      <div class="plain">
+        <b>In plain terms</b>
+        Run <code>hop migrate --dry-run</code> to see, with no risk, exactly what hop could take over from your existing Homebrew install. If it looks right, drop <code>--dry-run</code> and hop installs those same tools under itself. Homebrew is left completely alone — both copies exist side by side until you decide to remove the old one, which hop tells you how to do but never does for you.
+      </div>
+
+      <h2 id="reads">What it reads</h2>
+      <p><code>hop migrate</code> reads Homebrew's <strong>Cellar</strong> directory and each formula's own install receipt directly off disk — it never shells out to <code>brew</code>, so brew doesn't need to be running, doesn't need to be working, and isn't touched by any of this. hop looks in the standard locations in order: <code>$HOMEBREW_PREFIX</code> if set, then <code>/opt/homebrew</code>, <code>/usr/local</code>, and <code>/home/linuxbrew/.linuxbrew</code> — or pass <code>--prefix</code> to point at a nonstandard install directly.</p>
+      <p>For each formula found, hop reads its install receipt to tell whether it was installed <strong>on request</strong> (something you actually asked brew for) versus pulled in automatically as another formula's dependency. By default, only on-request formulae are considered for migration — <code>--all</code> includes brew's own auto-installed dependencies too, though hop will resolve its own dependency graph for whatever it migrates regardless, so including brew's rarely changes anything except the list you're shown.</p>
+
+      <h2 id="walkthrough">A walkthrough</h2>
+      <div class="doc-code"><span class="t-prompt">$</span> hop migrate --dry-run
+==&gt; Homebrew at /opt/homebrew
+
+  284 formulae installed  ·  68 you asked for yourself
+  11 casks <span class="t-dim">(GUI apps — hop manages command-line tools, so these stay with brew)</span>
+
+hop can take these over
+  +  flyctl      0.4.101 → 0.4.102
+  +  gh          2.100.0
+  +  grpcurl     1.9.4
+  +  mkcert      1.4.4
+  +  shellcheck  0.11.0
+
+61 formulae have no hop recipe yet — these stay with brew; the two coexist fine.</div>
+      <p>Nothing on disk changes yet — <code>--dry-run</code> only ever reports. Drop the flag, confirm the prompt (or pass <code>-y</code> to skip it), and hop installs exactly the migratable set as one ordinary transaction: downloaded, verified, and linked in parallel, the same as any other <code>hop install</code>.</p>
+
+      <h2 id="classification">How every formula gets classified</h2>
+      <p>hop sorts what it finds into four groups, and reports every one of them rather than silently dropping anything it can't handle:</p>
+      <ul>
+        <li><strong>Migratable</strong> — hop has a recipe for it, for this platform, and it isn't already installed under hop. These are what an actual <code>hop migrate</code> run installs.</li>
+        <li><strong>Already managed</strong> — hop already has this package installed. Reported so you know it's accounted for, not silently skipped.</li>
+        <li><strong>No recipe yet</strong> — Homebrew has it, hop's index doesn't (yet). These stay with brew; the two package managers coexist without conflict for anything in this category.</li>
+        <li><strong>Brew's own dependencies</strong> — formulae brew pulled in automatically rather than you asking for directly. Left out by default since hop resolves its own dependency graph for whatever you do migrate; <code>--all</code> brings them into the migratable count too.</li>
+      </ul>
+
+      <h2 id="casks">Casks aren't part of this</h2>
+      <p>Homebrew casks are GUI applications — hop manages command-line tools, so casks are reported (how many exist) but never migrated, installed, or touched in any way. If you have 11 casks, migrating your formulae changes nothing about them.</p>
+
+      <h2 id="cleanup">Retiring Homebrew's copies is your call</h2>
+      <p>After a real (non-dry-run) migration, both copies of every migrated tool exist on the machine at once — Homebrew's original and hop's new one. Which one actually runs when you type its name depends on <code>PATH</code> order, which <code>hop doctor</code> can check. hop prints the exact <code>brew uninstall</code> command for everything it just took over, but it will not run that command for you under any circumstance — removing software installed by another tool is a decision for you to make deliberately, not something a package manager does as a side effect of a different command.</p>
+
+      <h2 id="hopfile">Recording the result</h2>
+      <p>Pass <code>--write-hopfile</code> to also record the migrated set into a <code>hopfile.toml</code> in the current directory — the same declarative file <code>hop init</code> and <code>hop sync</code> use for project reproducibility, so the tools you just brought over from Homebrew become part of what a second machine can reproduce with one command.</p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap-wide">
+    <div class="foot-row">
+      <div class="brand" style="font-size:16px;"><span class="dot"></span>HopCLI</div>
+      <div class="foot-links">
+        <a href="index.html">Home</a>
+        <a href="docs.html">Docs</a>
+        <a href="https://github.com/samuelbanapour/hopcli">GitHub</a>
+      </div>
+      <span class="foot-note">ships as one binary, hop — named for the jump between generations</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var toc = document.querySelectorAll('.doc-toc a');
+  var sections = Array.prototype.map.call(toc, function(a){ return document.querySelector(a.getAttribute('href')); });
+  function onScroll(){
+    var y = window.scrollY + 100;
+    var active = 0;
+    sections.forEach(function(s, i){ if (s && s.offsetTop <= y) active = i; });
+    toc.forEach(function(a, i){ a.classList.toggle('active', i === active); });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){ if (entry.isIntersecting) { entry.target.classList.add('in-view'); io.unobserve(entry.target); } });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in-view'); });
+  }
+})();
+</script>

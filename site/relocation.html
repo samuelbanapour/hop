@@ -1,0 +1,136 @@
+<meta charset="utf-8">
+<title>Homebrew relocation — HopCLI</title>
+<meta name="description" content="How hop takes a Homebrew bottle built for a fixed system path and rewrites it to run from hop's own store — placeholder tokens, RPATH, and the real bugs it took to get right.">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<script>document.documentElement.classList.add('js');</script>
+<link rel="stylesheet" href="shared.css">
+
+<nav>
+  <div class="nav-row">
+    <a class="brand" href="index.html"><span class="dot"></span>HopCLI</a>
+    <div class="nav-links">
+      <a href="docs.html">Docs</a>
+      <a href="commands.html">Commands</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="relocation.html">Relocation</a>
+      <a href="migrate.html">Migrate guide</a>
+      <a class="gh" href="https://github.com/samuelbanapour/hopcli">on GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <section class="doc-head" style="border-top:none;">
+    <span class="doc-eyebrow">Deep dive</span>
+    <h1>Making a Homebrew bottle run somewhere Homebrew never put it</h1>
+    <p class="sub">Close to 200 of hop's recipes are Homebrew's own prebuilt binaries — "bottles" — fetched straight from <code>ghcr.io/homebrew/core</code>. This page explains why that isn't as simple as downloading and unzipping, and the real bugs it took to get all the way there.</p>
+  </section>
+
+  <div class="doc-layout">
+    <aside class="doc-toc">
+      <span class="toc-label">Jump to</span>
+      <ol>
+        <li><a href="#problem">The problem</a></li>
+        <li><a href="#placeholders">Placeholder tokens</a></li>
+        <li><a href="#rpath">RPATH and LC_RPATH</a></li>
+        <li><a href="#consolidation">One rewrite, not several</a></li>
+        <li><a href="#loader">The loader that must never change</a></li>
+        <li><a href="#glibc">A dependency isn't always needed</a></li>
+        <li><a href="#limits">Where this genuinely can't reach</a></li>
+      </ol>
+    </aside>
+
+    <div class="doc-body">
+      <div class="plain">
+        <b>In plain terms</b>
+        A prebuilt binary usually has some file paths baked into it at compile time — "my shared library lives at exactly <code>/this/one/place</code>." Homebrew's own binaries are built assuming they'll live at Homebrew's own fixed install location. hop installs things somewhere else entirely, in its own per-package store, so every one of those baked-in paths has to be found and rewritten before the binary will actually run — not just extracted.
+      </div>
+
+      <h2 id="problem">The problem, concretely</h2>
+      <p>Homebrew's official Linux install location is always <code>/home/linuxbrew/.linuxbrew</code>; on a Mac it's <code>/opt/homebrew</code>. Because that location is fixed, Homebrew's build infrastructure can bake absolute references to it directly into a binary — "when you need <code>libcurl</code>, look at exactly this path" — and never worry about it being wrong, because every real Homebrew install puts <code>libcurl</code> at that exact path.</p>
+      <p>hop's store is deliberately not a fixed, shared location. Every package gets its own directory, named by a content hash that depends on exactly what's in it: <code>curl-8.22.0-b126ad9cb96d</code>. That's what makes two different builds of the same version coexist safely and what makes an unmodified store path safe to keep forever — but it also means the path a Homebrew binary expects to find its dependencies at simply doesn't exist under hop. Downloading and extracting the bottle isn't enough; every one of those baked-in references has to be located and rewritten to point at wherever hop actually put the dependency.</p>
+
+      <h2 id="placeholders">Placeholder tokens, not real paths</h2>
+      <p>Fortunately, Homebrew's own bottles aren't quite as fixed as they look. Rather than baking in the literal install path at build time, Homebrew bakes in a placeholder token — a string like <code>@@HOMEBREW_PREFIX@@/opt/curl/lib</code> — and rewrites those tokens to the real path as one of the very last steps of its own install process. hop does the equivalent rewrite itself, substituting its own store path instead.</p>
+      <p>There isn't just one token shape. Over the course of getting this right against real bottles, hop's relocation code ended up handling several distinct forms, each confirmed against an actual bottle that used it:</p>
+      <ul>
+        <li><code>@@HOMEBREW_PREFIX@@/opt/&lt;formula&gt;/...</code> — the ordinary case, a reference to another formula's own directory.</li>
+        <li><code>@@HOMEBREW_CELLAR@@/&lt;formula&gt;/&lt;version&gt;/...</code> and the mixed <code>@@HOMEBREW_PREFIX@@/Cellar/&lt;formula&gt;/&lt;version&gt;/...</code> form — both name a formula's install directory directly rather than through Homebrew's <code>opt</code> symlink farm.</li>
+        <li>A bare <code>@@HOMEBREW_PREFIX@@/lib/&lt;file&gt;</code>, naming no formula at all — Homebrew's own convention for a keg-linked library placed directly at the prefix root. <code>gdk-pixbuf-csource</code> failed with a bare "Symbol not found" on macOS until this case was handled: hop tries the formula's own store path first, then every dependency, and uses whichever one the file actually exists at.</li>
+        <li><code>@@HOMEBREW_PERL@@</code> — Homebrew doesn't vendor its own Perl on either platform, so formulas with a Perl-based script (<code>autoconf</code>, <code>exiftool</code>) reference the ambient system interpreter instead, resolved via a plain <code>PATH</code> lookup rather than hop's own store.</li>
+      </ul>
+      <p>The very first version of this matching missed one detail entirely: a formula name that contains an <code>@</code>, like <code>python@3.14</code> or <code>openssl@3</code>. Without <code>@</code> in the character class the regex simply stopped matching one character early, truncating the token and silently leaving it unresolved — confirmed for real on <code>python@3.14</code>'s own <code>pip3.14</code> script, which shipped a literal, unrewritten <code>#!@@HOMEBREW_CELLAR@@/python@3.14/...</code> shebang and refused to execute at all.</p>
+
+      <h2 id="rpath">Not just text — RPATH and LC_RPATH</h2>
+      <p>Placeholder tokens don't only show up as readable text in shell scripts. A compiled binary's own metadata carries the same kind of reference, in a form specific to each platform's executable format:</p>
+      <ul>
+        <li>On Linux, an ELF binary's <strong>RPATH</strong>/<strong>RUNPATH</strong> — a colon-separated list of directories the dynamic linker searches for shared libraries — is rewritten with <code>patchelf</code>.</li>
+        <li>On macOS, a Mach-O binary's <strong>LC_LOAD_DYLIB</strong> and <strong>LC_ID_DYLIB</strong> load commands (what library a binary needs, and what a library calls itself) are rewritten with <code>install_name_tool</code>.</li>
+      </ul>
+      <p>A third Mach-O load command, <strong>LC_RPATH</strong>, went unpatched for a real stretch of this project's life — the original code only ever parsed <code>otool -L</code>/<code>-D</code> output (load commands and IDs), never <code>otool -l</code>'s program-header view, where LC_RPATH actually lives. This broke exactly the formulas that reference a sibling library via the relative form <code>@rpath/libX.dylib</code> rather than a full path — <code>fbthrift</code>, <code>watchman</code>, and <code>jasper</code> among them — with a placeholder LC_RPATH entry that nothing was ever rewriting.</p>
+
+      <h2 id="consolidation">One rewrite per file, not several</h2>
+      <p>The most consequential bug in this whole mechanism wasn't a missing case — it was assuming that patching a file's RPATH, then separately patching its interpreter, then separately patching it again to add a dependency's directory, was equivalent to computing the right answer once and writing it. It isn't.</p>
+      <p>The bug that exposed this: many Homebrew Linux bottles don't declare an RPATH entry for every dependency consistently across every file within the same formula. <code>glib</code>'s <code>libglib-2.0.so.0</code> correctly references <code>zlib-ng-compat</code>'s directory in its RPATH; <code>libgio-2.0.so.0</code>, in the exact same formula, needs the same library and doesn't declare it. Real Homebrew papers over this with <code>ldconfig</code>'s single, shared, prefix-wide library cache — every installed formula's lib directory is registered there once, so a file missing its own explicit RPATH entry still finds what it needs. hop's isolated, per-package store has no equivalent, so the fix adds, unconditionally, every dependency's lib directory to a file's RPATH regardless of whether that specific file's own declared entries already covered it.</p>
+      <p>The first version of that fix applied it as a separate, third <code>patchelf</code> invocation, after the placeholder-resolution pass and the interpreter fix's own pass. Rebuilt and tested against <code>glib</code> alone, this produced an outright segmentation fault — not a missing-library error, a crash — in a binary whose ELF header still looked completely well-formed under inspection. Three sequential rewrites of the same file's dynamic section, it turned out, is enough to corrupt something patchelf itself doesn't reliably preserve across repeated edits. The fix: compute the complete desired RPATH and interpreter for a file up front, as pure data, and apply both together in exactly one <code>patchelf</code> call.</p>
+
+      <div class="note"><b>Confirmed, not assumed:</b> every claim on this page was checked against a real, running binary — most of it inside an arm64 Linux container via Docker/Colima, since a produced ELF binary can only really be verified by executing it on Linux. The darwin path was checked the same way, natively, against 149 of 149 Homebrew formulas with real executables in the current index.</div>
+
+      <h2 id="loader">The one file that must never be touched</h2>
+      <p>Fixing that crash didn't fully explain it, and the real explanation turned out to be more specific than "too many rewrites" in general. A full gdb backtrace on the still-crashing case pointed at <code>_dl_start</code> — inside glibc's own dynamic loader, before it had even gotten as far as reading the program it was asked to run.</p>
+      <p>glibc's own loader is a uniquely fragile file. Unlike every other binary on the system, it has no interpreter of its own — it <em>is</em> the interpreter — and it relocates itself by hand at process startup, in code that assumes its own program headers exactly as the toolchain originally laid them out. Homebrew ships it with <em>no</em> RPATH at all, confirmed directly. The "add every dependency's directory unconditionally" fix, applied without exception, gave the loader an RPATH section it had never had — and inserting that new section was enough to break its self-relocation on the very next run. It has no legitimate use for an RPATH of its own anyway (it never resolves a dependency through one; every other binary's RPATH is what it resolves), so the fix was to exclude it from this pass entirely rather than try to compute a "safer" version of the same change.</p>
+
+      <h2 id="glibc">A dependency being present isn't the same as a file needing it</h2>
+      <p>One more bug came from the same root cause in a subtler form. hop injects glibc as an implicit dependency into every Homebrew-Linux artifact's closure, since some formulas' bottles are built against a newer glibc than a given host provides and genuinely need it. But not every formula that ends up with glibc in its dependency closure actually needs Homebrew's own glibc over the host's — some bottles are built with a completely ordinary, literal system interpreter path, proving they were never meant to use Homebrew's own loader at all.</p>
+      <p><code>ncdu</code> is exactly this case, confirmed by downloading its untouched bottle straight from <code>ghcr.io</code> and inspecting it directly: its interpreter is the plain system path, not a placeholder. Blanket-adding Homebrew's glibc directory to its RPATH anyway put two independently built, ABI-incompatible copies of <code>libc.so.6</code> in reach of the same process — which failed with an internal symbol-versioning error at startup, rather than the harmless unused search path an unnecessary RPATH entry usually is. The fix: only add glibc's directory unconditionally when a file's own interpreter is actually being repointed at Homebrew's loader — the same condition the old, pre-consolidation code used, restored rather than reinvented.</p>
+
+      <h2 id="limits">Where this genuinely can't reach</h2>
+      <p>Not everything a Homebrew bottle does is expressible as a placeholder token or a load-command entry, and a small number of cases are honestly out of reach for this mechanism, not merely unhandled yet:</p>
+      <ul>
+        <li><strong>Ruby's own VM bootstrap</strong> bakes a literal, non-placeholder absolute path directly into <code>libruby.dylib</code> — confirmed with <code>strings</code> on the extracted library. There's no token here to substitute; the path is simply wrong once relocated, so <code>ruby</code> and its one dependent, <code>lolcat</code>, are left out of the index rather than shipped broken.</li>
+        <li><strong>neovim's <code>lpeg</code> binding</strong> calls Lua's <code>require()</code>, which <code>dlopen()</code>s a literal <code>/home/linuxbrew/.linuxbrew/opt/lpeg/lib/liblpeg.so</code> baked into the compiled binary as a runtime string constant — not an ELF <code>NEEDED</code> entry or RPATH search, so <code>patchelf</code> has nothing to rewrite. This one happens to work on a real Homebrew install purely because Homebrew's official Linux prefix genuinely is that exact path.</li>
+        <li><strong>A handful of runtime libraries</strong> — <code>libstdc++</code>, <code>libgcc_s</code>, <code>libffi</code>, <code>libxml2</code>, <code>libpcap</code>, <code>libbz2</code>, <code>libexpat</code>, <code>libtiff</code>, <code>libldap</code>, <code>libgomp</code> among them — aren't declared as a dependency by the affected formulas' own Homebrew metadata either. A minimal machine without them fails the exact same way under real <code>brew install</code>; this isn't a gap in hop's relocation, it's a gap in what the bottle promises to provide.</li>
+      </ul>
+      <p>Python needed a mechanism beyond relocation entirely rather than falling into either category above: its own <code>sys.base_prefix</code> is baked in at build time the same way Ruby's is, but unlike Ruby, hop ships a working fix for it — a small wrapper script that sets <code>PYTHONHOME</code> (and restores the calling formula's own site-packages via <code>PYTHONPATH</code>) before handing off to the real interpreter binary, transparent to every existing reference to it.</p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap-wide">
+    <div class="foot-row">
+      <div class="brand" style="font-size:16px;"><span class="dot"></span>HopCLI</div>
+      <div class="foot-links">
+        <a href="index.html">Home</a>
+        <a href="docs.html">Docs</a>
+        <a href="https://github.com/samuelbanapour/hopcli">GitHub</a>
+      </div>
+      <span class="foot-note">ships as one binary, hop — named for the jump between generations</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var toc = document.querySelectorAll('.doc-toc a');
+  var sections = Array.prototype.map.call(toc, function(a){ return document.querySelector(a.getAttribute('href')); });
+  function onScroll(){
+    var y = window.scrollY + 100;
+    var active = 0;
+    sections.forEach(function(s, i){ if (s && s.offsetTop <= y) active = i; });
+    toc.forEach(function(a, i){ a.classList.toggle('active', i === active); });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){ if (entry.isIntersecting) { entry.target.classList.add('in-view'); io.unobserve(entry.target); } });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in-view'); });
+  }
+})();
+</script>
