@@ -1,8 +1,43 @@
 {
   "schema": 1,
   "source": "builtin",
-  "generated": "2026-09-13T04:11:53Z",
+  "generated": "2026-09-13T05:51:37Z",
   "recipes": [
+    {
+      "name": "acl",
+      "version": "2.4.0",
+      "description": "Commands for manipulating POSIX access control lists",
+      "homepage": "https://savannah.nongnu.org/projects/acl/",
+      "license": "GPL-2.0-or-later AND LGPL-2.1-or-later",
+      "keywords": [
+        "homebrew"
+      ],
+      "artifacts": {
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/acl/blobs/sha256:cf320c35f8f78b11ae1d7dfcf0dcc8e4f532755ecb13d346cffa363e5eef7f2b",
+          "sha256": "cf320c35f8f78b11ae1d7dfcf0dcc8e4f532755ecb13d346cffa363e5eef7f2b",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/acl:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "chacl",
+            "getfacl",
+            "setfacl"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/acl/blobs/sha256:48bae129ac5466a87580baa10d4c9fa6e371767b7d0d86380c25d6f642a4d64f",
+          "sha256": "48bae129ac5466a87580baa10d4c9fa6e371767b7d0d86380c25d6f642a4d64f",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/acl:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "chacl",
+            "getfacl",
+            "setfacl"
+          ]
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` acl would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
     {
       "name": "age",
       "version": "1.3.2",
@@ -82,6 +117,37 @@
         }
       },
       "caveats": "This is a root filesystem tarball, not a command. Find it with:\n\n    hop info alpine-minirootfs\n\nExtract it into a chroot, or `docker import` it as a base image."
+    },
+    {
+      "name": "alsa-lib",
+      "version": "1.2.16.1_1",
+      "description": "Provides audio and MIDI functionality to the Linux operating system",
+      "homepage": "https://www.alsa-project.org/",
+      "license": "LGPL-2.1-or-later AND GPL-2.0-or-later",
+      "keywords": [
+        "homebrew"
+      ],
+      "artifacts": {
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/alsa-lib/blobs/sha256:2585ca003b5d398419bffad120e55d7b0429c0986e70bf03e7435329136013ac",
+          "sha256": "2585ca003b5d398419bffad120e55d7b0429c0986e70bf03e7435329136013ac",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/alsa-lib:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "aserver"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/alsa-lib/blobs/sha256:b1ae855e221183539e46de1223bd314cada603de3e8d4b34737774cbe272d0d1",
+          "sha256": "b1ae855e221183539e46de1223bd314cada603de3e8d4b34737774cbe272d0d1",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/alsa-lib:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "aserver"
+          ]
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` alsa-lib would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
     },
     {
       "name": "aom",
@@ -256,6 +322,34 @@
         }
       },
       "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` asdf would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
+      "name": "attr",
+      "version": "2.6.0",
+      "description": "Manipulate filesystem extended attributes (library — pulled in only as a dependency; nothing on PATH)",
+      "homepage": "https://savannah.nongnu.org/projects/attr",
+      "license": "GPL-2.0-or-later",
+      "keywords": [
+        "homebrew",
+        "library"
+      ],
+      "artifacts": {
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/attr/blobs/sha256:fbb8da02d151687a0ff9c27add3f0600dad7717b44e03160800afbcf0ea9f291",
+          "sha256": "fbb8da02d151687a0ff9c27add3f0600dad7717b44e03160800afbcf0ea9f291",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/attr:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/attr/blobs/sha256:6cf6153b6390b7efb17d220b68e7ca26afab6778d4db7c7fc1da71029198df5c",
+          "sha256": "6cf6153b6390b7efb17d220b68e7ca26afab6778d4db7c7fc1da71029198df5c",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/attr:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` attr would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
     },
     {
       "name": "autoconf",
@@ -480,7 +574,8 @@
       "deps": [
         "icu4c@78",
         "xz",
-        "zstd"
+        "zstd",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -874,7 +969,8 @@
         "libxrender",
         "lzo",
         "pixman",
-        "gettext"
+        "gettext",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -1157,7 +1253,9 @@
         "homebrew"
       ],
       "deps": [
-        "gmp"
+        "gmp",
+        "acl",
+        "attr"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -1993,7 +2091,9 @@
         "libpsl",
         "libssh2",
         "openssl@3",
-        "zstd"
+        "zstd",
+        "libidn2",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-arm64": {
@@ -2158,6 +2258,87 @@
       "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` dav1d would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
     },
     {
+      "name": "dbus",
+      "version": "1.16.2_1",
+      "description": "Message bus system, providing inter-application communication",
+      "homepage": "https://wiki.freedesktop.org/www/Software/dbus",
+      "license": "AFL-2.1 OR GPL-2.0-or-later",
+      "keywords": [
+        "homebrew"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/dbus/blobs/sha256:438a1da22c323246b958e0fbc63c5e7405dba77e9274809ebd73ab8c886a19d7",
+          "sha256": "438a1da22c323246b958e0fbc63c5e7405dba77e9274809ebd73ab8c886a19d7",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/dbus:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "dbus-cleanup-sockets",
+            "dbus-daemon",
+            "dbus-launch",
+            "dbus-monitor",
+            "dbus-run-session",
+            "dbus-send",
+            "dbus-test-tool",
+            "dbus-update-activation-environment",
+            "dbus-uuidgen"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/dbus/blobs/sha256:a5c1ed4bc84b205b8d161905108ce307b76376037d07d0ce9a6377e7f13d6c38",
+          "sha256": "a5c1ed4bc84b205b8d161905108ce307b76376037d07d0ce9a6377e7f13d6c38",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/dbus:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "dbus-cleanup-sockets",
+            "dbus-daemon",
+            "dbus-launch",
+            "dbus-monitor",
+            "dbus-run-session",
+            "dbus-send",
+            "dbus-test-tool",
+            "dbus-update-activation-environment",
+            "dbus-uuidgen"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/dbus/blobs/sha256:42841a5373f596cbccd52b4cf3eae4f3ec6a853309b14e36e869a7030fabd21a",
+          "sha256": "42841a5373f596cbccd52b4cf3eae4f3ec6a853309b14e36e869a7030fabd21a",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/dbus:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "dbus-cleanup-sockets",
+            "dbus-daemon",
+            "dbus-launch",
+            "dbus-monitor",
+            "dbus-run-session",
+            "dbus-send",
+            "dbus-test-tool",
+            "dbus-update-activation-environment",
+            "dbus-uuidgen"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/dbus/blobs/sha256:f636ed77fc07ab232ec75012b8b5a69cee10f8f239d48b1d5622baa83d9d9d7e",
+          "sha256": "f636ed77fc07ab232ec75012b8b5a69cee10f8f239d48b1d5622baa83d9d9d7e",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/dbus:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "dbus-cleanup-sockets",
+            "dbus-daemon",
+            "dbus-launch",
+            "dbus-monitor",
+            "dbus-run-session",
+            "dbus-send",
+            "dbus-test-tool",
+            "dbus-update-activation-environment",
+            "dbus-uuidgen"
+          ]
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` dbus would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
       "name": "debian-cloud",
       "version": "12",
       "description": "Debian 12 (bookworm) generic cloud image (qcow2), for qemu, cloud-init and VM provisioning",
@@ -2242,7 +2423,8 @@
       ],
       "deps": [
         "little-cms2",
-        "sqlite"
+        "sqlite",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -2903,7 +3085,9 @@
         "glog",
         "openssl@3",
         "wangle",
-        "xxhash"
+        "xxhash",
+        "boost",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -3045,7 +3229,10 @@
         "svt-av1",
         "x264",
         "x265",
-        "xz"
+        "xz",
+        "alsa-lib",
+        "libxcb",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -3401,7 +3588,8 @@
         "glog",
         "libsodium",
         "openssl@3",
-        "zstd"
+        "zstd",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -3434,6 +3622,62 @@
         }
       },
       "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` fizz would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
+      "name": "flac",
+      "version": "1.5.0",
+      "description": "Free lossless audio codec",
+      "homepage": "https://xiph.org/flac/",
+      "license": "BSD-3-Clause AND GPL-2.0-or-later AND ISC AND LGPL-2.0-or-later AND LGPL-2.1-or-later AND LicenseRef-Homebrew-public-domain AND (GPL-2.0-or-later OR LGPL-2.1-or-later)",
+      "keywords": [
+        "homebrew"
+      ],
+      "deps": [
+        "libogg"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/flac/blobs/sha256:8b3a61d7bedcef1e927057d3d7ef21b1ae69fddfb6a462b98def7f57e306a6a4",
+          "sha256": "8b3a61d7bedcef1e927057d3d7ef21b1ae69fddfb6a462b98def7f57e306a6a4",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/flac:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "flac",
+            "metaflac"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/flac/blobs/sha256:ac05c8b3d7ed7b444cdd5b4a3d3dfbe841d63ac35da6c8a1a51d673a6eddda48",
+          "sha256": "ac05c8b3d7ed7b444cdd5b4a3d3dfbe841d63ac35da6c8a1a51d673a6eddda48",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/flac:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "flac",
+            "metaflac"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/flac/blobs/sha256:85f5cec1705ffb8d93fb9abbb0b7b0f197d61633d8e0de2a29de825526790006",
+          "sha256": "85f5cec1705ffb8d93fb9abbb0b7b0f197d61633d8e0de2a29de825526790006",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/flac:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "flac",
+            "metaflac"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/flac/blobs/sha256:4e19e26751f4f5c93122102114d7954329b2b1223ada59e8d92afd350a56702b",
+          "sha256": "4e19e26751f4f5c93122102114d7954329b2b1223ada59e8d92afd350a56702b",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/flac:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "flac",
+            "metaflac"
+          ]
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` flac would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
     },
     {
       "name": "flyctl",
@@ -3537,7 +3781,8 @@
         "openssl@3",
         "snappy",
         "xz",
-        "zstd"
+        "zstd",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -3712,7 +3957,8 @@
         "homebrew"
       ],
       "deps": [
-        "libpng"
+        "libpng",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -4160,7 +4406,8 @@
         "jpeg-turbo",
         "libpng",
         "libtiff",
-        "gettext"
+        "gettext",
+        "shared-mime-info"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -4225,7 +4472,8 @@
       ],
       "deps": [
         "json-c",
-        "libunistring"
+        "libunistring",
+        "acl"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -4479,7 +4727,8 @@
         "libtiff",
         "little-cms2",
         "openjpeg",
-        "tesseract"
+        "tesseract",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-arm64": {
@@ -4684,7 +4933,9 @@
       ],
       "deps": [
         "pcre2",
-        "gettext"
+        "gettext",
+        "openssl@3",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -4957,7 +5208,10 @@
       ],
       "deps": [
         "pcre2",
-        "gettext"
+        "gettext",
+        "dbus",
+        "util-linux",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -5066,6 +5320,85 @@
         }
       },
       "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` glib would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
+      "name": "glibc",
+      "version": "2.39_1",
+      "description": "GNU C Library (library — pulled in only as a dependency; nothing on PATH)",
+      "homepage": "https://www.gnu.org/software/libc/",
+      "license": "GPL-2.0-or-later AND LGPL-2.1-or-later",
+      "keywords": [
+        "homebrew",
+        "library"
+      ],
+      "deps": [
+        "linux-headers@6.8"
+      ],
+      "artifacts": {
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/glibc/blobs/sha256:2fe24afa0fd4034a66340b61fbe952ec7628d5eb30358191730c9ba2b6a1d421",
+          "sha256": "2fe24afa0fd4034a66340b61fbe952ec7628d5eb30358191730c9ba2b6a1d421",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/glibc:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "gencat",
+            "getconf",
+            "getent",
+            "iconv",
+            "iconvconfig",
+            "ld.so",
+            "ldconfig",
+            "ldd",
+            "locale",
+            "localedef",
+            "makedb",
+            "mtrace",
+            "nscd",
+            "pcprofiledump",
+            "pldd",
+            "sln",
+            "sotruss",
+            "sprof",
+            "tzselect",
+            "xtrace",
+            "zdump",
+            "zic"
+          ],
+          "no_executables": true
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/glibc/blobs/sha256:01a46dbd217ab6379da50f9285da81ebaf0928c3457fbb04542b745bc80cb27f",
+          "sha256": "01a46dbd217ab6379da50f9285da81ebaf0928c3457fbb04542b745bc80cb27f",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/glibc:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "gencat",
+            "getconf",
+            "getent",
+            "iconv",
+            "iconvconfig",
+            "ld.so",
+            "ldconfig",
+            "ldd",
+            "locale",
+            "localedef",
+            "makedb",
+            "mtrace",
+            "nscd",
+            "pcprofiledump",
+            "pldd",
+            "sln",
+            "sotruss",
+            "sprof",
+            "tzselect",
+            "xtrace",
+            "zdump",
+            "zic"
+          ],
+          "no_executables": true
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` glibc would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
     },
     {
       "name": "glog",
@@ -5253,7 +5586,8 @@
         "npth",
         "pinentry",
         "readline",
-        "gettext"
+        "gettext",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-arm64": {
@@ -5539,7 +5873,8 @@
         "freetype",
         "gdk-pixbuf",
         "gettext",
-        "harfbuzz"
+        "harfbuzz",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-arm64": {
@@ -5979,7 +6314,8 @@
         "glib",
         "graphite2",
         "icu4c@78",
-        "libpng"
+        "libpng",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -6141,7 +6477,8 @@
         "homebrew"
       ],
       "deps": [
-        "ncurses"
+        "ncurses",
+        "lm-sensors"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -6416,7 +6753,8 @@
         "libtool",
         "little-cms2",
         "webp",
-        "xz"
+        "xz",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-arm64": {
@@ -6766,6 +7104,9 @@
       "license": "MIT",
       "keywords": [
         "homebrew"
+      ],
+      "deps": [
+        "libxcb"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -7234,7 +7575,8 @@
         "libpng",
         "libtiff",
         "openjpeg",
-        "webp"
+        "webp",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -7363,7 +7705,8 @@
         "libb2",
         "lz4",
         "xz",
-        "zstd"
+        "zstd",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -7482,7 +7825,8 @@
         "aom",
         "dav1d",
         "jpeg-turbo",
-        "libpng"
+        "libpng",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -7573,6 +7917,43 @@
         }
       },
       "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` libb2 would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
+      "name": "libcap",
+      "version": "2.78",
+      "description": "User-space interfaces to POSIX 1003.1e capabilities",
+      "homepage": "https://sites.google.com/site/fullycapable/",
+      "license": "BSD-3-Clause AND GPL-2.0-or-later",
+      "keywords": [
+        "homebrew"
+      ],
+      "artifacts": {
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libcap/blobs/sha256:18ad05f305a2ce9c296a0651d06a475788c435e10aec75924838d40fc67c516b",
+          "sha256": "18ad05f305a2ce9c296a0651d06a475788c435e10aec75924838d40fc67c516b",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libcap:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "capsh",
+            "getcap",
+            "getpcaps",
+            "setcap"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libcap/blobs/sha256:ace490a7344980dcb006d0f32699648006b8fdfd5ac51de04c6106d142ef467e",
+          "sha256": "ace490a7344980dcb006d0f32699648006b8fdfd5ac51de04c6106d142ef467e",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libcap:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "capsh",
+            "getcap",
+            "getpcaps",
+            "setcap"
+          ]
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` libcap would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
     },
     {
       "name": "libdatrie",
@@ -8228,6 +8609,48 @@
       "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` libngtcp2 would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
     },
     {
+      "name": "libogg",
+      "version": "1.3.6",
+      "description": "Ogg Bitstream Library (library — pulled in only as a dependency; nothing on PATH)",
+      "homepage": "https://www.xiph.org/ogg/",
+      "license": "BSD-3-Clause",
+      "keywords": [
+        "homebrew",
+        "library"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libogg/blobs/sha256:7a0ea60e18a7c1da00972c28055638f1ddd1335f3be74821cb9df40dab680f7b",
+          "sha256": "7a0ea60e18a7c1da00972c28055638f1ddd1335f3be74821cb9df40dab680f7b",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libogg:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "darwin-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libogg/blobs/sha256:167bcd43f2c162a64d0a29f2f125c491da12632875859652763fbf5a8a0ea014",
+          "sha256": "167bcd43f2c162a64d0a29f2f125c491da12632875859652763fbf5a8a0ea014",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libogg:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libogg/blobs/sha256:e4fb064699caad0097ce135c7212022d1dc230424fb3b63c379731ab44ea8e42",
+          "sha256": "e4fb064699caad0097ce135c7212022d1dc230424fb3b63c379731ab44ea8e42",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libogg:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libogg/blobs/sha256:7262ddbb97a7421a59bc2cc3bc1574bbb6a440ec6d825a0b5794c79eb89adc8b",
+          "sha256": "7262ddbb97a7421a59bc2cc3bc1574bbb6a440ec6d825a0b5794c79eb89adc8b",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libogg:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` libogg would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
       "name": "libpng",
       "version": "1.6.58",
       "description": "Library for manipulating PNG images",
@@ -8235,6 +8658,9 @@
       "license": "libpng-2.0",
       "keywords": [
         "homebrew"
+      ],
+      "deps": [
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -8296,6 +8722,10 @@
       "license": "MIT",
       "keywords": [
         "homebrew"
+      ],
+      "deps": [
+        "libidn2",
+        "libunistring"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -8393,6 +8823,144 @@
       "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` librsvg would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
     },
     {
+      "name": "libsecret",
+      "version": "0.21.8.2",
+      "description": "Library for storing/retrieving passwords and other secrets",
+      "homepage": "https://wiki.gnome.org/Projects/Libsecret",
+      "license": "LGPL-2.1-or-later",
+      "keywords": [
+        "homebrew"
+      ],
+      "deps": [
+        "glib",
+        "libgcrypt",
+        "gettext"
+      ],
+      "artifacts": {
+        "darwin-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libsecret/blobs/sha256:41f3810a797fd4fcf98d87551060a39367d9c3c74eb0496ca5bd01161bf4fe44",
+          "sha256": "41f3810a797fd4fcf98d87551060a39367d9c3c74eb0496ca5bd01161bf4fe44",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libsecret:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "secret-tool"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libsecret/blobs/sha256:c75303f08d3e9426547700ce8d49594f1955fa487786b855fa8ba9cc270fbffe",
+          "sha256": "c75303f08d3e9426547700ce8d49594f1955fa487786b855fa8ba9cc270fbffe",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libsecret:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "secret-tool"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libsecret/blobs/sha256:9f1c5f67559393f1a707e7cc5dd07c33f91f6186b0bf447aa3ac5e4c18bae032",
+          "sha256": "9f1c5f67559393f1a707e7cc5dd07c33f91f6186b0bf447aa3ac5e4c18bae032",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libsecret:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "secret-tool"
+          ]
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` libsecret would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
+      "name": "libsndfile",
+      "version": "1.2.2_1",
+      "description": "C library for files containing sampled sound",
+      "homepage": "https://libsndfile.github.io/libsndfile/",
+      "license": "LGPL-2.1-or-later",
+      "keywords": [
+        "homebrew"
+      ],
+      "deps": [
+        "flac",
+        "lame",
+        "libogg",
+        "libvorbis",
+        "mpg123",
+        "opus"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libsndfile/blobs/sha256:ea6ba9a5dc801a8b736ad39a5e417af93c5d0514ea5a741e92da88d9327a7988",
+          "sha256": "ea6ba9a5dc801a8b736ad39a5e417af93c5d0514ea5a741e92da88d9327a7988",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libsndfile:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "sndfile-cmp",
+            "sndfile-concat",
+            "sndfile-convert",
+            "sndfile-deinterleave",
+            "sndfile-info",
+            "sndfile-interleave",
+            "sndfile-metadata-get",
+            "sndfile-metadata-set",
+            "sndfile-play",
+            "sndfile-salvage"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libsndfile/blobs/sha256:aaaf26fac338c877a1c0bb30062d320e307f858f399abea332af93fe0aae4421",
+          "sha256": "aaaf26fac338c877a1c0bb30062d320e307f858f399abea332af93fe0aae4421",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libsndfile:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "sndfile-cmp",
+            "sndfile-concat",
+            "sndfile-convert",
+            "sndfile-deinterleave",
+            "sndfile-info",
+            "sndfile-interleave",
+            "sndfile-metadata-get",
+            "sndfile-metadata-set",
+            "sndfile-play",
+            "sndfile-salvage"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libsndfile/blobs/sha256:b40061adc0ea00923ea38c2c472eccc172e702398c2ddd3c705bf0dd6b16cbed",
+          "sha256": "b40061adc0ea00923ea38c2c472eccc172e702398c2ddd3c705bf0dd6b16cbed",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libsndfile:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "sndfile-cmp",
+            "sndfile-concat",
+            "sndfile-convert",
+            "sndfile-deinterleave",
+            "sndfile-info",
+            "sndfile-interleave",
+            "sndfile-metadata-get",
+            "sndfile-metadata-set",
+            "sndfile-play",
+            "sndfile-salvage"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libsndfile/blobs/sha256:ba22269018452e319778db8f9dfff4f0ddbab0570bd9f44412cf8ea8cccc517a",
+          "sha256": "ba22269018452e319778db8f9dfff4f0ddbab0570bd9f44412cf8ea8cccc517a",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libsndfile:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "sndfile-cmp",
+            "sndfile-concat",
+            "sndfile-convert",
+            "sndfile-deinterleave",
+            "sndfile-info",
+            "sndfile-interleave",
+            "sndfile-metadata-get",
+            "sndfile-metadata-set",
+            "sndfile-play",
+            "sndfile-salvage"
+          ]
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` libsndfile would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
       "name": "libsodium",
       "version": "1.0.22",
       "description": "NaCl networking and cryptography library (library — pulled in only as a dependency; nothing on PATH)",
@@ -8435,6 +9003,48 @@
       "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` libsodium would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
     },
     {
+      "name": "libsoxr",
+      "version": "0.1.3",
+      "description": "High quality, one-dimensional sample-rate conversion library (library — pulled in only as a dependency; nothing on PATH)",
+      "homepage": "https://sourceforge.net/projects/soxr/",
+      "license": "LGPL-2.1-or-later",
+      "keywords": [
+        "homebrew",
+        "library"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libsoxr/blobs/sha256:00d2a5318828b9120aaa460510b5d23edee43f1e5db04cf74ba12a3908642d3c",
+          "sha256": "00d2a5318828b9120aaa460510b5d23edee43f1e5db04cf74ba12a3908642d3c",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libsoxr:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "darwin-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libsoxr/blobs/sha256:75cbef5fc1102154ba29c48795117b641c37d90f90b4d010d72766a4408cde75",
+          "sha256": "75cbef5fc1102154ba29c48795117b641c37d90f90b4d010d72766a4408cde75",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libsoxr:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libsoxr/blobs/sha256:1753c0562a6494e1437dc79db88d4672bb4b2e2a2b9134ac85952b555baf8559",
+          "sha256": "1753c0562a6494e1437dc79db88d4672bb4b2e2a2b9134ac85952b555baf8559",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libsoxr:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libsoxr/blobs/sha256:41860cff8cb688bff751be3d79c39e2dff0c0be2e2196b700386aca27b65769b",
+          "sha256": "41860cff8cb688bff751be3d79c39e2dff0c0be2e2196b700386aca27b65769b",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libsoxr:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` libsoxr would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
       "name": "libssh2",
       "version": "1.11.1_4",
       "description": "C library implementing the SSH2 protocol (library — pulled in only as a dependency; nothing on PATH)",
@@ -8445,7 +9055,8 @@
         "library"
       ],
       "deps": [
-        "openssl@3"
+        "openssl@3",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -8594,7 +9205,8 @@
         "jpeg-turbo",
         "webp",
         "xz",
-        "zstd"
+        "zstd",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-arm64": {
@@ -8789,6 +9401,38 @@
       "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` libunistring would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
     },
     {
+      "name": "libunwind",
+      "version": "1.8.3",
+      "description": "C API for determining the call-chain of a program (library — pulled in only as a dependency; nothing on PATH)",
+      "homepage": "https://www.nongnu.org/libunwind/",
+      "license": "MIT",
+      "keywords": [
+        "homebrew",
+        "library"
+      ],
+      "deps": [
+        "xz",
+        "zlib-ng-compat"
+      ],
+      "artifacts": {
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libunwind/blobs/sha256:87c11a5130ea0663cb9e9b007d734470522501d25591b2a7f58034376f7aa3bb",
+          "sha256": "87c11a5130ea0663cb9e9b007d734470522501d25591b2a7f58034376f7aa3bb",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libunwind:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libunwind/blobs/sha256:c36c1cbc4e8cc6072c609ecc76f2fd8546dad4e1cebe8d41cd69984dcba2babb",
+          "sha256": "c36c1cbc4e8cc6072c609ecc76f2fd8546dad4e1cebe8d41cd69984dcba2babb",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libunwind:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` libunwind would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
       "name": "libusb",
       "version": "1.0.30",
       "description": "Library for USB device access (library — pulled in only as a dependency; nothing on PATH)",
@@ -8797,6 +9441,9 @@
       "keywords": [
         "homebrew",
         "library"
+      ],
+      "deps": [
+        "systemd"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -8920,6 +9567,51 @@
         }
       },
       "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` libvmaf would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
+      "name": "libvorbis",
+      "version": "1.3.7",
+      "description": "Vorbis general audio compression codec (library — pulled in only as a dependency; nothing on PATH)",
+      "homepage": "https://xiph.org/vorbis/",
+      "license": "BSD-3-Clause",
+      "keywords": [
+        "homebrew",
+        "library"
+      ],
+      "deps": [
+        "libogg"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libvorbis/blobs/sha256:94aafb164cf8490d1d7c1cbe32695995c592c63a8cafe8621e793819079d7f46",
+          "sha256": "94aafb164cf8490d1d7c1cbe32695995c592c63a8cafe8621e793819079d7f46",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libvorbis:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "darwin-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libvorbis/blobs/sha256:d68d75f926e7734a08aea51e75c69139f09dbedc8c5b9eb5f580831e56ceff4a",
+          "sha256": "d68d75f926e7734a08aea51e75c69139f09dbedc8c5b9eb5f580831e56ceff4a",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libvorbis:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libvorbis/blobs/sha256:41daf79ce53910061acbe1f63ca95f53b4149d3ebb2b97c2bb4d31845820f219",
+          "sha256": "41daf79ce53910061acbe1f63ca95f53b4149d3ebb2b97c2bb4d31845820f219",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libvorbis:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libvorbis/blobs/sha256:f3dac34ab6697f236712689aede48c8519f66cb6f3c69d6fb98169ed546ba198",
+          "sha256": "f3dac34ab6697f236712689aede48c8519f66cb6f3c69d6fb98169ed546ba198",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libvorbis:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` libvorbis would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
     },
     {
       "name": "libvpx",
@@ -9101,6 +9793,95 @@
       "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` libxcb would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
     },
     {
+      "name": "libxcrypt",
+      "version": "4.5.2",
+      "description": "Extended crypt library for descrypt, md5crypt, bcrypt, and others (library — pulled in only as a dependency; nothing on PATH)",
+      "homepage": "https://github.com/besser82/libxcrypt",
+      "license": "LGPL-2.1-or-later",
+      "keywords": [
+        "homebrew",
+        "library"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libxcrypt/blobs/sha256:909d2e42bae6c62c05e5c52f6f45aa3da6a4c668c6a88f90a0cc6ebb6794f212",
+          "sha256": "909d2e42bae6c62c05e5c52f6f45aa3da6a4c668c6a88f90a0cc6ebb6794f212",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libxcrypt:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "darwin-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libxcrypt/blobs/sha256:35a824fc898063ae807823d2c6d9c9709bf9215f2b65c9437e66c42f79f2afd9",
+          "sha256": "35a824fc898063ae807823d2c6d9c9709bf9215f2b65c9437e66c42f79f2afd9",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libxcrypt:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libxcrypt/blobs/sha256:9319e1e70e1e3e476e421956baaeebc0d7be9c3030897844a3c348fe4dd116a5",
+          "sha256": "9319e1e70e1e3e476e421956baaeebc0d7be9c3030897844a3c348fe4dd116a5",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libxcrypt:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libxcrypt/blobs/sha256:591376dcb066e3abf120b46895aabe9409aadf8f9577bd2672e52524f05a1952",
+          "sha256": "591376dcb066e3abf120b46895aabe9409aadf8f9577bd2672e52524f05a1952",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libxcrypt:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` libxcrypt would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
+      "name": "libxcursor",
+      "version": "1.2.3",
+      "description": "X.Org: X Window System Cursor management library (library — pulled in only as a dependency; nothing on PATH)",
+      "homepage": "https://www.x.org/",
+      "license": "MIT",
+      "keywords": [
+        "homebrew",
+        "library"
+      ],
+      "deps": [
+        "libx11",
+        "libxfixes",
+        "libxrender"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libxcursor/blobs/sha256:9a063644b479ef0269bb01a8faa79eaab44cf159ffb4cd30d399beea2d5bf459",
+          "sha256": "9a063644b479ef0269bb01a8faa79eaab44cf159ffb4cd30d399beea2d5bf459",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libxcursor:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "darwin-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libxcursor/blobs/sha256:12839a10118eb92f0db97f4561d6a26847a10c1efdfeb05930278c69c08f43c7",
+          "sha256": "12839a10118eb92f0db97f4561d6a26847a10c1efdfeb05930278c69c08f43c7",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libxcursor:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libxcursor/blobs/sha256:02e5f01e4940638fbcce577f05ac3bc57f87bf272959e286a323f6fe3c2fc86d",
+          "sha256": "02e5f01e4940638fbcce577f05ac3bc57f87bf272959e286a323f6fe3c2fc86d",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libxcursor:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libxcursor/blobs/sha256:a2556c55f893b654072a287ea7ad7c5261beaf6cf3cd6b2c5feabc4c7b4a70d6",
+          "sha256": "a2556c55f893b654072a287ea7ad7c5261beaf6cf3cd6b2c5feabc4c7b4a70d6",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libxcursor:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` libxcursor would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
       "name": "libxdmcp",
       "version": "1.1.5",
       "description": "X.Org: X Display Manager Control Protocol library (library — pulled in only as a dependency; nothing on PATH)",
@@ -9192,6 +9973,148 @@
       "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` libxext would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
     },
     {
+      "name": "libxfixes",
+      "version": "6.0.2",
+      "description": "X.Org: Header files for the XFIXES extension (library — pulled in only as a dependency; nothing on PATH)",
+      "homepage": "https://www.x.org/",
+      "license": "MIT",
+      "keywords": [
+        "homebrew",
+        "library"
+      ],
+      "deps": [
+        "libx11",
+        "xorgproto"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libxfixes/blobs/sha256:6a4994ef8113aee2ac68b5de54b64b9b9496eafb6c30bfd9e17ed7c268e4d4d2",
+          "sha256": "6a4994ef8113aee2ac68b5de54b64b9b9496eafb6c30bfd9e17ed7c268e4d4d2",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libxfixes:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "darwin-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libxfixes/blobs/sha256:6a31c00680abb486f7272cc3024c782f02c3026c7d271ffae13ec92b89c9145e",
+          "sha256": "6a31c00680abb486f7272cc3024c782f02c3026c7d271ffae13ec92b89c9145e",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libxfixes:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libxfixes/blobs/sha256:6f33e8a88f01a7afb5a784155e4c81051fea75570635b89ddb4b3b48d2825acf",
+          "sha256": "6f33e8a88f01a7afb5a784155e4c81051fea75570635b89ddb4b3b48d2825acf",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libxfixes:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libxfixes/blobs/sha256:bd877255bd00d407fa7b6652d9d34abcbedff76a2c192a32e63c94add2f0b8c2",
+          "sha256": "bd877255bd00d407fa7b6652d9d34abcbedff76a2c192a32e63c94add2f0b8c2",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libxfixes:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` libxfixes would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
+      "name": "libxi",
+      "version": "1.8.3",
+      "description": "X.Org: Library for the X Input Extension (library — pulled in only as a dependency; nothing on PATH)",
+      "homepage": "https://www.x.org/",
+      "license": "MIT",
+      "keywords": [
+        "homebrew",
+        "library"
+      ],
+      "deps": [
+        "libx11",
+        "libxext",
+        "libxfixes",
+        "xorgproto"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libxi/blobs/sha256:156699bb0a014109ede563b0e056d977e00c12ee8526b051910664385dd6d522",
+          "sha256": "156699bb0a014109ede563b0e056d977e00c12ee8526b051910664385dd6d522",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libxi:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "darwin-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libxi/blobs/sha256:69bb8b5378155130ebbe41a3c54ea69f6acdc9065483556a5a81550bd716fdcb",
+          "sha256": "69bb8b5378155130ebbe41a3c54ea69f6acdc9065483556a5a81550bd716fdcb",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libxi:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libxi/blobs/sha256:5128c5f8ad475f0115e02bd2273029d93ef90ab63dfc0bfd414cf2eb01072c89",
+          "sha256": "5128c5f8ad475f0115e02bd2273029d93ef90ab63dfc0bfd414cf2eb01072c89",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libxi:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libxi/blobs/sha256:9eec879337fd7d374842691b2662e96c885a5b70e1d3b366ca2b139e14eb1b7f",
+          "sha256": "9eec879337fd7d374842691b2662e96c885a5b70e1d3b366ca2b139e14eb1b7f",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libxi:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` libxi would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
+      "name": "libxrandr",
+      "version": "1.5.5",
+      "description": "X.Org: X Resize, Rotate and Reflection extension library (library — pulled in only as a dependency; nothing on PATH)",
+      "homepage": "https://www.x.org/",
+      "license": "MIT",
+      "keywords": [
+        "homebrew",
+        "library"
+      ],
+      "deps": [
+        "libx11",
+        "libxext",
+        "libxrender",
+        "xorgproto"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libxrandr/blobs/sha256:03452b3eb7237aca7975992b9178b3c3dfeffd73693775ebf674cb95a3703392",
+          "sha256": "03452b3eb7237aca7975992b9178b3c3dfeffd73693775ebf674cb95a3703392",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libxrandr:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "darwin-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libxrandr/blobs/sha256:22e601cc0469ba07ed2979bdddb5db69834500c660a2b3875d53a03f27ccb478",
+          "sha256": "22e601cc0469ba07ed2979bdddb5db69834500c660a2b3875d53a03f27ccb478",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libxrandr:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libxrandr/blobs/sha256:bed6ab672a51a09e7b6da5d5d824dba33704ce745889d4eebf4917aa009a3b02",
+          "sha256": "bed6ab672a51a09e7b6da5d5d824dba33704ce745889d4eebf4917aa009a3b02",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libxrandr:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libxrandr/blobs/sha256:f2a61886e6c65894d681629c4117d61f4566fcc1955315008bc53f21a1b667b4",
+          "sha256": "f2a61886e6c65894d681629c4117d61f4566fcc1955315008bc53f21a1b667b4",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libxrandr:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` libxrandr would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
       "name": "libxrender",
       "version": "0.9.12",
       "description": "X.Org: Library for the Render Extension to the X11 protocol (library — pulled in only as a dependency; nothing on PATH)",
@@ -9238,6 +10161,53 @@
       "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` libxrender would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
     },
     {
+      "name": "libxscrnsaver",
+      "version": "1.2.5",
+      "description": "X.Org: X11 Screen Saver extension client library (library — pulled in only as a dependency; nothing on PATH)",
+      "homepage": "https://www.x.org/",
+      "license": "MIT",
+      "keywords": [
+        "homebrew",
+        "library"
+      ],
+      "deps": [
+        "libx11",
+        "libxext",
+        "xorgproto"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libxscrnsaver/blobs/sha256:c28763bc9642f615b6aa7864a720dc4b1c6a66875cd23d984c7df896dd515837",
+          "sha256": "c28763bc9642f615b6aa7864a720dc4b1c6a66875cd23d984c7df896dd515837",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libxscrnsaver:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "darwin-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libxscrnsaver/blobs/sha256:f95fd53831c3fca39f3a8290b9fd46c4e2f166fd537b306b8201749c57f0290d",
+          "sha256": "f95fd53831c3fca39f3a8290b9fd46c4e2f166fd537b306b8201749c57f0290d",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libxscrnsaver:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libxscrnsaver/blobs/sha256:592204a7c4aa929e51c550213e52af404a62e1e83075d48daa93e8efb9a88e36",
+          "sha256": "592204a7c4aa929e51c550213e52af404a62e1e83075d48daa93e8efb9a88e36",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libxscrnsaver:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/libxscrnsaver/blobs/sha256:0c1321270199c8288dc9a1b946e542fe379cc1ca0ee5132d956b7ce6a7c33d0a",
+          "sha256": "0c1321270199c8288dc9a1b946e542fe379cc1ca0ee5132d956b7ce6a7c33d0a",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/libxscrnsaver:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` libxscrnsaver would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
       "name": "libyaml",
       "version": "0.2.5",
       "description": "YAML Parser (library — pulled in only as a dependency; nothing on PATH)",
@@ -9278,6 +10248,34 @@
         }
       },
       "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` libyaml would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
+      "name": "linux-headers@6.8",
+      "version": "6.8.12_1",
+      "description": "Header files of the Linux kernel (library — pulled in only as a dependency; nothing on PATH)",
+      "homepage": "https://kernel.org/",
+      "license": "GPL-2.0-only WITH Linux-syscall-note",
+      "keywords": [
+        "homebrew",
+        "library"
+      ],
+      "artifacts": {
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/linux-headers/6.8/blobs/sha256:d7b3910ec915d32643f07f9ee8e863e63eece4c4f02090899af82482474cfb17",
+          "sha256": "d7b3910ec915d32643f07f9ee8e863e63eece4c4f02090899af82482474cfb17",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/linux-headers/6.8:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/linux-headers/6.8/blobs/sha256:9607ed3374bbe242f556083e33fa70895dde9d095740b8cdd77adeb4893d6ca9",
+          "sha256": "9607ed3374bbe242f556083e33fa70895dde9d095740b8cdd77adeb4893d6ca9",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/linux-headers/6.8:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` linux-headers@6.8 would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
     },
     {
       "name": "little-cms2",
@@ -9334,6 +10332,34 @@
         }
       },
       "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` little-cms2 would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
+      "name": "lm-sensors",
+      "version": "3.6.2",
+      "description": "Tools for monitoring the temperatures, voltages, and fans (library — pulled in only as a dependency; nothing on PATH)",
+      "homepage": "https://github.com/hramrach/lm-sensors",
+      "license": "GPL-2.0-or-later OR LGPL-2.1-or-later",
+      "keywords": [
+        "homebrew",
+        "library"
+      ],
+      "artifacts": {
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/lm-sensors/blobs/sha256:24aa125e2b8fe32e1600b64c0c5d8a32a575db9ef4dea9e17d31c6a02a48087f",
+          "sha256": "24aa125e2b8fe32e1600b64c0c5d8a32a575db9ef4dea9e17d31c6a02a48087f",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/lm-sensors:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/lm-sensors/blobs/sha256:05d1a0969a84d7ed3f9b95effe63bc9378452f2a1a1e367b8c8ef1efde275af9",
+          "sha256": "05d1a0969a84d7ed3f9b95effe63bc9378452f2a1a1e367b8c8ef1efde275af9",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/lm-sensors:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` lm-sensors would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
     },
     {
       "name": "lpeg",
@@ -10810,7 +11836,8 @@
         "jasper",
         "jpeg-turbo",
         "libpng",
-        "libtiff"
+        "libtiff",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-arm64": {
@@ -12118,7 +13145,8 @@
         "lua",
         "openssl@3",
         "pcre2",
-        "python@3.14"
+        "python@3.14",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -12502,6 +13530,49 @@
       "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` opus would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
     },
     {
+      "name": "orc",
+      "version": "0.4.44",
+      "description": "Oil Runtime Compiler (ORC)",
+      "homepage": "https://gstreamer.freedesktop.org/modules/orc.html",
+      "license": "BSD-2-Clause AND BSD-3-Clause",
+      "keywords": [
+        "homebrew"
+      ],
+      "artifacts": {
+        "darwin-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/orc/blobs/sha256:21bb6e15481ce8c8faf8214fe7cc2042a258fb09697e26249b733045d327b5df",
+          "sha256": "21bb6e15481ce8c8faf8214fe7cc2042a258fb09697e26249b733045d327b5df",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/orc:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "orc-bugreport",
+            "orcc"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/orc/blobs/sha256:6b14ed765346e7753fb5d6c5249addc0dcf27e128b279f4431ddd7f6f66eefbc",
+          "sha256": "6b14ed765346e7753fb5d6c5249addc0dcf27e128b279f4431ddd7f6f66eefbc",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/orc:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "orc-bugreport",
+            "orcc"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/orc/blobs/sha256:24687a69229796ddff114dffb92f800b37860622a48ba8379716363909ba3d46",
+          "sha256": "24687a69229796ddff114dffb92f800b37860622a48ba8379716363909ba3d46",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/orc:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "orc-bugreport",
+            "orcc"
+          ]
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` orc would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
       "name": "ouch",
       "version": "0.8.2",
       "description": "Painless compression and decompression for your terminal",
@@ -12606,7 +13677,8 @@
         "homebrew"
       ],
       "deps": [
-        "gmp"
+        "gmp",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-arm64": {
@@ -12866,6 +13938,9 @@
       "keywords": [
         "homebrew"
       ],
+      "deps": [
+        "zlib-ng-compat"
+      ],
       "artifacts": {
         "darwin-arm64": {
           "url": "https://ghcr.io/v2/homebrew/core/pcre2/blobs/sha256:0b27d55ce599c9f208dd0ecef2d4e081c32044cda68b53e81d3aad550a04a991",
@@ -12963,7 +14038,9 @@
       ],
       "deps": [
         "libassuan",
-        "libgpg-error"
+        "libgpg-error",
+        "glib",
+        "libsecret"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -13230,6 +14307,104 @@
       "caveats": "This is an installer ISO, not a command. Find it with:\n\n    hop info proxmox-ve\n\nBoot it with qemu, write it to a USB drive, or mount it directly on server\nhardware \u2014 Proxmox VE is a hypervisor, meant to be installed as the host OS."
     },
     {
+      "name": "pulseaudio",
+      "version": "17.0",
+      "description": "Sound system for POSIX OSes",
+      "homepage": "https://wiki.freedesktop.org/www/Software/PulseAudio/",
+      "license": "GPL-2.0-or-later AND LGPL-2.1-or-later AND BSD-3-Clause",
+      "keywords": [
+        "homebrew"
+      ],
+      "deps": [
+        "glib",
+        "libsndfile",
+        "libsoxr",
+        "libtool",
+        "openssl@3",
+        "orc",
+        "speexdsp",
+        "gettext",
+        "alsa-lib",
+        "dbus",
+        "libcap"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/pulseaudio/blobs/sha256:07c3d88ac76789dc1c94b6881a11ea02868a3e0023f3fd3e2760b95c5aef2161",
+          "sha256": "07c3d88ac76789dc1c94b6881a11ea02868a3e0023f3fd3e2760b95c5aef2161",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/pulseaudio:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "pa-info",
+            "pacat",
+            "pacmd",
+            "pactl",
+            "pamon",
+            "paplay",
+            "parec",
+            "parecord",
+            "pasuspender",
+            "pulseaudio"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/pulseaudio/blobs/sha256:188739c5b88a09cb24b1ee83fe4c7c95760c977249c102045ca4251c59408503",
+          "sha256": "188739c5b88a09cb24b1ee83fe4c7c95760c977249c102045ca4251c59408503",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/pulseaudio:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "pa-info",
+            "pacat",
+            "pacmd",
+            "pactl",
+            "pamon",
+            "paplay",
+            "parec",
+            "parecord",
+            "pasuspender",
+            "pulseaudio"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/pulseaudio/blobs/sha256:3e8c61fa5d337d64747fb305559f1a4821d75cecfd15dc59323450cde1816d29",
+          "sha256": "3e8c61fa5d337d64747fb305559f1a4821d75cecfd15dc59323450cde1816d29",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/pulseaudio:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "pa-info",
+            "pacat",
+            "pacmd",
+            "pactl",
+            "pamon",
+            "paplay",
+            "parec",
+            "parecord",
+            "pasuspender",
+            "pulseaudio"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/pulseaudio/blobs/sha256:2122e7fdeb6dfbd23c71b1454e5da23792857aa2b0e9a78db172ab6448891675",
+          "sha256": "2122e7fdeb6dfbd23c71b1454e5da23792857aa2b0e9a78db172ab6448891675",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/pulseaudio:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "pa-info",
+            "pacat",
+            "pacmd",
+            "pactl",
+            "pamon",
+            "paplay",
+            "parec",
+            "parecord",
+            "pasuspender",
+            "pulseaudio"
+          ]
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` pulseaudio would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
       "name": "pv",
       "version": "1.11.0",
       "description": "Monitor data's progress through a pipe",
@@ -13371,7 +14546,8 @@
         "autoconf",
         "openssl@3",
         "pkgconf",
-        "readline"
+        "readline",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-arm64": {
@@ -13427,7 +14603,8 @@
         "openssl@3",
         "sqlite",
         "xz",
-        "zstd"
+        "zstd",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -13964,6 +15141,16 @@
         "homebrew",
         "library"
       ],
+      "deps": [
+        "libx11",
+        "libxcursor",
+        "libxext",
+        "libxfixes",
+        "libxi",
+        "libxrandr",
+        "libxscrnsaver",
+        "pulseaudio"
+      ],
       "artifacts": {
         "darwin-arm64": {
           "url": "https://ghcr.io/v2/homebrew/core/sdl3/blobs/sha256:12a5b5c683352e8443f9374aa13c487aa435a85c21cc32167be6520704874a27",
@@ -13988,6 +15175,58 @@
         }
       },
       "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` sdl3 would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
+      "name": "shared-mime-info",
+      "version": "2.5.1",
+      "description": "Database of common MIME types",
+      "homepage": "https://wiki.freedesktop.org/www/Software/shared-mime-info",
+      "license": "GPL-2.0-only",
+      "keywords": [
+        "homebrew"
+      ],
+      "deps": [
+        "glib"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/shared-mime-info/blobs/sha256:c7951cc3967666ed9197cf8c5415cfd0846844b67d9c9daa061142b06f4af668",
+          "sha256": "c7951cc3967666ed9197cf8c5415cfd0846844b67d9c9daa061142b06f4af668",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/shared-mime-info:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "update-mime-database"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/shared-mime-info/blobs/sha256:0f296575eba0a479fdb7fe5ea9f6d048f57411c65aab6ab03d8a56b51c60f725",
+          "sha256": "0f296575eba0a479fdb7fe5ea9f6d048f57411c65aab6ab03d8a56b51c60f725",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/shared-mime-info:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "update-mime-database"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/shared-mime-info/blobs/sha256:0c437c9eff86b2dec2f79752de0690c1f037584bbcd008a888a845507edfa09f",
+          "sha256": "0c437c9eff86b2dec2f79752de0690c1f037584bbcd008a888a845507edfa09f",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/shared-mime-info:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "update-mime-database"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/shared-mime-info/blobs/sha256:9d05cc9cf16ef36f272d845e159d9064d8045aaad2b4dfd8d76311d008037a0b",
+          "sha256": "9d05cc9cf16ef36f272d845e159d9064d8045aaad2b4dfd8d76311d008037a0b",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/shared-mime-info:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "update-mime-database"
+          ]
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` shared-mime-info would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
     },
     {
       "name": "shellcheck",
@@ -14246,6 +15485,48 @@
       "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` snappy would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
     },
     {
+      "name": "speexdsp",
+      "version": "1.2.1",
+      "description": "Speex audio processing library (library — pulled in only as a dependency; nothing on PATH)",
+      "homepage": "https://speex.org/",
+      "license": "BSD-3-Clause",
+      "keywords": [
+        "homebrew",
+        "library"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/speexdsp/blobs/sha256:d36e29b66b65a4d81e246d825187877ef05f47325bf032948c8bc4cddb826613",
+          "sha256": "d36e29b66b65a4d81e246d825187877ef05f47325bf032948c8bc4cddb826613",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/speexdsp:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "darwin-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/speexdsp/blobs/sha256:a2320386798a6df29d57c7a166361c66ff17840ad8deca0b8d9b03c82822dc44",
+          "sha256": "a2320386798a6df29d57c7a166361c66ff17840ad8deca0b8d9b03c82822dc44",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/speexdsp:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/speexdsp/blobs/sha256:c417e96a3739f41fb59aca0ceba32fd45b07f79175d8eda837dd125159098453",
+          "sha256": "c417e96a3739f41fb59aca0ceba32fd45b07f79175d8eda837dd125159098453",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/speexdsp:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/speexdsp/blobs/sha256:e4f60d49f781e99446057cfcee58ac1ebc00f3d003d377a8615b662b56a5b9b3",
+          "sha256": "e4f60d49f781e99446057cfcee58ac1ebc00f3d003d377a8615b662b56a5b9b3",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/speexdsp:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` speexdsp would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
       "name": "sqlite",
       "version": "3.53.4",
       "description": "Command-line interface for SQLite",
@@ -14255,7 +15536,8 @@
         "homebrew"
       ],
       "deps": [
-        "readline"
+        "readline",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -14499,6 +15781,175 @@
       }
     },
     {
+      "name": "systemd",
+      "version": "261.3",
+      "description": "System and service manager",
+      "homepage": "https://systemd.io",
+      "license": "LGPL-2.1-or-later AND GPL-2.0-or-later AND CC0-1.0 AND LGPL-2.0-or-later AND MIT AND MIT-0 AND LicenseRef-Homebrew-public-domain AND (LGPL-2.0-or-later WITH Linux-syscall-note) AND (GPL-1.0-or-later WITH Linux-syscall-note) AND (GPL-2.0-or-later WITH Linux-syscall-note) AND (GPL-2.0-only WITH Linux-syscall-note) AND (BSD-3-Clause OR (GPL-2.0-only WITH Linux-syscall-note)) AND (MIT OR (GPL-2.0-only WITH Linux-syscall-note)) AND (MIT OR (GPL-2.0-or-later WITH Linux-syscall-note)) AND (GPL-2.0-only OR BSD-2-Clause)",
+      "keywords": [
+        "homebrew"
+      ],
+      "deps": [
+        "glib",
+        "libcap",
+        "libxcrypt",
+        "lz4",
+        "openssl@3",
+        "util-linux",
+        "xz",
+        "zstd"
+      ],
+      "artifacts": {
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/systemd/blobs/sha256:4671122c97f9e9f207876b1eefc8c569d25a3dd3d0eb8676affca716c6bc5957",
+          "sha256": "4671122c97f9e9f207876b1eefc8c569d25a3dd3d0eb8676affca716c6bc5957",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/systemd:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "bootctl",
+            "busctl",
+            "coredumpctl",
+            "halt",
+            "hostnamectl",
+            "init",
+            "journalctl",
+            "kernel-install",
+            "localectl",
+            "loginctl",
+            "machinectl",
+            "mount.ddi",
+            "mount.mstack",
+            "mount.storage",
+            "networkctl",
+            "oomctl",
+            "portablectl",
+            "poweroff",
+            "reboot",
+            "resolvconf",
+            "resolvectl",
+            "run0",
+            "shutdown",
+            "storagectl",
+            "systemctl",
+            "systemd-ac-power",
+            "systemd-analyze",
+            "systemd-ask-password",
+            "systemd-cat",
+            "systemd-cgls",
+            "systemd-cgtop",
+            "systemd-confext",
+            "systemd-creds",
+            "systemd-delta",
+            "systemd-detect-virt",
+            "systemd-dissect",
+            "systemd-escape",
+            "systemd-firstboot",
+            "systemd-id128",
+            "systemd-inhibit",
+            "systemd-machine-id-setup",
+            "systemd-mount",
+            "systemd-mstack",
+            "systemd-mute-console",
+            "systemd-notify",
+            "systemd-nspawn",
+            "systemd-path",
+            "systemd-pty-forward",
+            "systemd-repart",
+            "systemd-resolve",
+            "systemd-run",
+            "systemd-socket-activate",
+            "systemd-stdio-bridge",
+            "systemd-sysext",
+            "systemd-sysinstall",
+            "systemd-sysusers",
+            "systemd-tmpfiles",
+            "systemd-tty-ask-password-agent",
+            "systemd-umount",
+            "systemd-vpick",
+            "timedatectl",
+            "udevadm",
+            "ukify",
+            "userdbctl",
+            "varlinkctl"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/systemd/blobs/sha256:643e4e10ae816664b625f69d85706721b8a72cd326cd34354cc9108a11c8418e",
+          "sha256": "643e4e10ae816664b625f69d85706721b8a72cd326cd34354cc9108a11c8418e",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/systemd:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "bootctl",
+            "busctl",
+            "coredumpctl",
+            "halt",
+            "hostnamectl",
+            "init",
+            "journalctl",
+            "kernel-install",
+            "localectl",
+            "loginctl",
+            "machinectl",
+            "mount.ddi",
+            "mount.mstack",
+            "mount.storage",
+            "networkctl",
+            "oomctl",
+            "portablectl",
+            "poweroff",
+            "reboot",
+            "resolvconf",
+            "resolvectl",
+            "run0",
+            "shutdown",
+            "storagectl",
+            "systemctl",
+            "systemd-ac-power",
+            "systemd-analyze",
+            "systemd-ask-password",
+            "systemd-cat",
+            "systemd-cgls",
+            "systemd-cgtop",
+            "systemd-confext",
+            "systemd-creds",
+            "systemd-delta",
+            "systemd-detect-virt",
+            "systemd-dissect",
+            "systemd-escape",
+            "systemd-firstboot",
+            "systemd-id128",
+            "systemd-inhibit",
+            "systemd-machine-id-setup",
+            "systemd-mount",
+            "systemd-mstack",
+            "systemd-mute-console",
+            "systemd-notify",
+            "systemd-nspawn",
+            "systemd-path",
+            "systemd-pty-forward",
+            "systemd-repart",
+            "systemd-resolve",
+            "systemd-run",
+            "systemd-socket-activate",
+            "systemd-stdio-bridge",
+            "systemd-sysext",
+            "systemd-sysinstall",
+            "systemd-sysusers",
+            "systemd-tmpfiles",
+            "systemd-tty-ask-password-agent",
+            "systemd-umount",
+            "systemd-vpick",
+            "timedatectl",
+            "udevadm",
+            "ukify",
+            "userdbctl",
+            "varlinkctl"
+          ]
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` systemd would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
       "name": "tails",
       "version": "7.12",
       "description": "Tails 7.12 (x86_64 only) \u2014 amnesic live OS, routes all traffic through Tor",
@@ -14674,7 +16125,8 @@
       ],
       "deps": [
         "pcre2",
-        "xz"
+        "xz",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -15146,6 +16598,417 @@
       "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` utf8proc would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
     },
     {
+      "name": "util-linux",
+      "version": "2.42.3",
+      "description": "Collection of Linux utilities",
+      "homepage": "https://github.com/util-linux/util-linux",
+      "license": "BSD-3-Clause AND BSD-4-Clause-UC AND GPL-2.0-only AND GPL-2.0-or-later AND GPL-3.0-or-later AND LGPL-2.1-or-later AND LicenseRef-Homebrew-public-domain",
+      "keywords": [
+        "homebrew"
+      ],
+      "deps": [
+        "gettext",
+        "readline",
+        "zlib-ng-compat"
+      ],
+      "artifacts": {
+        "darwin-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/util-linux/blobs/sha256:85d6dbbd6e114707c4ae5a29f5fd594ad4f3727bdde3caec3e13decd6bbd4d32",
+          "sha256": "85d6dbbd6e114707c4ae5a29f5fd594ad4f3727bdde3caec3e13decd6bbd4d32",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/util-linux:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "addpart",
+            "agetty",
+            "bits",
+            "blkdiscard",
+            "blkid",
+            "blkpr",
+            "blkzone",
+            "blockdev",
+            "cal",
+            "cfdisk",
+            "chcpu",
+            "chmem",
+            "choom",
+            "chrt",
+            "col",
+            "colcrt",
+            "colrm",
+            "column",
+            "copyfilerange",
+            "coresched",
+            "ctrlaltdel",
+            "delpart",
+            "dmesg",
+            "eject",
+            "enosys",
+            "exch",
+            "fadvise",
+            "fallocate",
+            "fdisk",
+            "fincore",
+            "findfs",
+            "findmnt",
+            "flock",
+            "fsck",
+            "fsck.cramfs",
+            "fsck.minix",
+            "fsfreeze",
+            "fstrim",
+            "getino",
+            "getopt",
+            "hardlink",
+            "hexdump",
+            "hwclock",
+            "i386",
+            "ionice",
+            "ipcmk",
+            "ipcrm",
+            "ipcs",
+            "irqtop",
+            "isosize",
+            "last",
+            "lastb",
+            "lastlog2",
+            "ldattach",
+            "linux32",
+            "linux64",
+            "logger",
+            "look",
+            "losetup",
+            "lsblk",
+            "lsclocks",
+            "lscpu",
+            "lsfd",
+            "lsipc",
+            "lsirq",
+            "lslocks",
+            "lslogins",
+            "lsmem",
+            "lsns",
+            "mcookie",
+            "mesg",
+            "mkfs",
+            "mkfs.bfs",
+            "mkfs.cramfs",
+            "mkfs.minix",
+            "mkswap",
+            "more",
+            "mount",
+            "mountpoint",
+            "namei",
+            "nologin",
+            "nsenter",
+            "partx",
+            "pipesz",
+            "pivot_root",
+            "prlimit",
+            "readprofile",
+            "rename",
+            "renice",
+            "resizepart",
+            "rev",
+            "rfkill",
+            "rtcwake",
+            "script",
+            "scriptlive",
+            "scriptreplay",
+            "setarch",
+            "setpgid",
+            "setsid",
+            "setterm",
+            "sfdisk",
+            "sulogin",
+            "swaplabel",
+            "swapoff",
+            "swapon",
+            "switch_root",
+            "taskset",
+            "uclampset",
+            "ul",
+            "umount",
+            "uname26",
+            "unshare",
+            "utmpdump",
+            "uuidd",
+            "uuidgen",
+            "uuidparse",
+            "waitpid",
+            "wall",
+            "wdctl",
+            "whereis",
+            "wipefs",
+            "x86_64",
+            "zramctl"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/util-linux/blobs/sha256:f5481596e2b7cea2d92f1c4eed7e8984d9fbc3360bd2634110637b37f01e959e",
+          "sha256": "f5481596e2b7cea2d92f1c4eed7e8984d9fbc3360bd2634110637b37f01e959e",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/util-linux:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "addpart",
+            "agetty",
+            "bits",
+            "blkdiscard",
+            "blkid",
+            "blkpr",
+            "blkzone",
+            "blockdev",
+            "cal",
+            "cfdisk",
+            "chcpu",
+            "chmem",
+            "choom",
+            "chrt",
+            "col",
+            "colcrt",
+            "colrm",
+            "column",
+            "copyfilerange",
+            "coresched",
+            "ctrlaltdel",
+            "delpart",
+            "dmesg",
+            "eject",
+            "enosys",
+            "exch",
+            "fadvise",
+            "fallocate",
+            "fdisk",
+            "fincore",
+            "findfs",
+            "findmnt",
+            "flock",
+            "fsck",
+            "fsck.cramfs",
+            "fsck.minix",
+            "fsfreeze",
+            "fstrim",
+            "getino",
+            "getopt",
+            "hardlink",
+            "hexdump",
+            "hwclock",
+            "i386",
+            "ionice",
+            "ipcmk",
+            "ipcrm",
+            "ipcs",
+            "irqtop",
+            "isosize",
+            "last",
+            "lastb",
+            "lastlog2",
+            "ldattach",
+            "linux32",
+            "linux64",
+            "logger",
+            "look",
+            "losetup",
+            "lsblk",
+            "lsclocks",
+            "lscpu",
+            "lsfd",
+            "lsipc",
+            "lsirq",
+            "lslocks",
+            "lslogins",
+            "lsmem",
+            "lsns",
+            "mcookie",
+            "mesg",
+            "mkfs",
+            "mkfs.bfs",
+            "mkfs.cramfs",
+            "mkfs.minix",
+            "mkswap",
+            "more",
+            "mount",
+            "mountpoint",
+            "namei",
+            "nologin",
+            "nsenter",
+            "partx",
+            "pipesz",
+            "pivot_root",
+            "prlimit",
+            "readprofile",
+            "rename",
+            "renice",
+            "resizepart",
+            "rev",
+            "rfkill",
+            "rtcwake",
+            "script",
+            "scriptlive",
+            "scriptreplay",
+            "setarch",
+            "setpgid",
+            "setsid",
+            "setterm",
+            "sfdisk",
+            "sulogin",
+            "swaplabel",
+            "swapoff",
+            "swapon",
+            "switch_root",
+            "taskset",
+            "uclampset",
+            "ul",
+            "umount",
+            "uname26",
+            "unshare",
+            "utmpdump",
+            "uuidd",
+            "uuidgen",
+            "uuidparse",
+            "waitpid",
+            "wall",
+            "wdctl",
+            "whereis",
+            "wipefs",
+            "x86_64",
+            "zramctl"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/util-linux/blobs/sha256:1eb0711633b8c65f11a1f85bd56b15e2ab21f99c914a997f8206c8af1fa5a5d3",
+          "sha256": "1eb0711633b8c65f11a1f85bd56b15e2ab21f99c914a997f8206c8af1fa5a5d3",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/util-linux:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "addpart",
+            "agetty",
+            "bits",
+            "blkdiscard",
+            "blkid",
+            "blkpr",
+            "blkzone",
+            "blockdev",
+            "cal",
+            "cfdisk",
+            "chcpu",
+            "chmem",
+            "choom",
+            "chrt",
+            "col",
+            "colcrt",
+            "colrm",
+            "column",
+            "copyfilerange",
+            "coresched",
+            "ctrlaltdel",
+            "delpart",
+            "dmesg",
+            "eject",
+            "enosys",
+            "exch",
+            "fadvise",
+            "fallocate",
+            "fdisk",
+            "fincore",
+            "findfs",
+            "findmnt",
+            "flock",
+            "fsck",
+            "fsck.cramfs",
+            "fsck.minix",
+            "fsfreeze",
+            "fstrim",
+            "getino",
+            "getopt",
+            "hardlink",
+            "hexdump",
+            "hwclock",
+            "i386",
+            "ionice",
+            "ipcmk",
+            "ipcrm",
+            "ipcs",
+            "irqtop",
+            "isosize",
+            "last",
+            "lastb",
+            "lastlog2",
+            "ldattach",
+            "linux32",
+            "linux64",
+            "logger",
+            "look",
+            "losetup",
+            "lsblk",
+            "lsclocks",
+            "lscpu",
+            "lsfd",
+            "lsipc",
+            "lsirq",
+            "lslocks",
+            "lslogins",
+            "lsmem",
+            "lsns",
+            "mcookie",
+            "mesg",
+            "mkfs",
+            "mkfs.bfs",
+            "mkfs.cramfs",
+            "mkfs.minix",
+            "mkswap",
+            "more",
+            "mount",
+            "mountpoint",
+            "namei",
+            "nologin",
+            "nsenter",
+            "partx",
+            "pipesz",
+            "pivot_root",
+            "prlimit",
+            "readprofile",
+            "rename",
+            "renice",
+            "resizepart",
+            "rev",
+            "rfkill",
+            "rtcwake",
+            "script",
+            "scriptlive",
+            "scriptreplay",
+            "setarch",
+            "setpgid",
+            "setsid",
+            "setterm",
+            "sfdisk",
+            "sulogin",
+            "swaplabel",
+            "swapoff",
+            "swapon",
+            "switch_root",
+            "taskset",
+            "uclampset",
+            "ul",
+            "umount",
+            "uname26",
+            "unshare",
+            "utmpdump",
+            "uuidd",
+            "uuidgen",
+            "uuidparse",
+            "waitpid",
+            "wall",
+            "wdctl",
+            "whereis",
+            "wipefs",
+            "x86_64",
+            "zramctl"
+          ]
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` util-linux would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
       "name": "vale",
       "version": "3.21.0",
       "description": "Syntax-aware linter for prose",
@@ -15424,7 +17287,10 @@
         "folly",
         "glog",
         "pcre2",
-        "python@3.14"
+        "python@3.14",
+        "boost",
+        "libunwind",
+        "openssl@4"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -15616,7 +17482,9 @@
         "libpsl",
         "openssl@3",
         "gettext",
-        "libunistring"
+        "libunistring",
+        "util-linux",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-amd64": {
@@ -16166,6 +18034,41 @@
       }
     },
     {
+      "name": "zlib-ng-compat",
+      "version": "2.3.3_1",
+      "description": "Zlib replacement with optimizations for next generation systems (library — pulled in only as a dependency; nothing on PATH)",
+      "homepage": "https://github.com/zlib-ng/zlib-ng",
+      "license": "Zlib",
+      "keywords": [
+        "homebrew",
+        "library"
+      ],
+      "artifacts": {
+        "darwin-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/zlib-ng-compat/blobs/sha256:0daac190c96363dd46141a34ab1c3031acbc7016aa2648b2bf2ac8cfb1718505",
+          "sha256": "0daac190c96363dd46141a34ab1c3031acbc7016aa2648b2bf2ac8cfb1718505",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/zlib-ng-compat:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/zlib-ng-compat/blobs/sha256:b8d7e8802092be9ecc516a0a43f35da61f3a83c73ba2e65b55419195a7ce7718",
+          "sha256": "b8d7e8802092be9ecc516a0a43f35da61f3a83c73ba2e65b55419195a7ce7718",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/zlib-ng-compat:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/zlib-ng-compat/blobs/sha256:e5fb75f8592d741139b0490622f5d2b232cfefeb79397b3158aba630258da6a4",
+          "sha256": "e5fb75f8592d741139b0490622f5d2b232cfefeb79397b3158aba630258da6a4",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/zlib-ng-compat:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "no_executables": true
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` zlib-ng-compat would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
       "name": "zoxide",
       "version": "0.10.0",
       "description": "A smarter cd that learns the directories you use",
@@ -16215,7 +18118,8 @@
       ],
       "deps": [
         "lz4",
-        "xz"
+        "xz",
+        "zlib-ng-compat"
       ],
       "artifacts": {
         "darwin-amd64": {

@@ -280,10 +280,21 @@ func (e *StoreEntry) discover(a *Artifact) error {
 		}
 		missing = append(missing, rel)
 	}
-	if len(missing) > 0 {
+	if len(missing) > 0 && len(e.Bins) == 0 {
+		// Every declared bin missing points at something fundamentally
+		// wrong (a bad recipe, a corrupted download) — worth failing loudly.
 		return fmt.Errorf("recipe declares %s but the archive does not contain %s",
 			strings.Join(want, ", "), strings.Join(missing, ", "))
 	}
+	// A partial miss, by contrast, is tolerated: Homebrew's own formula
+	// metadata declares one executable list across every platform a bottle
+	// ships for, with no per-platform breakdown available at all — a
+	// formula can legitimately omit an architecture-specific tool on one
+	// platform (util-linux's x86 personality-switching aliases i386/
+	// x86_64, which simply don't exist in its arm64 bottle, notably) while
+	// still shipping the rest. Failing the whole install over one such gap
+	// would be exactly the "layout differs, tolerate it" case Bin's own
+	// doc comment already describes, just not honored until now.
 
 	for _, rel := range a.Man {
 		p := filepath.Join(e.Path, filepath.Clean(rel))

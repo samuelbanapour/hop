@@ -306,16 +306,22 @@ const (
 // list; each Homebrew placeholder entry in it is resolved and replaced,
 // entries that resolve to nothing are dropped rather than left dangling.
 func relocateOneELF(path, selfFormula, selfVersion, selfStorePath string, deps map[string]depLocation) error {
-	out, err := exec.Command("patchelf", "--print-rpath", path).Output()
-	if err != nil {
-		return nil // not every ELF file has an rpath at all; that's fine
-	}
-	rpath := strings.TrimSpace(string(out))
-	if rpath == "" || (!strings.Contains(rpath, prefixToken) && !strings.Contains(rpath, cellarToken)) {
-		return nil
-	}
-
 	resolve := func(placeholder string) (string, bool) {
+		// A bare "@@HOMEBREW_PREFIX@@/lib" (optionally with a trailing
+		// path) names no formula at all — it's Homebrew-on-Linux's other
+		// fixed reference to glibc's own shared lib directory, sitting
+		// directly under the prefix root rather than under any per-formula
+		// opt/Cellar subdirectory, parallel to homebrewLinuxInterpreter's
+		// "@@HOMEBREW_PREFIX@@/lib/ld.so". Confirmed on python@3.14's own
+		// raw bottle: its rpath's very first entry is exactly this, with
+		// nothing for parsePlaceholder's usual formula-extraction to find.
+		if placeholder == homebrewLinuxSharedLib || strings.HasPrefix(placeholder, homebrewLinuxSharedLib+"/") {
+			if dep, ok := deps["glibc"]; ok {
+				rest := strings.TrimPrefix(strings.TrimPrefix(placeholder, homebrewLinuxSharedLib), "/")
+				return filepath.Join(dep.storePath, "glibc", dep.version, "lib", rest), true
+			}
+			return "", false
+		}
 		formula, rest, ok := parsePlaceholder(placeholder)
 		if !ok {
 			return "", false
@@ -327,6 +333,26 @@ func relocateOneELF(path, selfFormula, selfVersion, selfStorePath string, deps m
 			return filepath.Join(dep.storePath, formula, dep.version, rest), true
 		}
 		return "", false
+	}
+
+	if err := relocateELFRpath(path, resolve); err != nil {
+		return err
+	}
+	return relocateELFInterpreter(path, deps)
+}
+
+// relocateELFRpath rewrites a single ELF file's RPATH/RUNPATH entries. Not
+// every ELF file has one at all — most don't, since only dynamically linked
+// binaries and shared libraries carry it, and a static binary or a file
+// with no Homebrew placeholder in it needs no change.
+func relocateELFRpath(path string, resolve func(string) (string, bool)) error {
+	out, err := exec.Command("patchelf", "--print-rpath", path).Output()
+	if err != nil {
+		return nil
+	}
+	rpath := strings.TrimSpace(string(out))
+	if rpath == "" || (!strings.Contains(rpath, prefixToken) && !strings.Contains(rpath, cellarToken)) {
+		return nil
 	}
 
 	var newEntries []string
@@ -353,6 +379,89 @@ func relocateOneELF(path, selfFormula, selfVersion, selfStorePath string, deps m
 	return nil
 }
 
+// homebrewLinuxInterpreter is the fixed, literal ELF interpreter (PT_INTERP)
+// path every Homebrew-on-Linux bottle's real executable carries — not a
+// per-formula placeholder like @@HOMEBREW_PREFIX@@/opt/<formula>/... (which
+// parsePlaceholder already handles), but a reference to Homebrew's own
+// bundled glibc rather than the host's, the same string regardless of
+// architecture or which formula the binary belongs to. Homebrew's own
+// installer resolves it by linking this path into its shared prefix's
+// symlink farm; hop has no such shared farm, so it resolves straight to
+// glibc's own extracted bin/ld.so — a relative symlink glibc's bottle
+// already ships pointing at the real, architecture-specific loader
+// (lib/ld-linux-aarch64.so.1, lib/ld-linux-x86-64.so.2, ...), verified by
+// inspecting glibc's own bottle contents rather than guessing the
+// architecture-specific filename here.
+//
+// Confirmed for real, not assumed: every executable in a Homebrew Linux
+// bottle (htop, nmap, even ncurses' own bundled tset/tput/...) carries
+// exactly this string and, without this fix, fails with "cannot execute:
+// required file not found" — the kernel can't even find the loader to
+// start the program.
+const homebrewLinuxInterpreter = "@@HOMEBREW_PREFIX@@/lib/ld.so"
+
+// homebrewLinuxSharedLib is the other fixed, non-formula-specific
+// placeholder Homebrew-on-Linux uses: a bare "@@HOMEBREW_PREFIX@@/lib"
+// RPATH entry (no /opt/<formula> or /Cellar/<formula>/<version> segment at
+// all), referring to glibc's own shared lib directory sitting directly
+// under the prefix root. Confirmed directly on python@3.14's raw,
+// unmodified bottle: the very first entry of its own declared rpath is
+// exactly this string, with nothing for parsePlaceholder's usual
+// formula-extraction to find — resolved in relocateOneELF's own resolve
+// closure rather than there, since it needs deps["glibc"] specifically
+// rather than a formula name parsed out of the placeholder itself.
+const homebrewLinuxSharedLib = "@@HOMEBREW_PREFIX@@/lib"
+
+// relocateELFInterpreter rewrites path's PT_INTERP entry when it's the fixed
+// Homebrew-on-Linux glibc reference above. Most ELF files aren't real
+// executables at all (shared libraries carry no interpreter), so a missing
+// or unrelated interpreter is silently left alone.
+func relocateELFInterpreter(path string, deps map[string]depLocation) error {
+	out, err := exec.Command("patchelf", "--print-interpreter", path).Output()
+	if err != nil {
+		return nil // not every ELF file is an executable with an interpreter
+	}
+	if strings.TrimSpace(string(out)) != homebrewLinuxInterpreter {
+		return nil
+	}
+	dep, ok := deps["glibc"]
+	if !ok {
+		return nil // no glibc in this closure to resolve against; leave as-is rather than guessed at
+	}
+	resolved := filepath.Join(dep.storePath, "glibc", dep.version, "bin", "ld.so")
+	if out, err := exec.Command("patchelf", "--set-interpreter", resolved, path).CombinedOutput(); err != nil {
+		return fmt.Errorf("patchelf --set-interpreter: %w: %s", err, strings.TrimSpace(string(out)))
+	}
+
+	// Homebrew's own ld.so carries no compiled-in default library search
+	// path of its own — verified directly: --print-rpath on glibc's own
+	// loader returns empty — so a binary using it as its interpreter needs
+	// glibc's own lib directory in its RPATH to find libc.so.6/libm.so.6/
+	// etc. at all. Confirmed for real: the interpreter fix above is enough
+	// to get the kernel to start the program, but without this it
+	// immediately fails with "error while loading shared libraries:
+	// libm.so.6: cannot open shared object file".
+	glibcLib := filepath.Join(dep.storePath, "glibc", dep.version, "lib")
+	rpathOut, err := exec.Command("patchelf", "--print-rpath", path).Output()
+	if err != nil {
+		return nil // interpreter is patched; a missing rpath here is unusual but not fatal to report
+	}
+	current := strings.TrimSpace(string(rpathOut))
+	for _, entry := range strings.Split(current, ":") {
+		if entry == glibcLib {
+			return nil // already present, most likely a reused store entry
+		}
+	}
+	newRpath := glibcLib
+	if current != "" {
+		newRpath = current + ":" + glibcLib
+	}
+	if out, err := exec.Command("patchelf", "--set-rpath", newRpath, path).CombinedOutput(); err != nil {
+		return fmt.Errorf("patchelf --set-rpath (glibc): %w: %s", err, strings.TrimSpace(string(out)))
+	}
+	return nil
+}
+
 // parsePlaceholder mirrors the darwin implementation exactly; duplicated
 // rather than shared across the build-tagged files to keep each platform's
 // relocation logic self-contained and independently readable.
@@ -364,6 +473,17 @@ func parsePlaceholder(s string) (formula, rest string, ok bool) {
 			return parts[0], parts[1], true
 		}
 		return parts[0], "", true
+	case strings.HasPrefix(s, prefixToken+"/Cellar/"):
+		// A Linux bottle's own self-reference uses this mixed
+		// prefix-token-plus-literal-"Cellar" form rather than the bare
+		// @@HOMEBREW_CELLAR@@ token below — confirmed directly on
+		// python@3.14's raw bottle, whose own rpath names its own lib
+		// directory as "@@HOMEBREW_PREFIX@@/Cellar/python@3.14/3.14.7/lib".
+		// Structurally identical to the cellarToken case otherwise.
+		parts := strings.SplitN(strings.TrimPrefix(s, prefixToken+"/Cellar/"), "/", 3)
+		if len(parts) == 3 {
+			return parts[0], parts[2], true
+		}
 	case strings.HasPrefix(s, cellarToken+"/"):
 		parts := strings.SplitN(strings.TrimPrefix(s, cellarToken+"/"), "/", 3)
 		if len(parts) == 3 {

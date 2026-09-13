@@ -64,6 +64,46 @@ type brewFormula struct {
 			} `json:"files"`
 		} `json:"stable"`
 	} `json:"bottle"`
+
+	// Variations carries per-platform overrides to Homebrew's default
+	// dependency list. Dependencies above reflects only the formula's
+	// default (effectively macOS) dependency set — a formula whose Ruby
+	// definition declares an extra dependency inside `on_linux do ... end`
+	// doesn't appear there at all, only under variations["arm64_linux"]/
+	// ["x86_64_linux"]. Verified for real: nmap's Linux bottle needs
+	// zlib-ng-compat (its own libz.so.1) and its top-level Dependencies
+	// omits it entirely — found by actually running a relocated nmap on
+	// Linux and hitting a missing shared library no declared dependency
+	// provided.
+	Variations map[string]struct {
+		Dependencies []string `json:"dependencies"`
+	} `json:"variations"`
+}
+
+// allDependencies returns f's declared dependencies plus anything its
+// Linux-specific bottle variations add on top, deduplicated. See the
+// Variations field doc for why this needs to exist as well as
+// Dependencies alone.
+func (f *brewFormula) allDependencies() []string {
+	seen := make(map[string]bool, len(f.Dependencies))
+	out := make([]string, 0, len(f.Dependencies))
+	add := func(name string) {
+		if !seen[name] {
+			seen[name] = true
+			out = append(out, name)
+		}
+	}
+	for _, d := range f.Dependencies {
+		add(d)
+	}
+	for _, key := range [...]string{"arm64_linux", "x86_64_linux"} {
+		if v, ok := f.Variations[key]; ok {
+			for _, d := range v.Dependencies {
+				add(d)
+			}
+		}
+	}
+	return out
 }
 
 // seedFormulae are hand-picked, well-known standalone CLI tools not already
@@ -104,6 +144,16 @@ var seedFormulae = []string{
 	// relative to its own executable at runtime and was verified to work
 	// correctly (sys.prefix, ssl, sqlite3 all resolve inside hop's store).
 	"cowsay", "figlet", "sl", "cmatrix", "fastfetch", "asciinema",
+
+	// glibc: not something a hop user installs directly, but every Linux
+	// Homebrew bottle's executable has its ELF interpreter (PT_INTERP)
+	// pointing at Homebrew's own bundled glibc rather than the host's —
+	// confirmed by actually running a relocated bottle's binary on real
+	// Linux, which fails with "cannot execute: required file not found"
+	// without this. Pulled in transparently as an implicit dependency of
+	// every Homebrew+Linux install by resolve.go, not something users
+	// request themselves.
+	"glibc",
 }
 
 // artifact/recipe/index mirror internal/core's JSON shape exactly, field for
@@ -271,7 +321,7 @@ func transitiveClosure(byName map[string]*brewFormula, seeds []string) (order, m
 			return nil
 		}
 		visiting = append(visiting, name)
-		for _, dep := range f.Dependencies {
+		for _, dep := range f.allDependencies() {
 			if err := visit(dep); err != nil {
 				return err
 			}
@@ -331,7 +381,19 @@ func buildRecipe(f *brewFormula) (*recipe, error) {
 	// closure. It still has to become a recipe: leaving it out would mean
 	// every formula that depends on it fails to resolve at all. It just
 	// puts nothing on PATH.
-	isLibrary := len(f.Executables) == 0
+	//
+	// glibc is a narrow, explicit exception even though it does declare
+	// executables (ld.so, ldconfig, nscd, ...): real Homebrew marks it
+	// keg_only specifically because linking it onto PATH risks shadowing
+	// the system's own glibc, and hop pulls it in purely as an implicit
+	// runtime dependency for other Linux bottles' ELF interpreter (see
+	// relocateHomebrewBottle) — a user was never going to `hop install
+	// glibc` themselves. This is deliberately not a general "respect
+	// Homebrew's keg_only flag" rule: several already-shipped formulae
+	// (curl, sqlite, readline, libxml2) are also keg_only in real Homebrew
+	// but have executables a hop user plausibly does want on PATH, and
+	// changing that is a separate decision, not a side effect of this one.
+	isLibrary := len(f.Executables) == 0 || f.Name == "glibc"
 
 	arts := map[string]*artifact{}
 	for _, plat := range []string{"darwin-arm64", "darwin-amd64", "linux-arm64", "linux-amd64"} {
@@ -366,7 +428,7 @@ func buildRecipe(f *brewFormula) (*recipe, error) {
 		Homepage:    f.Homepage,
 		License:     f.License,
 		Keywords:    keywords,
-		Deps:        f.Dependencies,
+		Deps:        f.allDependencies(),
 		Artifacts:   arts,
 		Caveats: "Installed from Homebrew's own bottle (the same binary `brew install` " +
 			f.Name + " would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes.",

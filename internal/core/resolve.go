@@ -228,6 +228,23 @@ func (r *Resolver) expand(reqs []request) ([]selection, error) {
 				return err
 			}
 		}
+		// A Homebrew-on-Linux bottle's executable has its ELF interpreter
+		// (PT_INTERP) baked to Homebrew's own bundled glibc, unconditionally
+		// — verified by actually running a relocated bottle on real Linux,
+		// which otherwise fails with "cannot execute: required file not
+		// found". This isn't declared in any formula's own Deps (Homebrew's
+		// own dependency graph doesn't list it either; every Linux bottle
+		// just assumes an ambient glibc), so hop injects it here rather
+		// than in the static index — only for an actual Homebrew-sourced
+		// Linux artifact with a real executable to run; a NoExecutables-only
+		// bottle's .so files carry no ELF interpreter at all and don't need
+		// this. See relocateHomebrewBottle for the matching patch.
+		if art.OCITokenURL != "" && strings.HasPrefix(string(plat), "linux-") &&
+			!art.NoExecutables && rec.Name != "glibc" {
+			if err := visit(request{name: "glibc", explicit: false, reason: "Linux ELF interpreter for " + rec.Name}); err != nil {
+				return err
+			}
+		}
 		path = path[:len(path)-1]
 		colour[key] = black
 
