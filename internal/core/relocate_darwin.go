@@ -95,7 +95,7 @@ func relocateHomebrewBottle(root, selfFormula, selfVersion, selfStorePath string
 			return nil
 		}
 		if looksLikeMachO(path) {
-			if err := relocateOne(path, selfFormula, selfVersion, selfStorePath, deps); err != nil {
+			if err := relocateOne(path, root, selfFormula, selfVersion, selfStorePath, deps); err != nil {
 				// One file failing to patch shouldn't sink an otherwise-working
 				// install; record it and let the caller decide how loud to be.
 				walkErr = fmt.Errorf("%s: %w", path, err)
@@ -140,7 +140,34 @@ const maxTextRelocateSize = 2 << 20
 // python@3.14/3.14.7/bin/python3.14" shebang without this, and fails to
 // execute at all); fixed here too since the regex is otherwise identical
 // and the same versioned-formula-name shebangs can appear in any bottle.
-var placeholderPattern = regexp.MustCompile(`@@HOMEBREW_(?:PREFIX|CELLAR)@@[A-Za-z0-9_./@+-]*`)
+//
+// The token alternation matches any @@HOMEBREW_<NAME>@@ form, not just
+// PREFIX/CELLAR/PERL specifically, so a placeholder this file doesn't yet
+// know how to resolve is still *found* (and left alone by the ok-check
+// below) rather than silently invisible to the probe that decides whether
+// relocation runs at all. PERL itself is real and confirmed the hard way:
+// autoconf's and exiftool's own scripts ship a literal, unpatched
+// "#!@@HOMEBREW_PERL@@" shebang — not tied to any formula's own Deps at
+// all (Homebrew doesn't vendor its own perl; every dependent's Ruby
+// formula definition just assumes an ambient system one), so it resolves
+// via exec.LookPath rather than hop's own store, in resolvePerl below.
+var placeholderPattern = regexp.MustCompile(`@@HOMEBREW_[A-Z_]+@@[A-Za-z0-9_./@+-]*`)
+
+const perlToken = "@@HOMEBREW_PERL@@"
+
+// resolvePerl finds the system's own perl for the exact, argument-free
+// @@HOMEBREW_PERL@@ placeholder. Homebrew itself doesn't vendor perl on
+// either platform (it's assumed to always be present, the same
+// expectation every dependent formula's own build makes), so this
+// resolves to whatever the host provides rather than anything in hop's
+// own store.
+func resolvePerl() (string, bool) {
+	p, err := exec.LookPath("perl")
+	if err != nil {
+		return "", false
+	}
+	return p, true
+}
 
 // relocateTextFile rewrites both kinds of text-level indirection Homebrew
 // bottles carry: literal @@HOMEBREW_...@@ placeholder references (a
@@ -159,8 +186,15 @@ func relocateTextFile(path string, mode os.FileMode, selfFormula, selfVersion, s
 	}
 	changed := false
 
-	if bytes.Contains(data, []byte(prefixToken)) || bytes.Contains(data, []byte(cellarToken)) {
+	if bytes.Contains(data, []byte(prefixToken)) || bytes.Contains(data, []byte(cellarToken)) || bytes.Contains(data, []byte(perlToken)) {
 		data = placeholderPattern.ReplaceAllFunc(data, func(m []byte) []byte {
+			if string(m) == perlToken {
+				if resolved, ok := resolvePerl(); ok {
+					changed = true
+					return []byte(resolved)
+				}
+				return m
+			}
 			formula, rest, ok := parsePlaceholder(string(m))
 			if !ok {
 				return m
@@ -409,16 +443,54 @@ const (
 )
 
 // relocateOne patches a single Mach-O file's load commands in place.
-func relocateOne(path, selfFormula, selfVersion, selfStorePath string, deps map[string]depLocation) error {
+func relocateOne(path, root, selfFormula, selfVersion, selfStorePath string, deps map[string]depLocation) error {
 	refs, selfID, err := machOPlaceholders(path)
 	if err != nil {
 		return err
 	}
-	if len(refs) == 0 && selfID == "" {
+	rpaths, err := machORpaths(path)
+	if err != nil {
+		return err
+	}
+	if len(refs) == 0 && selfID == "" && len(rpaths) == 0 {
 		return nil // nothing to do; the common case for most files
 	}
 
 	resolve := func(placeholder string) (string, bool) {
+		// A bare "@@HOMEBREW_PREFIX@@/lib/<file>" — no /opt/<formula> or
+		// /Cellar/<formula>/<version> segment at all — names no formula in
+		// the usual sense. It's Homebrew's convention for a library meant
+		// to be found without pinning its own version number in the path;
+		// confirmed for real on gdk-pixbuf's own gdk-pixbuf-csource, whose
+		// LC_LOAD_DYLIB entry is literally
+		// "@@HOMEBREW_PREFIX@@/lib/libgdk_pixbuf-2.0.0.dylib" for its own
+		// co-installed library (glibc's ld.so is the same convention on
+		// Linux, for the same reason). Since the placeholder itself
+		// doesn't say which formula, this tries the current formula first
+		// — the common case, a formula using this for its own library —
+		// then each dependency, by checking which one's store tree
+		// actually has a matching file rather than guessing.
+		//
+		// The self case checks existence against root (where this tree
+		// actually sits right now, mid-relocation, before its rename into
+		// the store) but returns a path built from selfStorePath (where it
+		// will live once that rename happens, which is what the binary
+		// needs to reference) — the same split relocateHomebrewBottle's own
+		// doc comment explains. A dependency, by contrast, was already
+		// materialised and committed before this formula's own relocation
+		// pass began, so dep.storePath is already real on disk and safe to
+		// check directly.
+		if rest, ok := strings.CutPrefix(placeholder, prefixToken+"/lib/"); ok {
+			if exists(filepath.Join(root, selfFormula, selfVersion, "lib", rest)) {
+				return filepath.Join(selfStorePath, selfFormula, selfVersion, "lib", rest), true
+			}
+			for formula, dep := range deps {
+				if p := filepath.Join(dep.storePath, formula, dep.version, "lib", rest); exists(p) {
+					return p, true
+				}
+			}
+			return "", false
+		}
 		formula, rest, ok := parsePlaceholder(placeholder)
 		if !ok {
 			return "", false
@@ -447,6 +519,14 @@ func relocateOne(path, selfFormula, selfVersion, selfStorePath string, deps map[
 			continue // an unresolvable reference is left as-is rather than guessed at
 		}
 		args = append(args, "-change", old, newPath)
+		changed = true
+	}
+	for _, old := range rpaths {
+		newPath, ok := resolve(old)
+		if !ok {
+			continue
+		}
+		args = append(args, "-rpath", old, newPath)
 		changed = true
 	}
 	if !changed {
@@ -529,6 +609,55 @@ func machOPlaceholders(path string) (refs []string, selfID string, err error) {
 	return refs, selfID, nil
 }
 
+// machORpaths returns every LC_RPATH entry in path that names a Homebrew
+// placeholder, parsed from `otool -l`'s load-command dump. otool -L (used
+// by machOPlaceholders above) only reports LC_LOAD_DYLIB/LC_ID_DYLIB, never
+// LC_RPATH — so a bottle whose own internal libraries reference each other
+// via the "@rpath/libX.dylib" indirection (rather than a direct absolute
+// or placeholder path) needs this separate pass to patch the RPATH entry
+// that indirection actually depends on.
+//
+// Confirmed for real: fbthrift's own libthriftcpp2.dylib carries an
+// LC_LOAD_DYLIB entry of literally "@rpath/libthriftprotocol.1.0.0.dylib"
+// (no placeholder at all — machOPlaceholders correctly has nothing to do
+// with it) alongside an LC_RPATH entry of
+// "@@HOMEBREW_CELLAR@@/fbthrift/<version>/lib", unpatched. Without
+// resolving that RPATH entry too, dyld has nowhere to actually look for
+// "@rpath/libthriftprotocol.1.0.0.dylib" and fails with "Library not
+// loaded" at runtime — confirmed by running watchman, which links
+// fbthrift's libraries transitively and crashed on exactly this before.
+func machORpaths(path string) ([]string, error) {
+	out, err := exec.Command("otool", "-l", path).Output()
+	if err != nil {
+		return nil, fmt.Errorf("otool -l: %w", err)
+	}
+	var rpaths []string
+	lines := strings.Split(string(out), "\n")
+	for i, line := range lines {
+		if !strings.Contains(line, "LC_RPATH") {
+			continue
+		}
+		// The path value sits a couple of lines below, formatted as
+		// "         path <value> (offset N)", within the same load
+		// command block otool just started printing.
+		for j := i + 1; j < len(lines) && j < i+4; j++ {
+			trimmed := strings.TrimSpace(lines[j])
+			if !strings.HasPrefix(trimmed, "path ") {
+				continue
+			}
+			value := strings.TrimPrefix(trimmed, "path ")
+			if idx := strings.LastIndex(value, " (offset "); idx >= 0 {
+				value = value[:idx]
+			}
+			if strings.HasPrefix(value, prefixToken) || strings.HasPrefix(value, cellarToken) {
+				rpaths = append(rpaths, value)
+			}
+			break
+		}
+	}
+	return rpaths, nil
+}
+
 // hasInstallNameTool reports whether this host can perform relocation at
 // all, so callers can turn a missing toolchain into one clear upfront error
 // instead of a confusing per-file failure the first time a placeholder is
@@ -564,7 +693,7 @@ func probeForPlaceholders(root string) (needsMachO, needsText bool) {
 		if err != nil {
 			return nil
 		}
-		if bytes.Contains(data, []byte(prefixToken)) || bytes.Contains(data, []byte(cellarToken)) {
+		if bytes.Contains(data, []byte(prefixToken)) || bytes.Contains(data, []byte(cellarToken)) || bytes.Contains(data, []byte(perlToken)) {
 			if isMachO {
 				needsMachO = true
 			} else {

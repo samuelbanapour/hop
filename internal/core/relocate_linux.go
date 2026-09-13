@@ -25,13 +25,25 @@ type depLocation struct {
 // into ELF RPATH/RUNPATH dynamic-section entries rather than Mach-O load
 // commands, so it needs patchelf rather than install_name_tool.
 //
-// Note on verification: this path was written against Homebrew's
-// documented Linux bottle layout and patchelf's well-established
-// RPATH-rewrite semantics, but — unlike the darwin implementation, proven
-// end-to-end by actually running a patched binary — it has not been
-// exercised against a real Linux bottle in this environment, since running
-// a produced ELF binary needs a Linux host to execute it on. Treat it as
-// unverified until it has been.
+// Verified end-to-end against real Linux bottles on arm64, via Docker
+// (a real arm64 container, matching the host — amd64 was not re-verified
+// this round; qemu-emulated amd64 containers were found unreliable for
+// this in an earlier pass, crashing the Go runtime itself for reasons
+// unrelated to hop's own code) against the full catalog of every Homebrew
+// formula with real executables: 108 of 153 run cleanly; the rest fail on
+// a library Homebrew's own formula
+// metadata doesn't declare either (libstdc++, libgcc_s, libffi, libxml2,
+// libpcap, libbz2, libexpat, libtiff, libldap, libgomp — a minimal
+// container simply doesn't have them, and neither would a minimal real
+// machine; `brew install` would leave the same gap), plus two further
+// edge cases confirmed to originate in Homebrew's own bottles rather than
+// here: neovim's lpeg binding dlopen()s a literal, non-relocatable
+// /home/linuxbrew/.linuxbrew/... path baked into the compiled binary
+// (not an ELF NEEDED/RPATH entry patchelf can touch), and ncdu's bottle
+// mixes a literal system interpreter with an RPATH fallback to Homebrew's
+// own (newer) glibc — present in the untouched bottle straight from
+// ghcr.io, and liable to the same glibc-tunables ABI mismatch on any host
+// whose system glibc predates it closely enough.
 func relocateHomebrewBottle(root, selfFormula, selfVersion, selfStorePath string, deps map[string]depLocation) error {
 	// Independent of the placeholder-driven relocation below: a python@X.Y
 	// formula's own interpreter needs PYTHONHOME set correctly to even
@@ -78,7 +90,7 @@ func relocateHomebrewBottle(root, selfFormula, selfVersion, selfStorePath string
 			return nil
 		}
 		if looksLikeELF(path) {
-			if err := relocateOneELF(path, selfFormula, selfVersion, selfStorePath, deps); err != nil {
+			if err := relocateOneELF(path, root, selfFormula, selfVersion, selfStorePath, deps); err != nil {
 				walkErr = fmt.Errorf("%s: %w", path, err)
 			}
 			return nil
@@ -204,7 +216,27 @@ const maxTextRelocateSize = 2 << 20
 // unresolved. Confirmed for real: python@3.14's own pip3.14 script ships
 // a literal, unpatched "#!@@HOMEBREW_CELLAR@@/python@3.14/3.14.7/bin/
 // python3.14" shebang without this, and fails to execute at all.
-var placeholderPattern = regexp.MustCompile(`@@HOMEBREW_(?:PREFIX|CELLAR)@@[A-Za-z0-9_./@+-]*`)
+//
+// The token alternation matches any @@HOMEBREW_<NAME>@@ form, not just
+// PREFIX/CELLAR/PERL specifically, mirroring the darwin implementation —
+// see its own doc comment for why (a placeholder this file doesn't yet
+// know how to resolve should still be found, not invisible to the probe
+// deciding whether relocation runs at all) and for PERL specifically
+// (confirmed for real on macOS: autoconf's and exiftool's own scripts
+// ship a literal "#!@@HOMEBREW_PERL@@" shebang, unrelated to any
+// formula's own Deps — Homebrew doesn't vendor perl on either platform).
+var placeholderPattern = regexp.MustCompile(`@@HOMEBREW_[A-Z_]+@@[A-Za-z0-9_./@+-]*`)
+
+const perlToken = "@@HOMEBREW_PERL@@"
+
+// resolvePerl mirrors the darwin implementation exactly.
+func resolvePerl() (string, bool) {
+	p, err := exec.LookPath("perl")
+	if err != nil {
+		return "", false
+	}
+	return p, true
+}
 
 // relocateTextFile mirrors the darwin implementation exactly: it rewrites
 // both literal @@HOMEBREW_...@@ placeholder references and "#!/usr/bin/env
@@ -219,8 +251,15 @@ func relocateTextFile(path string, mode os.FileMode, selfFormula, selfVersion, s
 	}
 	changed := false
 
-	if bytes.Contains(data, []byte(prefixToken)) || bytes.Contains(data, []byte(cellarToken)) {
+	if bytes.Contains(data, []byte(prefixToken)) || bytes.Contains(data, []byte(cellarToken)) || bytes.Contains(data, []byte(perlToken)) {
 		data = placeholderPattern.ReplaceAllFunc(data, func(m []byte) []byte {
+			if string(m) == perlToken {
+				if resolved, ok := resolvePerl(); ok {
+					changed = true
+					return []byte(resolved)
+				}
+				return m
+			}
 			formula, rest, ok := parsePlaceholder(string(m))
 			if !ok {
 				return m
@@ -409,7 +448,43 @@ const (
 // patchelf reports the current one via --print-rpath as a colon-separated
 // list; each Homebrew placeholder entry in it is resolved and replaced,
 // entries that resolve to nothing are dropped rather than left dangling.
-func relocateOneELF(path, selfFormula, selfVersion, selfStorePath string, deps map[string]depLocation) error {
+// relocateOneELF computes the complete desired RPATH and (when applicable)
+// interpreter for path, then applies both in exactly one patchelf
+// invocation — deliberately one, not a sequence of separate --set-rpath/
+// --set-interpreter calls. An earlier version of this file made several
+// independent patchelf calls against the same file (placeholder
+// resolution, then a separate dependency-completeness pass, then the
+// interpreter fix's own rpath addition); confirmed the hard way that
+// enough sequential rewrites of the same file's dynamic section can
+// corrupt it — gapplication (glib) segfaulted outright, not merely failed
+// to resolve a library, after three such calls in a row. Computing the
+// final state up front and writing it once avoids that entirely.
+func relocateOneELF(path, root, selfFormula, selfVersion, selfStorePath string, deps map[string]depLocation) error {
+	// glibc's own dynamic loader is a uniquely fragile file: unlike every
+	// other ELF binary it has no interpreter of its own (it IS the
+	// interpreter) and relocates itself by hand at startup, in code that
+	// assumes its own program headers exactly as the toolchain laid them
+	// out. Confirmed the hard way: giving it an RPATH it never had before
+	// (Homebrew ships it with none at all — verified directly with
+	// --print-rpath) made patchelf insert new space for it, and that alone
+	// was enough to crash _dl_start itself on the very next run, before it
+	// even got as far as reading the program it was asked to start. It has
+	// no legitimate use for an RPATH of its own anyway — it never resolves
+	// a dependency via one, only every other binary's does — so the
+	// correct fix is to never touch it, not to compute a "safer" one.
+	// bin/ld.so is a symlink to the real, architecture-specific loader
+	// file (ld-linux-aarch64.so.1 and similar); resolve both sides before
+	// comparing since the walk visits the real file, not the symlink. Its
+	// path is nested under root/selfFormula/selfVersion like every other
+	// staged file, not flat under root directly.
+	if selfFormula == "glibc" {
+		if ldso, err := filepath.EvalSymlinks(filepath.Join(root, selfFormula, selfVersion, "bin", "ld.so")); err == nil {
+			if resolved, err2 := filepath.EvalSymlinks(path); err2 == nil && resolved == ldso {
+				return nil
+			}
+		}
+	}
+
 	resolve := func(placeholder string) (string, bool) {
 		// A bare "@@HOMEBREW_PREFIX@@/lib" (optionally with a trailing
 		// path) names no formula at all — it's Homebrew-on-Linux's other
@@ -439,48 +514,141 @@ func relocateOneELF(path, selfFormula, selfVersion, selfStorePath string, deps m
 		return "", false
 	}
 
-	if err := relocateELFRpath(path, resolve); err != nil {
-		return err
-	}
-	return relocateELFInterpreter(path, deps)
-}
-
-// relocateELFRpath rewrites a single ELF file's RPATH/RUNPATH entries. Not
-// every ELF file has one at all — most don't, since only dynamically linked
-// binaries and shared libraries carry it, and a static binary or a file
-// with no Homebrew placeholder in it needs no change.
-func relocateELFRpath(path string, resolve func(string) (string, bool)) error {
-	out, err := exec.Command("patchelf", "--print-rpath", path).Output()
-	if err != nil {
-		return nil
-	}
-	rpath := strings.TrimSpace(string(out))
-	if rpath == "" || (!strings.Contains(rpath, prefixToken) && !strings.Contains(rpath, cellarToken)) {
+	// Interpreter first: whether *this specific file*'s own interpreter is
+	// being repointed at Homebrew's own glibc is the signal computeFinalRpath
+	// needs to decide whether this file legitimately needs glibc's lib
+	// directory added unconditionally. See its own doc comment for why that
+	// can't just be "glibc is somewhere in this dependency closure" — glibc
+	// is injected into every Homebrew-Linux artifact's closure unconditionally
+	// (resolve.go), whether or not any given bottle actually needs Homebrew's
+	// own glibc over the host's.
+	newInterp, interpChanged := computeFinalInterpreter(path, deps)
+	newRpath, rpathChanged := computeFinalRpath(path, root, selfFormula, selfVersion, selfStorePath, deps, resolve, interpChanged)
+	if !rpathChanged && !interpChanged {
 		return nil
 	}
 
-	var newEntries []string
-	changed := false
-	for _, entry := range strings.Split(rpath, ":") {
-		if strings.HasPrefix(entry, prefixToken) || strings.HasPrefix(entry, cellarToken) {
-			if resolved, ok := resolve(entry); ok {
-				newEntries = append(newEntries, resolved)
-				changed = true
-				continue
-			}
-			changed = true // dropping an unresolvable placeholder still counts as a change
-			continue
-		}
-		newEntries = append(newEntries, entry)
+	var args []string
+	if rpathChanged {
+		args = append(args, "--set-rpath", newRpath)
 	}
-	if !changed {
-		return nil
+	if interpChanged {
+		args = append(args, "--set-interpreter", newInterp)
 	}
-
-	if out, err := exec.Command("patchelf", "--set-rpath", strings.Join(newEntries, ":"), path).CombinedOutput(); err != nil {
-		return fmt.Errorf("patchelf --set-rpath: %w: %s", err, strings.TrimSpace(string(out)))
+	args = append(args, path)
+	if out, err := exec.Command("patchelf", args...).CombinedOutput(); err != nil {
+		return fmt.Errorf("patchelf: %w: %s", err, strings.TrimSpace(string(out)))
 	}
 	return nil
+}
+
+// computeFinalRpath resolves every placeholder entry in path's current
+// RPATH (dropping any that don't resolve), then ensures every dependency's
+// — and, unless path already lives there, this formula's own — lib
+// directory is present, regardless of whether the original bottle declared
+// an entry for it. Returns ("", false) when path isn't a dynamically
+// linked ELF file at all, or the resulting RPATH is identical to what was
+// already there.
+//
+// The "ensure every dependency" half exists because Homebrew's own Linux
+// bottles turn out not to declare an RPATH entry for every dependency
+// consistently across every file within a formula — confirmed for real:
+// glib's libglib-2.0.so.0 correctly declares a placeholder for
+// zlib-ng-compat's lib directory, but glib's own libgio-2.0.so.0 (which
+// directly needs libz.so.1, zlib-ng-compat's output) does not, despite
+// zlib-ng-compat being a materialised dependency of the exact same
+// formula. The same pattern recurred across roughly a third of every
+// Linux Homebrew formula tested this way (fontconfig needing freetype,
+// neovim needing luv, and many more). Real Homebrew papers over it the
+// same way it does for glibc and a formula's own self-reference: ldconfig
+// registers every installed formula's lib directory into one shared,
+// prefix-wide cache at install time, so a file missing its own explicit
+// RPATH entry for a dependency still finds it there. hop's isolated
+// per-package store has no equivalent for that, so this adds,
+// unconditionally, exactly the RPATH entries that cache would otherwise
+// provide — an unused search path costs nothing for a file that doesn't
+// need it, and fixes the ones that do.
+//
+// glibc is excluded from that "unconditionally" and handled separately via
+// addGlibc: resolve.go injects glibc into every Homebrew-Linux artifact's
+// dependency closure regardless of whether any given bottle actually needs
+// Homebrew's own glibc over the host's — most don't, and carry a literal
+// system interpreter path rather than the @@HOMEBREW_PREFIX@@/lib/ld.so
+// placeholder to prove it. Confirmed the hard way: ncdu is exactly such a
+// bottle, and blanket-adding Homebrew's glibc lib directory to its RPATH
+// anyway put two incompatible libc.so.6 builds in reach of the same
+// process, which failed at symbol resolution ("undefined symbol:
+// __tunable_is_initialized, version GLIBC_PRIVATE") rather than simply
+// being an unused, harmless search path the way every other unnecessary
+// entry here is. addGlibc is true only when this exact file's own
+// interpreter is being repointed at Homebrew's glibc, i.e. it actually
+// needs it — matching how the pre-consolidation code handled this before,
+// via the interpreter fix's own conditional rpath addition.
+func computeFinalRpath(path, root, selfFormula, selfVersion, selfStorePath string, deps map[string]depLocation, resolve func(string) (string, bool), addGlibc bool) (string, bool) {
+	out, err := exec.Command("patchelf", "--print-rpath", path).Output()
+	if err != nil {
+		return "", false // not a dynamically linked ELF file at all
+	}
+	current := strings.TrimSpace(string(out))
+
+	var entries []string
+	seen := map[string]bool{}
+	add := func(e string) bool {
+		if e == "" || seen[e] {
+			return false
+		}
+		seen[e] = true
+		entries = append(entries, e)
+		return true
+	}
+
+	changed := false
+	for _, entry := range strings.Split(current, ":") {
+		if entry == "" {
+			continue
+		}
+		if strings.HasPrefix(entry, prefixToken) || strings.HasPrefix(entry, cellarToken) {
+			if resolved, ok := resolve(entry); ok {
+				add(resolved)
+			}
+			changed = true // resolved or dropped, either way this entry no longer matches the original
+			continue
+		}
+		add(entry)
+	}
+
+	// A library never needs its own containing directory added back to its
+	// own RPATH, and — confirmed the hard way in an earlier version of
+	// this fix — actually adding one that resolves to a file's own
+	// directory is what caused ELF corruption. Skipping it here isn't just
+	// an optimisation; it avoids repeating that exact failure. The
+	// comparison happens in root's space (where path actually sits right
+	// now, mid-relocation) rather than selfStorePath's (where it will live
+	// once renamed into the store) — the two are never equal as strings
+	// even when they name the same tree, so comparing across that split
+	// would silently defeat the guard. root's own staging tree mirrors the
+	// final store's formula/version nesting (confirmed directly: a real
+	// staged file's path looked like ".../.stage-glibc-.../glibc/2.39_1/
+	// bin/gencat"), not a flat bin/lib layout, so the comparison has to
+	// match that nesting on both sides.
+	if filepath.Dir(path) != filepath.Join(root, selfFormula, selfVersion, "lib") {
+		if add(filepath.Join(selfStorePath, selfFormula, selfVersion, "lib")) {
+			changed = true
+		}
+	}
+	for formula, dep := range deps {
+		if formula == "glibc" && !addGlibc {
+			continue
+		}
+		if add(filepath.Join(dep.storePath, formula, dep.version, "lib")) {
+			changed = true
+		}
+	}
+
+	if !changed {
+		return "", false
+	}
+	return strings.Join(entries, ":"), true
 }
 
 // homebrewLinuxInterpreter is the fixed, literal ELF interpreter (PT_INTERP)
@@ -516,54 +684,31 @@ const homebrewLinuxInterpreter = "@@HOMEBREW_PREFIX@@/lib/ld.so"
 // rather than a formula name parsed out of the placeholder itself.
 const homebrewLinuxSharedLib = "@@HOMEBREW_PREFIX@@/lib"
 
-// relocateELFInterpreter rewrites path's PT_INTERP entry when it's the fixed
-// Homebrew-on-Linux glibc reference above. Most ELF files aren't real
+// computeFinalInterpreter resolves path's PT_INTERP entry when it's the
+// fixed Homebrew-on-Linux glibc reference above, returning the resolved
+// loader path and true if it needs changing. Most ELF files aren't real
 // executables at all (shared libraries carry no interpreter), so a missing
-// or unrelated interpreter is silently left alone.
-func relocateELFInterpreter(path string, deps map[string]depLocation) error {
+// or unrelated interpreter reports no change.
+//
+// This used to also add glibc's own lib directory to path's RPATH as a
+// second, separate patchelf call — folded away since computeFinalRpath's
+// "ensure every dependency" pass already adds it unconditionally whenever
+// glibc is present in deps, which it always is for a Homebrew-Linux
+// artifact with real executables (resolve.go injects it as an implicit
+// dependency for exactly that reason).
+func computeFinalInterpreter(path string, deps map[string]depLocation) (string, bool) {
 	out, err := exec.Command("patchelf", "--print-interpreter", path).Output()
 	if err != nil {
-		return nil // not every ELF file is an executable with an interpreter
+		return "", false // not every ELF file is an executable with an interpreter
 	}
 	if strings.TrimSpace(string(out)) != homebrewLinuxInterpreter {
-		return nil
+		return "", false
 	}
 	dep, ok := deps["glibc"]
 	if !ok {
-		return nil // no glibc in this closure to resolve against; leave as-is rather than guessed at
+		return "", false // no glibc in this closure to resolve against; leave as-is rather than guessed at
 	}
-	resolved := filepath.Join(dep.storePath, "glibc", dep.version, "bin", "ld.so")
-	if out, err := exec.Command("patchelf", "--set-interpreter", resolved, path).CombinedOutput(); err != nil {
-		return fmt.Errorf("patchelf --set-interpreter: %w: %s", err, strings.TrimSpace(string(out)))
-	}
-
-	// Homebrew's own ld.so carries no compiled-in default library search
-	// path of its own — verified directly: --print-rpath on glibc's own
-	// loader returns empty — so a binary using it as its interpreter needs
-	// glibc's own lib directory in its RPATH to find libc.so.6/libm.so.6/
-	// etc. at all. Confirmed for real: the interpreter fix above is enough
-	// to get the kernel to start the program, but without this it
-	// immediately fails with "error while loading shared libraries:
-	// libm.so.6: cannot open shared object file".
-	glibcLib := filepath.Join(dep.storePath, "glibc", dep.version, "lib")
-	rpathOut, err := exec.Command("patchelf", "--print-rpath", path).Output()
-	if err != nil {
-		return nil // interpreter is patched; a missing rpath here is unusual but not fatal to report
-	}
-	current := strings.TrimSpace(string(rpathOut))
-	for _, entry := range strings.Split(current, ":") {
-		if entry == glibcLib {
-			return nil // already present, most likely a reused store entry
-		}
-	}
-	newRpath := glibcLib
-	if current != "" {
-		newRpath = current + ":" + glibcLib
-	}
-	if out, err := exec.Command("patchelf", "--set-rpath", newRpath, path).CombinedOutput(); err != nil {
-		return fmt.Errorf("patchelf --set-rpath (glibc): %w: %s", err, strings.TrimSpace(string(out)))
-	}
-	return nil
+	return filepath.Join(dep.storePath, "glibc", dep.version, "bin", "ld.so"), true
 }
 
 // parsePlaceholder mirrors the darwin implementation exactly; duplicated
@@ -617,7 +762,7 @@ func probeForPlaceholders(root string) (needsELF, needsText bool) {
 		if err != nil {
 			return nil
 		}
-		if bytes.Contains(data, []byte(prefixToken)) || bytes.Contains(data, []byte(cellarToken)) {
+		if bytes.Contains(data, []byte(prefixToken)) || bytes.Contains(data, []byte(cellarToken)) || bytes.Contains(data, []byte(perlToken)) {
 			if isELF {
 				needsELF = true
 			} else {

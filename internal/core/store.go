@@ -266,8 +266,26 @@ func (e *StoreEntry) discover(a *Artifact) error {
 		// Fall back to searching by file name, then by the exposed command
 		// name: a single-file artifact is written to bin/<name>, so the
 		// recipe's in-archive path never exists on disk.
+		probes := []string{baseName(rel), name}
+		// Homebrew renames a handful of GNU tools with a leading "g" (gsed,
+		// ggrep, gfind, ...) specifically to avoid shadowing macOS's own
+		// BSD-flavored versions — a rename its Linux bottles don't need or
+		// make, since GNU tools are already the Linux default, and don't
+		// perform: confirmed for real, findutils'/gnu-sed's/grep's own
+		// Linux bottles ship plain find/sed/grep, not gfind/gsed/ggrep,
+		// while Homebrew's bulk API's "executables" field (genbrew's only
+		// source for Bin) reports the same g-prefixed names for every
+		// platform regardless. The name actually exposed on PATH still
+		// matches what was declared (BinLink below uses name, not probe) —
+		// this only widens where hop looks for the underlying file, so a
+		// Linux user gets the same predictable `gfind`/`gsed`/`ggrep`
+		// hop already gives a macOS user, rather than silently shadowing
+		// their system's own find/sed/grep under the bare name.
+		if stripped, ok := strings.CutPrefix(name, "g"); ok && stripped != "" {
+			probes = append(probes, stripped)
+		}
 		found := ""
-		for _, probe := range []string{baseName(rel), name} {
+		for _, probe := range probes {
 			if hit, err := findByName(e.Path, probe); err == nil && hit != "" {
 				found = hit
 				break
