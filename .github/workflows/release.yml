@@ -47,7 +47,16 @@ jobs:
           - goos: linux
             goarch: arm64
     steps:
+      # On a workflow_dispatch run, github.ref still points at whatever
+      # triggered the dispatch (usually the default branch), not the tag
+      # given as input — without an explicit ref here, a manual run builds
+      # the default branch's current HEAD but publishes it under whatever
+      # tag name was typed in, silently mismatching content and label. A
+      # tag push (github.event_name == push) already has github.ref set
+      # correctly to the tag itself.
       - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.tag || github.ref }}
       - uses: actions/setup-go@v5
         with:
           go-version-file: go.mod
@@ -111,9 +120,29 @@ jobs:
           PRERELEASE=()
           if [[ "$TAG" == *-* ]]; then PRERELEASE=(--prerelease); fi
 
+          # gh shows an asset's bare filename by default; label each
+          # archive with its OS/arch in plain words (path#label syntax)
+          # so the release page reads clearly without decoding
+          # "darwin-arm64" style filenames.
+          ASSETS=(artifacts/SHA256SUMS)
+          for f in artifacts/*.tar.gz; do
+            case "$f" in
+              *-darwin-amd64.tar.gz)  label="macOS (Intel)" ;;
+              *-darwin-arm64.tar.gz)  label="macOS (Apple Silicon)" ;;
+              *-linux-amd64.tar.gz)   label="Linux (x86_64)" ;;
+              *-linux-arm64.tar.gz)   label="Linux (ARM64)" ;;
+              *)                      label="" ;;
+            esac
+            if [[ -n "$label" ]]; then
+              ASSETS+=("$f#$label")
+            else
+              ASSETS+=("$f")
+            fi
+          done
+
           gh release create "$TAG" \
             --repo "${{ github.repository }}" \
             --title "hop $TAG" \
             --generate-notes \
             "${PRERELEASE[@]}" \
-            artifacts/*.tar.gz artifacts/SHA256SUMS
+            "${ASSETS[@]}"
