@@ -517,11 +517,11 @@
     <div class="section-head reveal">
       <span class="kicker">The index</span>
       <h2>Every recipe, checksum-verified by inspection</h2>
-      <p>The built-in index isn't hand-typed. A generator resolves each package's latest release, downloads the real artifact, and derives its checksum by opening it — nothing here is guessed. Images span more than Linux cloud builds: <code>freebsd-vm</code> is genuinely non-Linux, <code>fedora-workstation</code> and <code>archlinux-iso</code> are real installer ISOs rather than cloud images, and <code>macos-recovery</code> pulls straight from Apple's own signed CDN for an Apple Silicon VM. <code>raspios-lite</code> honestly has no <code>amd64</code> build at all — Pi hardware is arm64-only, so hop says so. Windows isn't here on purpose: Microsoft's ISOs sit behind an interactive, EULA-gated web flow with no stable checksum manifest, which every other entry in this index deliberately has — that's the line hop stays behind.</p>
+      <p>The built-in index isn't hand-typed. A generator resolves each package's latest release, downloads the real artifact, and derives its checksum by opening it — nothing here is guessed. Close to 200 entries come straight from Homebrew's own bottle infrastructure, with their real dependency graphs relocated into hop's own store rather than Homebrew's. Images span more than Linux cloud builds: <code>freebsd-vm</code>, <code>openbsd-vm</code> and <code>netbsd-iso</code> are genuinely non-Linux, <code>fedora-workstation</code> and <code>archlinux-iso</code> are real installer ISOs rather than cloud images, security-focused distros like <code>kali-linux</code> and <code>tails</code> sit alongside everyday ones, and eleven separate <code>macos-*</code> recipes span Lion through Tahoe from Apple's own infrastructure. <code>raspios-lite</code> honestly has no <code>amd64</code> build at all — Pi hardware is arm64-only, so hop says so. Windows isn't here on purpose: Microsoft's ISOs sit behind an interactive, EULA-gated web flow with no stable checksum manifest, which every other entry in this index deliberately has — that's the line hop stays behind.</p>
     </div>
 
     <div class="catalog-meta">
-      <span class="catalog-count">70 recipes · 261 verified artifacts · darwin-arm64, darwin-amd64, linux-amd64, linux-arm64</span>
+      <span class="catalog-count">284 recipes · 1,048 verified artifacts · darwin-arm64, darwin-amd64, linux-amd64, linux-arm64</span>
       <a href="#install" class="btn btn-ghost" style="padding:7px 14px; font-size:12.5px;">hop search &lt;name&gt;</a>
     </div>
 
@@ -606,16 +606,26 @@
 
 <script>
 (function(){
-  // Real recipe data (from internal/core/data/index.json) — not sample text.
+  // A representative sample of recipe data (from internal/core/data/index.json),
+  // not the full 284 — TOTAL below is the real count for the "+N more" tally.
+  var TOTAL = 284;
   var pkgs = [
     ["ubuntu-cloud","24.04","Ubuntu 24.04 LTS server cloud image, for qemu and VM provisioning",4],
     ["debian-cloud","12","Debian 12 (bookworm) generic cloud image, for qemu and VM provisioning",4],
     ["alpine-minirootfs","3.20","Alpine Linux minimal root filesystem, for containers and chroots",4],
     ["freebsd-vm","15.1-RELEASE","FreeBSD's general-purpose VM image — not Linux, not cloud-init",4],
+    ["openbsd-vm","7.9","OpenBSD install ISO — a second, independent BSD",4],
     ["fedora-workstation","44","Fedora Workstation Live ISO — an installer, not a cloud image",4],
     ["archlinux-iso","latest","Arch Linux install ISO, x86_64 only",2],
+    ["kali-linux","2026.2","Kali Linux installer ISO — Debian-derived, for security testing",4],
+    ["tails","7.12","An amnesic live OS that routes all traffic through Tor (x86_64 only)",2],
     ["macos-recovery","26.6.2","macOS full restore image for Apple Silicon VMs",1],
+    ["macos-sequoia","15.7.9","macOS Sequoia full installer, straight from Apple's own infrastructure",2],
     ["raspios-lite","2026-06-18","Raspberry Pi OS Lite, arm64 only — real SD-card hardware, no cloud",2],
+    ["nmap","7.991","Port scanning utility for large networks — Homebrew bottle, relocated",4],
+    ["ffmpeg","9.0.1","Play, record, convert and stream select audio and video codecs",4],
+    ["htop","3.5.3","Improved top, an interactive process viewer — Homebrew bottle, relocated",4],
+    ["yt-dlp","2026.8.19","Feature-rich command-line audio/video downloader",3],
     ["ripgrep","15.2.0","Recursively search directories for a regex pattern, respecting .gitignore",4],
     ["fd","10.5.0","A fast, user-friendly alternative to find",4],
     ["bat","0.26.1","A cat clone with syntax highlighting and git integration",4],
@@ -690,7 +700,7 @@
       + '<div class="card-plats">' + p[3] + ' platform' + (p[3]===1?'':'s') + '</div>'
       + '</div>';
   });
-  html += '<div class="catalog-more">+ ' + (pkgs.length - SHOWN) + ' more in the index</div>';
+  html += '<div class="catalog-more">+ ' + (TOTAL - SHOWN) + ' more in the index</div>';
   el.innerHTML = html;
 
   document.querySelectorAll('.copy-btn').forEach(function(btn){

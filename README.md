@@ -62,7 +62,11 @@ eval "$(hop shellenv)"          # add this to ~/.zshrc, ~/.bashrc, etc.
 ```
 
 hop ships with a recipe index compiled into the binary, so this works with no
-network access and no separate "update" step on a fresh machine.
+network access and no separate "update" step on a fresh machine. That index
+currently carries **284 recipes and 1,048 verified artifacts** across
+`darwin-arm64`, `darwin-amd64`, `linux-amd64` and `linux-arm64` — standalone
+CLI tools, close to 200 Homebrew formulae with their real dependency graphs,
+and 28 OS/VM images spanning Linux, BSD, and macOS from Lion through Tahoe.
 
 ## The basics
 
@@ -123,18 +127,43 @@ hardware is arm64-only, so hop says so rather than pretending otherwise).
 | `debian-cloud` | Debian 12 (bookworm) generic cloud image |
 | `alpine-minirootfs` | Alpine Linux minimal root filesystem, for containers |
 | `freebsd-vm` | FreeBSD's general-purpose VM image — not Linux, not cloud-init |
+| `openbsd-vm` | OpenBSD install ISO — a second, independent BSD |
+| `netbsd-iso` | NetBSD install ISO — the BSD built to run on almost anything |
 | `raspios-lite` | Raspberry Pi OS Lite, arm64 only, for real SD-card hardware |
 | `fedora-workstation` | Fedora Workstation Live ISO — an installer, not a cloud image |
 | `archlinux-iso` | Arch Linux install ISO, x86_64 only |
+| `opensuse-tumbleweed` | openSUSE Tumbleweed DVD installer — the rolling-release openSUSE |
+| `rocky-linux` | Rocky Linux minimal installer ISO — a free, community-rebuilt RHEL |
+| `void-linux` | Void Linux live ISO — its own xbps package manager, no systemd |
 | `macos-recovery` | macOS full restore image for Apple Silicon VMs |
 
 Each is resolved straight from its own distro's official checksum manifest —
 Ubuntu, Alpine and Fedora publish SHA-256, Debian only publishes SHA-512
-(which is why hop's artifact format accepts either), and FreeBSD uses its
-own `SHA256 (file) = digest` format rather than the GNU `sha256sum`
-convention. All of it is verified with exactly the same rigor as everything
+(which is why hop's artifact format accepts either), FreeBSD and OpenBSD use
+`SHA256 (file) = digest` rather than the GNU `sha256sum` convention, and
+Void's and Kali's combined manifests need picking the right line out of
+several. All of it is verified with exactly the same rigor as everything
 else in the index — nothing here is trusted just because it "looks
 official."
+
+### Specialized Linux, for when "general-purpose" isn't the point
+
+A handful of distros exist specifically for security testing, privacy, or
+virtualization rather than everyday use — hop treats them the same as any
+other image, just verified against manifests with their own quirks:
+
+| Package | What it is |
+|---|---|
+| `kali-linux` | Debian-derived, for security testing and penetration testing |
+| `parrot-security` | Debian-derived, for security testing (x86_64 only — arm64 ships as a UTM tarball, not an ISO) |
+| `proxmox-ve` | A Debian-derived type-1 hypervisor, for running VMs directly on hardware |
+| `tails` | An amnesic live OS that routes all traffic through Tor (x86_64 only) |
+
+`tails` is the one exception to "every image is independently re-hashed":
+the Tails project publishes only a PGP signature for its image, no plain
+checksum manifest at all, so hop trusts it on first use like it does for
+some legacy macOS DMGs — the same limitation, not a lowered bar applied
+selectively.
 
 `macos-recovery` deserves its own note. It's resolved from
 [api.ipsw.me](https://ipsw.me), a long-standing public aggregator of
@@ -206,26 +235,58 @@ infrastructure — the same prebuilt binaries `brew install` itself
 downloads, fetched directly from `ghcr.io/homebrew/core` as OCI registry
 blobs (the real Docker-registry token-then-blob protocol: an anonymous pull
 token, then the blob, verified against the exact SHA-256 Homebrew's own API
-publishes):
+publishes). Close to 200 formulae are in the index this way — networking
+and diagnostic tools (`nmap`, `iperf3`, `mtr`, `rclone`), media and document
+tooling (`ffmpeg`, `imagemagick`, `pandoc`, `exiftool`), dev-environment
+version managers (`pyenv`, `rbenv`, `direnv`, `git-lfs`), GNU utilities for
+scripts that expect them (`gawk`, `gnu-sed`, `findutils`), and enough
+terminal fun (`cowsay`, `figlet`, `cmatrix`) that a package index doesn't
+have to take itself too seriously:
 
 ```bash
 hop install htop     # pulls htop + its real dependency, ncurses
-hop install tig      # ncurses + pcre2 + readline, resolved transitively
+hop install nmap     # openssl@3, libssh2, pcre2, lua — resolved transitively
 ```
 
 A Homebrew bottle is compiled with placeholder tokens
-(`@@HOMEBREW_PREFIX@@`) baked into its Mach-O load commands, standing in
-for wherever it ends up installed — `brew install` itself patches these
-with `install_name_tool` at pour time, which is exactly why a bottle simply
-extracted elsewhere doesn't run: dyld can't resolve a literal
-`@@HOMEBREW_PREFIX@@/opt/ncurses/lib/libncursesw.6.dylib`. hop performs the
-same patch into its own content-addressed store paths instead of a shared
-Homebrew prefix, then ad-hoc re-signs whatever it touched (a modified
-signature is otherwise invalid). This was verified for real, not assumed:
-`htop` crashed with `Symbol not found: _COLORS` before this existed, and
-`tig` — three levels of real dependencies deep (`ncurses`, `pcre2`,
-`readline`) — runs correctly, with every linked library confirmed pointing
-at its actual hop store path, after it.
+(`@@HOMEBREW_PREFIX@@`/`@@HOMEBREW_CELLAR@@`) standing in for wherever it
+ends up installed — `brew install` itself patches these at pour time, which
+is exactly why a bottle simply extracted elsewhere doesn't run. hop performs
+the same patch into its own content-addressed store paths instead of a
+shared Homebrew prefix. This turned out to mean four distinct kinds of
+patching, each found by actually running the installed binary rather than
+trusting a clean install:
+
+- **Mach-O load commands** (`install_name_tool`, then an ad-hoc re-sign,
+  since patching invalidates the existing signature) — the case most tools
+  in this space handle.
+- **Plain-text wrapper scripts** carrying the same placeholder tokens — a
+  Ruby or Python gem's `bin/<name>` launcher, notably.
+- **`#!/usr/bin/env <interpreter>` shebangs**, which carry no placeholder at
+  all. hop deliberately keeps a dependency-only package like `python@3.14`
+  off the user's `PATH`, so an unrewritten shebang would silently fall
+  through to whatever interpreter (if any) happens to be ambient on the
+  machine — these get pinned to the exact dependency hop resolved, the same
+  thing `brew`'s own installer does for gem-based formulae.
+- **Symlinks that climb out to Homebrew's shared `opt/<formula>` farm** — a
+  Python-based CLI's bundled venv interpreter link, notably. These need
+  patching in the extractor itself, since a naive path-traversal guard
+  would otherwise silently drop the symlink before relocation ever sees it.
+
+This was verified for real at every step, not assumed: `htop` crashed with
+`Symbol not found: _COLORS` before any of this existed, `tig` — three real
+dependencies deep (`ncurses`, `pcre2`, `readline`) — now runs with every
+linked library confirmed pointing at its actual hop store path, and `nmap`,
+`yt-dlp` and `csvkit` each surfaced one of the less obvious cases above by
+actually failing at runtime until it was fixed.
+
+One formula doesn't fit this scheme at all: **Ruby bakes literal, real
+absolute paths (`/opt/homebrew/Cellar/ruby/…`) directly into `libruby.dylib`
+for its own VM bootstrap**, confirmed with `strings` on the extracted
+library and by running hop's own copy of `ruby` standalone — not a
+placeholder token hop's relocation can patch, and not a bug in the sense
+everything above was. hop doesn't carry `ruby` (or its one Homebrew
+dependent) rather than ship something that fails at runtime.
 
 A pure-library dependency (`readline`, `openssl@3`, and most of what a real
 formula's dependency graph pulls in) still becomes a recipe — it just puts
