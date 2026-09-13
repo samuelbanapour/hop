@@ -1,6 +1,7 @@
 package core
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -224,7 +225,23 @@ func (r *Resolver) expand(reqs []request) ([]selection, error) {
 		colour[key] = grey
 		path = append(path, rec.Name)
 		for _, dep := range rec.Deps {
-			if err := visit(request{name: dep, explicit: false, reason: "dependency of " + rec.Name}); err != nil {
+			err := visit(request{name: dep, explicit: false, reason: "dependency of " + rec.Name})
+			var unsupported *UnsupportedPlatformError
+			if errors.As(err, &unsupported) {
+				// A dependency with no build at all for this platform is
+				// tolerated here, not fatal — this is exactly what a
+				// Homebrew formula's own platform-conditional dependency
+				// looks like from hop's side once merged into one flat
+				// Deps list: lm-sensors, needed by htop only on Linux (for
+				// hardware sensor readouts genbrew's own Linux-variation
+				// merge picked up), has no darwin build at all and was
+				// never meant to be required there. rec's own artifact for
+				// this platform was still built without it, so resolving
+				// without it here is correct, not a workaround around a
+				// real gap.
+				continue
+			}
+			if err != nil {
 				return err
 			}
 		}

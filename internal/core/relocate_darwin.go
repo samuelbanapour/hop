@@ -131,7 +131,16 @@ const maxTextRelocateSize = 2 << 20
 // whatever path-like characters follow it — so relocateTextFile can find and
 // replace occurrences embedded anywhere inside a script, not just ones
 // otool would have reported as a load command.
-var placeholderPattern = regexp.MustCompile(`@@HOMEBREW_(?:PREFIX|CELLAR)@@[A-Za-z0-9_./+-]*`)
+// The character class includes "@" specifically for versioned formula
+// names (python@3.14, openssl@3, gcc@13, ...) — without it, a placeholder
+// naming one of these truncates right before the "@" and never matches
+// parsePlaceholder's expected shape, silently leaving the placeholder
+// unresolved. Confirmed for real on the Linux side (python@3.14's own
+// pip3.14 script ships a literal, unpatched "#!@@HOMEBREW_CELLAR@@/
+// python@3.14/3.14.7/bin/python3.14" shebang without this, and fails to
+// execute at all); fixed here too since the regex is otherwise identical
+// and the same versioned-formula-name shebangs can appear in any bottle.
+var placeholderPattern = regexp.MustCompile(`@@HOMEBREW_(?:PREFIX|CELLAR)@@[A-Za-z0-9_./@+-]*`)
 
 // relocateTextFile rewrites both kinds of text-level indirection Homebrew
 // bottles carry: literal @@HOMEBREW_...@@ placeholder references (a

@@ -33,6 +33,14 @@ type depLocation struct {
 // a produced ELF binary needs a Linux host to execute it on. Treat it as
 // unverified until it has been.
 func relocateHomebrewBottle(root, selfFormula, selfVersion, selfStorePath string, deps map[string]depLocation) error {
+	// Independent of the placeholder-driven relocation below: a python@X.Y
+	// formula's own interpreter needs PYTHONHOME set correctly to even
+	// bootstrap at all, which no ELF/RPATH patch can provide. See
+	// wrapPythonInterpreter's own doc comment for why.
+	if err := wrapPythonInterpreter(root, selfFormula, selfVersion, selfStorePath); err != nil {
+		return err
+	}
+
 	needsELF, needsText := probeForPlaceholders(root)
 	// Mirrors the darwin implementation: a "#!/usr/bin/env ruby"-style
 	// shebang carries no @@HOMEBREW_...@@ token at all, so the probe above
@@ -91,6 +99,95 @@ func relocateHomebrewBottle(root, selfFormula, selfVersion, selfStorePath string
 	return walkErr
 }
 
+// wrapPythonInterpreter replaces a python@X.Y formula's own interpreter
+// binary (bin/python3.14, for the formula named python@3.14 — the pattern
+// generalizes to any future python@X.Y hop adds) with a small shell script
+// that sets PYTHONHOME before exec'ing the real binary, renamed alongside
+// it as bin/python3.14-real. Every other formula is left untouched.
+//
+// Homebrew's Linux Python build bakes a literal, non-placeholder absolute
+// path (confirmed for real: python@3.14's own `-c "import sys;
+// print(sys.base_prefix)"` prints the fixed
+// "/home/linuxbrew/.linuxbrew/Cellar/python@3.14/3.14.7", not wherever it
+// actually runs from) into its own C-level bootstrap — not a
+// @@HOMEBREW_...@@ token any ELF/RPATH patch in this file can reach, since
+// it's baked into the interpreter's own path-resolution logic rather than
+// a load command or rpath entry. Without a correct PYTHONHOME the
+// interpreter can't even import its own "encodings" module and crashes on
+// startup — confirmed for every Python-based Homebrew formula that invokes
+// it (csvkit, yt-dlp), not just a standalone `python3.14` run directly.
+//
+// A pyvenv.cfg file dropped next to the binary — CPython's own supported
+// mechanism for exactly this class of problem — was tried first and
+// verified NOT sufficient: it only takes effect when the interpreter
+// binary is invoked directly, because CPython's own pyvenv.cfg lookup is
+// relative to however it was actually invoked (argv[0]), not the resolved
+// real binary, so a symlink chain from a dependent formula's own launcher
+// (csvkit's, yt-dlp's own libexec/bin/python, both already correctly
+// relocated by relocateTextFile/rewriteShebang to this binary's exact
+// absolute path) never finds it. PYTHONHOME, a process environment
+// variable rather than a file lookup, is consulted first regardless of
+// invocation path — which is exactly why it has to be set here, at the
+// interpreter itself, rather than left to each caller: wrapping this one
+// binary fixes every caller transparently without touching any of them,
+// since they already all reference this exact path.
+//
+// PYTHONHOME alone isn't quite enough, though — confirmed by actually
+// running yt-dlp with only that set: it fixes sys.base_prefix (so the
+// stdlib bootstraps), but per CPython's own documented behavior PYTHONHOME
+// also overrides sys.prefix/sys.exec_prefix to match it exactly, which
+// silently breaks the mechanism a Python-based formula's own bundled
+// dependencies were relying on — before this wrapper existed at all,
+// sys.prefix was correctly derived from however the interpreter had been
+// invoked (yt-dlp's own libexec/bin/python, not python@3.14's), and
+// site.py's automatic site-packages discovery used that to find yt-dlp's
+// own vendored packages under <that prefix>/lib/pythonX.Y/site-packages.
+// Confirmed empirically (an instrumented copy of this exact wrapper) that
+// $0 reliably still carries that caller-specific path — the shebang chain
+// preserves it even through the kernel's own script-interpreter handling —
+// so the wrapper restores it explicitly via PYTHONPATH rather than trusting
+// PYTHONHOME's side effect to get it right.
+func wrapPythonInterpreter(root, selfFormula, selfVersion, selfStorePath string) error {
+	pyVersion, ok := strings.CutPrefix(selfFormula, "python@")
+	if !ok {
+		return nil
+	}
+	binName := "python" + pyVersion
+
+	currentBin := filepath.Join(root, selfFormula, selfVersion, "bin", binName)
+	info, err := os.Lstat(currentBin)
+	if err != nil || !info.Mode().IsRegular() {
+		return nil // no such interpreter binary in this tree
+	}
+	currentReal := currentBin + "-real"
+	if _, err := os.Stat(currentReal); err == nil {
+		return nil // already wrapped; relocation only ever runs once per fresh extraction, but no harm in checking
+	}
+	if err := os.Rename(currentBin, currentReal); err != nil {
+		return fmt.Errorf("wrapping %s: %w", binName, err)
+	}
+
+	// The wrapper's own content has to name the future final store path,
+	// not root (the current staging location) — the same split every
+	// other placeholder resolution in this file makes, and for the same
+	// reason: this tree gets renamed into place after relocation finishes.
+	finalVersionDir := filepath.Join(selfStorePath, selfFormula, selfVersion)
+	finalReal := filepath.Join(finalVersionDir, "bin", binName+"-real")
+	sitePackagesRel := filepath.Join("lib", binName, "site-packages")
+	wrapper := fmt.Sprintf(`#!/bin/sh
+export PYTHONHOME=%q
+callerlib=$(dirname "$(dirname "$0")")/%s
+if [ -d "$callerlib" ]; then
+	export PYTHONPATH="$callerlib${PYTHONPATH:+:$PYTHONPATH}"
+fi
+exec %q "$@"
+`, finalVersionDir, sitePackagesRel, finalReal)
+	if err := os.WriteFile(currentBin, []byte(wrapper), 0o755); err != nil {
+		return fmt.Errorf("writing %s wrapper: %w", binName, err)
+	}
+	return nil
+}
+
 // maxTextRelocateSize mirrors the darwin implementation's bound on how
 // large a file can be and still plausibly be a wrapper script worth
 // text-scanning for a placeholder, rather than a compiled binary already
@@ -100,7 +197,14 @@ const maxTextRelocateSize = 2 << 20
 // placeholderPattern mirrors the darwin implementation: the token plus
 // whatever path-like characters follow it, so a placeholder embedded
 // anywhere in a script (not just where patchelf would report it) is found.
-var placeholderPattern = regexp.MustCompile(`@@HOMEBREW_(?:PREFIX|CELLAR)@@[A-Za-z0-9_./+-]*`)
+// The character class includes "@" specifically for versioned formula
+// names (python@3.14, openssl@3, gcc@13, ...) — without it, a placeholder
+// naming one of these truncates right before the "@" and never matches
+// parsePlaceholder's expected shape, silently leaving the placeholder
+// unresolved. Confirmed for real: python@3.14's own pip3.14 script ships
+// a literal, unpatched "#!@@HOMEBREW_CELLAR@@/python@3.14/3.14.7/bin/
+// python3.14" shebang without this, and fails to execute at all.
+var placeholderPattern = regexp.MustCompile(`@@HOMEBREW_(?:PREFIX|CELLAR)@@[A-Za-z0-9_./@+-]*`)
 
 // relocateTextFile mirrors the darwin implementation exactly: it rewrites
 // both literal @@HOMEBREW_...@@ placeholder references and "#!/usr/bin/env
