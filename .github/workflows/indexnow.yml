@@ -1,0 +1,68 @@
+name: IndexNow
+
+# Tell IndexNow-participating search engines (Bing, Yandex, and anyone else
+# that shares the protocol) whenever a page actually changed, instead of
+# waiting for their own crawler to notice on its own schedule. Runs only
+# when something under site/ changes, so an unrelated CLI commit doesn't
+# trigger a submission for pages that didn't move.
+on:
+  push:
+    branches: [master]
+    paths:
+      - "site/**"
+  workflow_dispatch: {}
+
+jobs:
+  submit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Submit every sitemap URL to IndexNow
+        run: |
+          python3 - <<'PYEOF'
+          import json
+          import re
+          import sys
+          import urllib.error
+          import urllib.request
+
+          HOST = "hopcli-site.onrender.com"
+          KEY = "697469fd6645c30c96d572711467bcf2"
+          KEY_LOCATION = f"https://{HOST}/{KEY}.txt"
+
+          # Pulled straight from the committed sitemap rather than
+          # hand-maintaining a second URL list here — adding a page to
+          # site/sitemap.xml is then the only place that needs updating.
+          with open("site/sitemap.xml", encoding="utf-8") as f:
+              xml = f.read()
+          urls = re.findall(r"<loc>([^<]+)</loc>", xml)
+          if not urls:
+              sys.exit("no URLs found in site/sitemap.xml")
+
+          body = json.dumps({
+              "host": HOST,
+              "key": KEY,
+              "keyLocation": KEY_LOCATION,
+              "urlList": urls,
+          }).encode("utf-8")
+
+          print("submitting:", body.decode())
+          req = urllib.request.Request(
+              "https://api.indexnow.org/indexnow",
+              data=body,
+              headers={"Content-Type": "application/json; charset=utf-8"},
+              method="POST",
+          )
+          try:
+              with urllib.request.urlopen(req, timeout=30) as resp:
+                  print("HTTP", resp.status)
+          except urllib.error.HTTPError as e:
+              print("HTTP", e.code)
+              print(e.read().decode(errors="replace"))
+              # 200 = accepted, 202 = accepted but key not yet fully
+              # verified (still fine on a freshly-added key) — anything
+              # else is a real failure worth failing the job for.
+              if e.code not in (200, 202):
+                  raise
+          PYEOF
