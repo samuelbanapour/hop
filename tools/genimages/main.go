@@ -28,15 +28,31 @@ import (
 	"time"
 )
 
-// artifact/recipe/index mirror internal/core's JSON shape. Duplicated rather
-// than imported so this generator can never be broken by an engine refactor.
+// artifact/recipe/index mirror internal/core's JSON shape exactly, field for
+// field — every field any of the three generators (genindex, genbrew,
+// genimages) can set, even ones this particular generator never populates
+// itself. Each generator's own run reads the *entire* existing index.json,
+// decodes it into its own local structs, and writes the whole thing back
+// out; a field missing from one generator's struct is silently dropped from
+// every other generator's recipes the moment this one runs. This happened
+// for real: an earlier version of this struct without OCITokenURL, Bin,
+// NoExecutables, Deps or Aliases stripped all of those from every Homebrew
+// formula the first time this generator ran after genbrew added them. Keep
+// this struct pair a complete superset in lockstep with
+// internal/core/index.go's Artifact and Recipe types, not just the subset
+// this generator happens to write.
 type artifact struct {
-	URL    string `json:"url"`
-	SHA256 string `json:"sha256,omitempty"`
-	SHA512 string `json:"sha512,omitempty"`
-	SHA1   string `json:"sha1,omitempty"`
-	Size   int64  `json:"size,omitempty"`
-	Format string `json:"format,omitempty"`
+	URL           string   `json:"url"`
+	SHA256        string   `json:"sha256,omitempty"`
+	SHA512        string   `json:"sha512,omitempty"`
+	SHA1          string   `json:"sha1,omitempty"`
+	Size          int64    `json:"size,omitempty"`
+	OCITokenURL   string   `json:"oci_token_url,omitempty"`
+	Format        string   `json:"format,omitempty"`
+	Strip         int      `json:"strip,omitempty"`
+	Bin           []string `json:"bin,omitempty"`
+	NoExecutables bool     `json:"no_executables,omitempty"`
+	Man           []string `json:"man,omitempty"`
 }
 
 type recipe struct {
@@ -47,6 +63,8 @@ type recipe struct {
 	License     string               `json:"license,omitempty"`
 	Keywords    []string             `json:"keywords,omitempty"`
 	Kind        string               `json:"kind,omitempty"`
+	Aliases     []string             `json:"aliases,omitempty"`
+	Deps        []string             `json:"deps,omitempty"`
 	Artifacts   map[string]*artifact `json:"artifacts"`
 	Caveats     string               `json:"caveats,omitempty"`
 }

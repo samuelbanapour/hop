@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "source": "builtin",
-  "generated": "2026-09-13T03:30:34Z",
+  "generated": "2026-09-13T03:50:56Z",
   "recipes": [
     {
       "name": "age",
@@ -54,6 +54,7 @@
         "musl",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://dl-cdn.alpinelinux.org/alpine/v3.20/releases/x86_64/alpine-minirootfs-3.20.10-x86_64.tar.gz",
@@ -141,6 +142,7 @@
         "linux",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://geo.mirror.pkgbuild.com/iso/latest/archlinux-x86_64.iso",
@@ -2168,24 +2170,29 @@
         "image",
         "debian"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2",
+          "sha512": "84946d6e2f55b1e8dcc114efc059f13882bd2ccdf36852126a13a0aa4a4ce0efee945406b78280e5942096639edc2a3ced20b70c12d9c7c7366ce364ba47a0ff",
           "size": 449314816,
           "format": "raw"
         },
         "darwin-arm64": {
           "url": "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-arm64.qcow2",
+          "sha512": "791a822d93afa20360af4497ea2d2c0c0867b9663b8fc4e8b864364334855585a9f053d8fc82c72fe703d66ff76387c6dfc7be8534f0c85c47f0448f6dd28dd4",
           "size": 435683328,
           "format": "raw"
         },
         "linux-amd64": {
           "url": "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-amd64.qcow2",
+          "sha512": "84946d6e2f55b1e8dcc114efc059f13882bd2ccdf36852126a13a0aa4a4ce0efee945406b78280e5942096639edc2a3ced20b70c12d9c7c7366ce364ba47a0ff",
           "size": 449314816,
           "format": "raw"
         },
         "linux-arm64": {
           "url": "https://cloud.debian.org/images/cloud/bookworm/latest/debian-12-generic-arm64.qcow2",
+          "sha512": "791a822d93afa20360af4497ea2d2c0c0867b9663b8fc4e8b864364334855585a9f053d8fc82c72fe703d66ff76387c6dfc7be8534f0c85c47f0448f6dd28dd4",
           "size": 435683328,
           "format": "raw"
         }
@@ -2989,6 +2996,7 @@
         "linux",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://download.fedoraproject.org/pub/fedora/linux/releases/44/Workstation/x86_64/iso/Fedora-Workstation-Live-44-1.7.x86_64.iso",
@@ -3665,6 +3673,7 @@
         "qemu",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://download.freebsd.org/releases/VM-IMAGES/15.1-RELEASE/amd64/Latest/FreeBSD-15.1-RELEASE-amd64-ufs.qcow2.xz",
@@ -7016,6 +7025,7 @@
         "linux",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://cdimage.kali.org/current/kali-linux-2026.2-installer-amd64.iso",
@@ -9676,14 +9686,17 @@
         "installer",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://swcdn.apple.com/content/downloads/10/18/047-32248-A_Y7S9K47C9M/rqg3zuwb6dkofsdilmz22awvxtq2sxwr15/InstallAssistant.pkg",
+          "sha1": "e6ca87c50853575044b7410424070b5740847f77",
           "size": 12413681835,
           "format": "raw"
         },
         "darwin-arm64": {
           "url": "https://swcdn.apple.com/content/downloads/10/18/047-32248-A_Y7S9K47C9M/rqg3zuwb6dkofsdilmz22awvxtq2sxwr15/InstallAssistant.pkg",
+          "sha1": "e6ca87c50853575044b7410424070b5740847f77",
           "size": 12413681835,
           "format": "raw"
         }
@@ -9702,6 +9715,7 @@
         "installer",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://updates.cdn-apple.com/2019/cert/061-41424-20191024-218af9ec-cf50-4516-9011-228c78eda3d2/InstallMacOSX.dmg",
@@ -9728,6 +9742,7 @@
         "installer",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://updates.cdn-apple.com/2021/macos/041-7683-20210614-E610947E-C7CE-46EB-8860-D26D71F0D3EA/InstallMacOSX.dmg",
@@ -9754,14 +9769,17 @@
         "installer",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://swcdn.apple.com/content/downloads/24/16/062-40406-A_LQ4WW26M04/j7bl9ygay5prezturwh72ai10fvseh2uhw/InstallAssistant.pkg",
+          "sha1": "a654cd91b86528bbf0e1b006e9a7e62967f73de8",
           "size": 12409187001,
           "format": "raw"
         },
         "darwin-arm64": {
           "url": "https://swcdn.apple.com/content/downloads/24/16/062-40406-A_LQ4WW26M04/j7bl9ygay5prezturwh72ai10fvseh2uhw/InstallAssistant.pkg",
+          "sha1": "a654cd91b86528bbf0e1b006e9a7e62967f73de8",
           "size": 12409187001,
           "format": "raw"
         }
@@ -9780,6 +9798,7 @@
         "installer",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://updates.cdn-apple.com/2021/macos/031-0627-20210614-90D11F33-1A65-42DD-BBEA-E1D9F43A6B3F/InstallMacOSX.dmg",
@@ -9808,6 +9827,7 @@
         "ipsw",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-arm64": {
           "url": "https://updates.cdn-apple.com/2026SummerFCS/fullrestores/140-75212/A2A24B94-1FC1-45A3-93F7-C51B02AF1F4D/UniversalMac_26.6.2_25G83_Restore.ipsw",
@@ -9830,14 +9850,17 @@
         "installer",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://swcdn.apple.com/content/downloads/16/08/140-85388-A_3LX3Q36I6P/zxod6nr7zkovvsml6s628z44gdbc4exa5p/InstallAssistant.pkg",
+          "sha1": "9b45bc4ef6f36decb1e7b41915956193d98d01df",
           "size": 15655958320,
           "format": "raw"
         },
         "darwin-arm64": {
           "url": "https://swcdn.apple.com/content/downloads/16/08/140-85388-A_3LX3Q36I6P/zxod6nr7zkovvsml6s628z44gdbc4exa5p/InstallAssistant.pkg",
+          "sha1": "9b45bc4ef6f36decb1e7b41915956193d98d01df",
           "size": 15655958320,
           "format": "raw"
         }
@@ -9856,6 +9879,7 @@
         "installer",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://updates.cdn-apple.com/2019/cert/061-39476-20191023-48f365f4-0015-4c41-9f44-39d3d2aca067/InstallOS.dmg",
@@ -9882,14 +9906,17 @@
         "installer",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://swcdn.apple.com/content/downloads/13/30/140-88558-A_TN3FIE7J63/p61cqj3ktmcqilz3q64ls4ekp1os9c8qbp/InstallAssistant.pkg",
+          "sha1": "10632733f9b4ab1397fffc98b53e6790e4c2c1b0",
           "size": 13654790295,
           "format": "raw"
         },
         "darwin-arm64": {
           "url": "https://swcdn.apple.com/content/downloads/13/30/140-88558-A_TN3FIE7J63/p61cqj3ktmcqilz3q64ls4ekp1os9c8qbp/InstallAssistant.pkg",
+          "sha1": "10632733f9b4ab1397fffc98b53e6790e4c2c1b0",
           "size": 13654790295,
           "format": "raw"
         }
@@ -9908,14 +9935,17 @@
         "installer",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://swcdn.apple.com/content/downloads/37/33/140-93587-A_GRFFH93NOL/f944yaqo1cjhh2m0kxrl0zhcpg9yb9qphv/InstallAssistant.pkg",
+          "sha1": "9545b959cab5c536998c45f0fdd4b5d3832dc6f7",
           "size": 18384624402,
           "format": "raw"
         },
         "darwin-arm64": {
           "url": "https://swcdn.apple.com/content/downloads/37/33/140-93587-A_GRFFH93NOL/f944yaqo1cjhh2m0kxrl0zhcpg9yb9qphv/InstallAssistant.pkg",
+          "sha1": "9545b959cab5c536998c45f0fdd4b5d3832dc6f7",
           "size": 18384624402,
           "format": "raw"
         }
@@ -9934,14 +9964,17 @@
         "installer",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://swcdn.apple.com/content/downloads/09/46/093-22004-A_QNZEDC334I/phigx2zvoggml6sh79my4y51fnvgy8hix4/InstallAssistant.pkg",
+          "sha1": "072098c6b951701714537d333f8e7dded6d64390",
           "size": 12205110942,
           "format": "raw"
         },
         "darwin-arm64": {
           "url": "https://swcdn.apple.com/content/downloads/09/46/093-22004-A_QNZEDC334I/phigx2zvoggml6sh79my4y51fnvgy8hix4/InstallAssistant.pkg",
+          "sha1": "072098c6b951701714537d333f8e7dded6d64390",
           "size": 12205110942,
           "format": "raw"
         }
@@ -9960,6 +9993,7 @@
         "installer",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://updates.cdn-apple.com/2019/cert/061-41343-20191023-02465f92-3ab5-4c92-bfe2-b725447a070d/InstallMacOSX.dmg",
@@ -10734,24 +10768,29 @@
         "iso",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://cdn.netbsd.org/pub/NetBSD/NetBSD-11.0/images/NetBSD-11.0-amd64.iso",
+          "sha512": "2b8f15ea6f4012ef962ffd054bead5dcb1c2233ebdf6d41d23be066b2a9e19978378b0f7f588ed6ab9cde8a5ec618ea560e800fe762309aa28bc36b6480e2734",
           "size": 692555776,
           "format": "raw"
         },
         "darwin-arm64": {
           "url": "https://cdn.netbsd.org/pub/NetBSD/NetBSD-11.0/images/NetBSD-11.0-evbarm-aarch64.iso",
+          "sha512": "4d7aa6414549da4453e09fa94758b59d601133cbeaa01ac6c55a819384dd4aea3a1019514f011c4d50ffa4ecf60e3eb21c092017de353c3d3525ce69976270c0",
           "size": 295526400,
           "format": "raw"
         },
         "linux-amd64": {
           "url": "https://cdn.netbsd.org/pub/NetBSD/NetBSD-11.0/images/NetBSD-11.0-amd64.iso",
+          "sha512": "2b8f15ea6f4012ef962ffd054bead5dcb1c2233ebdf6d41d23be066b2a9e19978378b0f7f588ed6ab9cde8a5ec618ea560e800fe762309aa28bc36b6480e2734",
           "size": 692555776,
           "format": "raw"
         },
         "linux-arm64": {
           "url": "https://cdn.netbsd.org/pub/NetBSD/NetBSD-11.0/images/NetBSD-11.0-evbarm-aarch64.iso",
+          "sha512": "4d7aa6414549da4453e09fa94758b59d601133cbeaa01ac6c55a819384dd4aea3a1019514f011c4d50ffa4ecf60e3eb21c092017de353c3d3525ce69976270c0",
           "size": 295526400,
           "format": "raw"
         }
@@ -12188,6 +12227,7 @@
         "iso",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://cdn.openbsd.org/pub/OpenBSD/7.9/amd64/install79.iso",
@@ -12390,6 +12430,7 @@
         "linux",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://download.opensuse.org/tumbleweed/iso/openSUSE-Tumbleweed-DVD-x86_64-Current.iso",
@@ -12799,6 +12840,7 @@
         "linux",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://deb.parrot.sh/parrot/iso/7.3/Parrot-security-7.3_amd64.iso",
@@ -13158,6 +13200,7 @@
         "virtualization",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://enterprise.proxmox.com/iso/proxmox-ve_9.2-1.iso",
@@ -13482,6 +13525,7 @@
         "arm",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-arm64": {
           "url": "https://downloads.raspberrypi.com/raspios_lite_arm64/images/raspios_lite_arm64-2026-06-19/2026-06-18-raspios-trixie-arm64-lite.img.xz",
@@ -13684,6 +13728,7 @@
         "linux",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9-latest-x86_64-minimal.iso",
@@ -14468,6 +14513,7 @@
         "linux",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://download.tails.net/tails/stable/tails-amd64-7.12/tails-amd64-7.12.iso",
@@ -14931,6 +14977,7 @@
         "image",
         "ubuntu"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://cloud-images.ubuntu.com/releases/noble/release/ubuntu-24.04-server-cloudimg-amd64.img",
@@ -15190,6 +15237,7 @@
         "linux",
         "image"
       ],
+      "kind": "image",
       "artifacts": {
         "darwin-amd64": {
           "url": "https://repo-default.voidlinux.org/live/current/void-live-x86_64-20250202-base.iso",
