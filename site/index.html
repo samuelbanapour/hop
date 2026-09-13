@@ -439,6 +439,11 @@
             <td>accumulate; <code>brew autoremove</code> is a separate step you have to remember</td>
             <td class="win">swept automatically the moment nothing needs them anymore</td>
           </tr>
+          <tr>
+            <th>Updating the tool itself</th>
+            <td>brew updates itself as a side effect of <code>brew update</code>, bundled in with refreshing the formula index</td>
+            <td class="win"><code>hop self-update</code> — its own command, checksum-verified against the release, atomic swap of the binary</td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -586,6 +591,13 @@
       <code><span class="t-prompt">$</span> eval "$(hop shellenv)"   <span class="t-dim"># add to ~/.zshrc</span></code>
       <button class="copy-btn" data-copy='eval "$(hop shellenv)"'>copy</button>
     </div>
+
+    <p style="font-family:var(--mono-code); font-size:13px; color:var(--ink-soft); margin:22px 0 6px;">and stay current</p>
+    <div class="install-line reveal">
+      <code><span class="t-prompt">$</span> hop self-update   <span class="t-dim"># checks GitHub, verifies the checksum, swaps the binary atomically</span></code>
+      <button class="copy-btn" data-copy="hop self-update">copy</button>
+    </div>
+    <p style="font-family:var(--mono-code); font-size:12.5px; color:var(--ink-soft); margin:10px 0 0;">Every command also checks for a newer release in the background — at most once a day, never blocking, never installing anything on its own — and prints a one-line hint when one exists.</p>
   </section>
 </div>
 
