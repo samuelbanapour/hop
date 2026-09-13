@@ -30,6 +30,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/samuelbanapour/hopcli/tools/internal/indexio"
 )
 
 // spec is the hand-maintained description of a package.
@@ -88,13 +90,6 @@ type recipe struct {
 	Deps        []string             `json:"deps,omitempty"`
 	Artifacts   map[string]*artifact `json:"artifacts"`
 	Caveats     string               `json:"caveats,omitempty"`
-}
-
-type index struct {
-	Schema    int       `json:"schema"`
-	Source    string    `json:"source"`
-	Generated time.Time `json:"generated"`
-	Recipes   []*recipe `json:"recipes"`
 }
 
 // ghRelease is the slice of the GitHub API response we need.
@@ -170,38 +165,19 @@ func main() {
 
 	sort.Slice(out, func(i, j int) bool { return out[i].Name < out[j].Name })
 
-	// Merge with any existing index so a partial run (-only) is additive
-	// rather than destructive.
-	if len(wanted) > 0 {
-		if prev, err := loadIndex(*outPath); err == nil {
-			have := map[string]bool{}
-			for _, r := range out {
-				have[r.Name] = true
-			}
-			for _, r := range prev.Recipes {
-				if !have[r.Name] {
-					out = append(out, r)
-				}
-			}
-			sort.Slice(out, func(i, j int) bool { return out[i].Name < out[j].Name })
-		}
-	}
-
-	ix := &index{
-		Schema:    1,
-		Source:    "builtin",
-		Generated: time.Now().UTC().Truncate(time.Second),
-		Recipes:   out,
-	}
-	b, err := json.MarshalIndent(ix, "", "  ")
-	if err != nil {
-		die("encoding index: %v", err)
-	}
 	if err := os.MkdirAll(filepath.Dir(*outPath), 0o755); err != nil {
 		die("%v", err)
 	}
-	if err := os.WriteFile(*outPath, append(b, '\n'), 0o644); err != nil {
-		die("writing %s: %v", *outPath, err)
+	// indexio.Merge is what makes this safe to run at all, in either mode:
+	// it replaces or adds exactly the recipes in out and leaves every other
+	// existing entry's JSON untouched, byte-for-byte. Before this, a full
+	// run (no -only) skipped the merge entirely and wrote out as the whole
+	// index — every Homebrew formula and OS image genbrew/genimages had
+	// added would have been silently discarded, not merely stripped of a
+	// field, the moment someone ran a full genindex refresh.
+	total, err := indexio.Merge(*outPath, out)
+	if err != nil {
+		die("%v", err)
 	}
 
 	arts := 0
@@ -209,7 +185,7 @@ func main() {
 		arts += len(r.Artifacts)
 	}
 	logf("")
-	logf("wrote %s: %d recipes, %d artifacts", *outPath, len(out), arts)
+	logf("wrote %s: %d recipes total, %d refreshed (%d artifacts)", *outPath, total, len(out), arts)
 	if len(skipped) > 0 {
 		sort.Strings(skipped)
 		warn("skipped: %s", strings.Join(skipped, ", "))
@@ -690,18 +666,6 @@ func loadSpec(p string) (*specFile, error) {
 		return nil, fmt.Errorf("spec declares no packages")
 	}
 	return &sf, nil
-}
-
-func loadIndex(p string) (*index, error) {
-	b, err := os.ReadFile(p)
-	if err != nil {
-		return nil, err
-	}
-	var ix index
-	if err := json.Unmarshal(b, &ix); err != nil {
-		return nil, err
-	}
-	return &ix, nil
 }
 
 // siblingBinaryName reports the leading identifier of a release filename

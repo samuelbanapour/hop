@@ -35,7 +35,8 @@ import (
 	"os"
 	"sort"
 	"strings"
-	"time"
+
+	"github.com/samuelbanapour/hopcli/tools/internal/indexio"
 )
 
 const bulkURL = "https://formulae.brew.sh/api/formula.json"
@@ -146,13 +147,6 @@ type recipe struct {
 	Caveats     string               `json:"caveats,omitempty"`
 }
 
-type index struct {
-	Schema    int       `json:"schema"`
-	Source    string    `json:"source"`
-	Generated time.Time `json:"generated"`
-	Recipes   []*recipe `json:"recipes"`
-}
-
 func main() {
 	var only string
 	for i, a := range os.Args {
@@ -207,43 +201,17 @@ func main() {
 	}
 
 	const outPath = "internal/core/data/index.json"
-	b, err := os.ReadFile(outPath)
+	total, err := indexio.Merge(outPath, built)
 	if err != nil {
-		die("reading %s: %v", outPath, err)
-	}
-	var ix index
-	if err := json.Unmarshal(b, &ix); err != nil {
-		die("parsing %s: %v", outPath, err)
-	}
-
-	have := map[string]bool{}
-	for _, r := range built {
-		have[r.Name] = true
-	}
-	kept := ix.Recipes[:0]
-	for _, r := range ix.Recipes {
-		if !have[r.Name] {
-			kept = append(kept, r)
-		}
-	}
-	ix.Recipes = append(kept, built...)
-	sort.Slice(ix.Recipes, func(i, j int) bool { return ix.Recipes[i].Name < ix.Recipes[j].Name })
-	ix.Generated = time.Now().UTC().Truncate(time.Second)
-
-	out, err := json.MarshalIndent(&ix, "", "  ")
-	if err != nil {
-		die("encoding index: %v", err)
-	}
-	if err := os.WriteFile(outPath, append(out, '\n'), 0o644); err != nil {
-		die("writing %s: %v", outPath, err)
+		die("%v", err)
 	}
 
 	arts := 0
-	for _, r := range ix.Recipes {
+	for _, r := range built {
 		arts += len(r.Artifacts)
 	}
 	logf("")
-	logf("wrote %s: %d recipes, %d artifacts (%d from homebrew/core)", outPath, len(ix.Recipes), arts, len(built))
+	logf("wrote %s: %d recipes total, %d from homebrew/core (%d artifacts)", outPath, total, len(built), arts)
 }
 
 func fetchAllFormulae() ([]brewFormula, error) {
