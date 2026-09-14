@@ -39,6 +39,7 @@ still hurt:
 | Project reproducibility | `Brewfile`, no lockfile | `hopfile.toml` + `hop.lock`, byte-for-byte reproducible |
 | Startup cost | Ruby interpreter, ~100–300ms | single static binary, single-digit ms |
 | Orphaned dependencies | accumulate; `brew autoremove` is a separate step | swept automatically on `hop remove` |
+| GUI apps | casks — a separate mechanism from formulae | same `hop install`, same store; the `.app` is symlinked into `~/Applications` |
 
 ## Install
 
@@ -71,10 +72,11 @@ eval "$(hop shellenv)"          # add this to ~/.zshrc, ~/.bashrc, etc.
 
 hop ships with a recipe index compiled into the binary, so this works with no
 network access and no separate "update" step on a fresh machine. That index
-currently carries **284 recipes and 1,048 verified artifacts** across
+currently carries **316 recipes and 1,146 verified artifacts** across
 `darwin-arm64`, `darwin-amd64`, `linux-amd64` and `linux-arm64` — standalone
 CLI tools, close to 200 Homebrew formulae with their real dependency graphs,
-and 28 OS/VM images spanning Linux, BSD, and macOS from Lion through Tahoe.
+28 OS/VM images spanning Linux, BSD, and macOS from Lion through Tahoe, and a
+handful of GUI apps (Homebrew casks) that land in `~/Applications`.
 
 ## The basics
 

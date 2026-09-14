@@ -18184,6 +18184,114 @@
         }
       },
       "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` zstd would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+    },
+    {
+      "name": "rectangle",
+      "version": "1.100",
+      "description": "Move and resize windows on macOS with keyboard shortcuts and snap areas",
+      "homepage": "https://rectangleapp.com",
+      "license": "MIT",
+      "keywords": [
+        "window-manager",
+        "gui",
+        "cask"
+      ],
+      "kind": "app",
+      "artifacts": {
+        "darwin-arm64": {
+          "url": "https://github.com/rxhanson/Rectangle/releases/download/v1.100/Rectangle1.100.dmg",
+          "sha256": "5cfbe9b68a558458302c5305cb7060491f68029338e2a4561c54a2981eb8622f",
+          "size": 4309946,
+          "format": "dmg"
+        },
+        "darwin-amd64": {
+          "url": "https://github.com/rxhanson/Rectangle/releases/download/v1.100/Rectangle1.100.dmg",
+          "sha256": "5cfbe9b68a558458302c5305cb7060491f68029338e2a4561c54a2981eb8622f",
+          "size": 4309946,
+          "format": "dmg"
+        }
+      }
+    },
+    {
+      "name": "stats",
+      "version": "3.0.16",
+      "description": "macOS system monitor in your menu bar (CPU, memory, disk, network, battery, sensors)",
+      "homepage": "https://mac-stats.com",
+      "license": "MIT",
+      "keywords": [
+        "system-monitor",
+        "menu-bar",
+        "cask"
+      ],
+      "kind": "app",
+      "artifacts": {
+        "darwin-arm64": {
+          "url": "https://github.com/exelban/stats/releases/download/v3.0.16/Stats.dmg",
+          "sha256": "e653498ed80e2ef7fa8e8e0422b5a320da9792c22054c19c65974f7cb9794c86",
+          "size": 7549233,
+          "format": "dmg"
+        },
+        "darwin-amd64": {
+          "url": "https://github.com/exelban/stats/releases/download/v3.0.16/Stats.dmg",
+          "sha256": "e653498ed80e2ef7fa8e8e0422b5a320da9792c22054c19c65974f7cb9794c86",
+          "size": 7549233,
+          "format": "dmg"
+        }
+      }
+    },
+    {
+      "name": "maccy",
+      "version": "2.7.1",
+      "description": "Lightweight clipboard manager for macOS",
+      "homepage": "https://maccy.app",
+      "license": "MIT",
+      "keywords": [
+        "clipboard",
+        "menu-bar",
+        "cask"
+      ],
+      "kind": "app",
+      "artifacts": {
+        "darwin-arm64": {
+          "url": "https://github.com/p0deje/Maccy/releases/download/2.7.1/Maccy.app.zip",
+          "sha256": "f388aee34de09a0c7531631303785d9938bef9a92130e21ce1049c8f56aad077",
+          "size": 4709233,
+          "format": "zip"
+        },
+        "darwin-amd64": {
+          "url": "https://github.com/p0deje/Maccy/releases/download/2.7.1/Maccy.app.zip",
+          "sha256": "f388aee34de09a0c7531631303785d9938bef9a92130e21ce1049c8f56aad077",
+          "size": 4709233,
+          "format": "zip"
+        }
+      }
+    },
+    {
+      "name": "hidden-bar",
+      "version": "1.10",
+      "description": "An ultra-light macOS utility that hides menu bar icons",
+      "homepage": "https://d.foundation/opensource",
+      "license": "MIT",
+      "keywords": [
+        "menu-bar",
+        "utility",
+        "cask"
+      ],
+      "kind": "app",
+      "artifacts": {
+        "darwin-arm64": {
+          "url": "https://github.com/dwarvesf/hidden/releases/download/v1.10/Hidden-Bar-v1.10-macos.zip",
+          "sha256": "a8a5f5299fdfab52bdffb2f5728a76d4cba690754e9b3b12f27bd38f2e76c0bc",
+          "size": 7669026,
+          "format": "zip"
+        },
+        "darwin-amd64": {
+          "url": "https://github.com/dwarvesf/hidden/releases/download/v1.10/Hidden-Bar-v1.10-macos.zip",
+          "sha256": "a8a5f5299fdfab52bdffb2f5728a76d4cba690754e9b3b12f27bd38f2e76c0bc",
+          "size": 7669026,
+          "format": "zip"
+        }
+      }
     }
   ]
 }

@@ -30,8 +30,9 @@ Nothing is removed from Homebrew. Once you are happy, hop prints the exact
 ` + "`brew uninstall`" + ` commands to run yourself — it will not run them for
 you, because that is your call, not a package manager's.
 
-Casks (GUI applications) are reported but not migrated: hop manages
-command-line tools.`,
+Casks (GUI applications) are counted but not migrated automatically — hop
+can install and manage GUI apps (see ` + "`hop install`" + `), but migrate
+does not yet cross Homebrew's cask names over to hop's own recipes.`,
 		Flags: []Flag{
 			{Long: "all", Kind: 'b', Help: "include brew's auto-installed dependencies too"},
 			{Long: "write-hopfile", Kind: 'b', Help: "also record the migrated set in a hopfile"},
@@ -250,7 +251,7 @@ func runMigrate(a *App, args []string) error {
 		len(formulae)-len(skippedDeps))
 	if casks > 0 {
 		ui.Line("  %s %s", ui.Count(casks, "cask", "casks"),
-			ui.Grey("(GUI apps — hop manages command-line tools, so these stay with brew)"))
+			ui.Grey("(GUI apps — hop can install apps too, but migrate doesn't cross Homebrew's cask names over yet; reinstall these with `hop install` if hop has a recipe for them)"))
 	}
 	ui.Blank()
 

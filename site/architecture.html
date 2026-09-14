@@ -36,6 +36,7 @@
         <li><a href="#generations">Generations</a></li>
         <li><a href="#transaction">A transaction, step by step</a></li>
         <li><a href="#rollback">Rollback</a></li>
+        <li><a href="#apps">GUI apps</a></li>
         <li><a href="#gc">Garbage collection</a></li>
         <li><a href="#index">The recipe index</a></li>
       </ol>
@@ -106,12 +107,17 @@
       <p><code>hop rollback</code> is not a special case of install running in reverse — it's the same activation step from above, pointed at an older generation number instead of a new one. That's the entire mechanism: no re-download, because the store paths a previous generation refers to are still sitting exactly where they were; no reinstall, because nothing about them needs redoing.</p>
       <p>Because rollback is itself just an activation, running it twice in a row returns you to where you started — generation 7 rolls back to 6, and rolling back again goes from 6 to 7.</p>
 
+      <h2 id="apps">GUI apps: the one place hop writes outside its Root</h2>
+      <p>A GUI application — what Homebrew calls a cask — is verified and stored exactly like any other package: the download is checksummed, the <code>.app</code> bundle is copied into a content-addressed store directory, nothing else. Everything up to that point fits the model above with no exception at all.</p>
+      <p>Making the app actually usable is where it can't. Spotlight, Launchpad and Finder look in <code>~/Applications</code>, not in hop's store, so hop symlinks the bundle there — the one filesystem write hop ever makes outside <code>Root</code>. It only happens because a GUI app is involved: install nothing but CLI tools and images, and this code path never runs at all — hop has no reason to look at <code>~/Applications</code>, let alone write to it. Bring a cask into the active generation and, on that install (and every later upgrade, rollback or remove), it's still as close to the rest of the model as the constraint allows: the symlink always points into the store, so switching versions or rolling back is still just repointing it, and hop only ever touches a symlink it can prove is its own (one whose target resolves inside its store) — a real application that happens to share a name is never removed or replaced.</p>
+      <p>A cask ships as a <code>.dmg</code> or a <code>.zip</code>; hop mounts or extracts it, keeps only the <code>.app</code> bundle, and discards everything else the artifact contained (background art, a Finder drag-to-install <code>Applications</code> symlink, a zip's wrapper folder). A Homebrew <code>.pkg</code> installer is a different problem hop deliberately doesn't take on: it runs an arbitrary script with no sandbox, which is exactly the kind of unbounded, unreversible step this whole page is about avoiding.</p>
+
       <h2 id="gc">Garbage collection</h2>
       <p>Keeping every generation forever means the store only ever grows — until <code>hop gc</code> runs. It performs a real mark-and-sweep: every store path referenced by any generation's manifest is marked reachable, and everything else is deleted. The active generation's dependencies are always reachable and are never touched; <code>--keep N</code> additionally discards all but the newest N generations, which is what actually frees space after a long history of upgrades. <code>hop prune</code> and <code>hop clean</code> are aliases for the same command, for anyone coming from Homebrew or npm where those are the familiar names.</p>
 
       <h2 id="index">The recipe index</h2>
       <p>A recipe is a plain JSON document — a name, a version, and a checksum-pinned artifact URL per platform. hop never executes a recipe; it only downloads and unpacks what it names. The built-in index is compiled directly into the binary, so a fresh machine can search and install with no network access and no separate "update index" step.</p>
-      <p>Nothing in the index is hand-typed. A generator resolves each package's latest upstream release, downloads the real artifact, and derives its checksum by opening the actual bytes — the same discipline that produced the 284 recipes and 1,048 verified artifacts currently in the index.</p>
+      <p>Nothing in the index is hand-typed. A generator resolves each package's latest upstream release, downloads the real artifact, and derives its checksum by opening the actual bytes — the same discipline that produced the 316 recipes and 1,146 verified artifacts currently in the index.</p>
     </div>
   </div>
 </div>

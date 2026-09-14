@@ -18,7 +18,14 @@ var Version = "0.1.0-dev"
 var Revision = "unknown"
 
 // Layout describes where hop keeps everything. Nothing outside Root is ever
-// written, which is what makes `hop uninstall-self` and `hop gc` trustworthy.
+// written — unless the installed set includes a GUI app (a Homebrew cask),
+// which is what makes `hop uninstall-self` and `hop gc` trustworthy for
+// everything else hop manages. A machine with no GUI app installed never
+// triggers the exception at all: hop has no code path that touches anything
+// outside Root unless one is actually present in the active generation. When
+// one is, hop symlinks its .app bundle into ~/Applications so Spotlight and
+// Finder can find it — see syncAppLinks in state.go for how that stays safe
+// to reverse anyway.
 //
 //	<root>/store/<name>-<version>-<hash>/   immutable package trees
 //	<root>/profiles/<n>/bin/<tool>          symlink farm for generation n

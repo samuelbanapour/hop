@@ -54,7 +54,7 @@
       <div class="cmd-card" id="install">
         <div class="cmd-card-head"><span class="cmd-name">install</span><span class="cmd-alias">aliases: i, add-pkg</span><span class="cmd-group">Packages</span></div>
         <div class="cmd-usage">hop install [flags] &lt;package&gt;...</div>
-        <p class="cmd-desc">Install one or more packages and everything they depend on. Downloads run in parallel, and an artifact already in the store is reused without touching the network. If anything fails, nothing changes — your environment is left exactly as it was.</p>
+        <p class="cmd-desc">Install one or more packages and everything they depend on. Downloads run in parallel, and an artifact already in the store is reused without touching the network. If anything fails, nothing changes — your environment is left exactly as it was. Works for GUI apps (Homebrew casks) too — those land in <code>~/Applications</code> instead of on PATH; see <a href="architecture.html#apps">how</a>.</p>
         <dl class="cmd-flags">
           <dt>-f, --force</dt><dd>reinstall even if already at this version</dd>
         </dl>

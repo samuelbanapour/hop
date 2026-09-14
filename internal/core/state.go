@@ -18,6 +18,7 @@ type Installed struct {
 	Version   string    `json:"version"`
 	StorePath string    `json:"store_path"`
 	Kind      Kind      `json:"kind,omitempty"`
+	App       string    `json:"app,omitempty"`
 	SHA256    string    `json:"sha256,omitempty"`
 	SHA512    string    `json:"sha512,omitempty"`
 	SHA1      string    `json:"sha1,omitempty"`
@@ -56,6 +57,16 @@ func (i *Installed) ImagePath() string {
 		return ""
 	}
 	return i.StorePath + "/" + name
+}
+
+// AppPath returns the absolute path to a KindApp package's .app bundle in
+// the store — not where it's exposed to the user; see AppLink for that.
+// Empty for anything else.
+func (i *Installed) AppPath() string {
+	if i == nil || i.Kind != KindApp || i.StorePath == "" || i.App == "" {
+		return ""
+	}
+	return filepath.Join(i.StorePath, i.App)
 }
 
 func (g *Generation) Find(name string) (*Installed, bool) {
@@ -305,13 +316,138 @@ func manSection(path string) string {
 }
 
 // Activate points <root>/current at generation n. This single rename is the
-// entire switchover: every command on PATH changes together, or not at all.
+// entire switchover for every command on PATH: it changes together, or not
+// at all. A generation containing GUI apps additionally needs ~/Applications
+// reconciled, which — unlike the rename above — lives outside Root and
+// genuinely cannot be done as one atomic step; see syncAppLinks.
 func Activate(l *Layout, n int) error {
 	if !exists(l.ProfileManifest(n)) {
 		return fmt.Errorf("generation %d does not exist", n)
 	}
+	prevID := CurrentID(l)
+	var prev *Generation
+	if prevID != 0 {
+		prev, _ = LoadGeneration(l, prevID) // best-effort; a missing prior manifest just means nothing to unlink
+	}
+	next, err := LoadGeneration(l, n)
+	if err != nil {
+		return err
+	}
+
 	// A relative target keeps the whole root relocatable.
-	return replaceSymlink(filepath.Join("profiles", strconv.Itoa(n)), l.Current())
+	if err := replaceSymlink(filepath.Join("profiles", strconv.Itoa(n)), l.Current()); err != nil {
+		return err
+	}
+
+	if err := syncAppLinks(l, prev, next); err != nil {
+		return fmt.Errorf("generation %d is active, but syncing GUI apps into ~/Applications failed: %w", n, err)
+	}
+	return nil
+}
+
+// userApplicationsDir is where hop makes a GUI app visible to Spotlight,
+// Launchpad and Finder — per-user, so no sudo is ever needed.
+func userApplicationsDir() (string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("cannot locate home directory: %w", err)
+	}
+	return filepath.Join(home, "Applications"), nil
+}
+
+// syncAppLinks reconciles ~/Applications with next's set of GUI apps. This is
+// the one place hop ever writes outside its own Root, which is why it is
+// deliberately narrow: it only ever touches a symlink it can prove is its
+// own (its target resolves inside hop's store), so a real application that
+// happens to share a name is never removed or replaced.
+func syncAppLinks(l *Layout, prev, next *Generation) error {
+	want := map[string]string{} // app bundle name -> its store path
+	if next != nil {
+		for _, p := range next.Packages {
+			if p.Kind == KindApp && p.App != "" {
+				want[p.App] = p.AppPath()
+			}
+		}
+	}
+	had := map[string]bool{}
+	if prev != nil {
+		for _, p := range prev.Packages {
+			if p.Kind == KindApp && p.App != "" {
+				had[p.App] = true
+			}
+		}
+	}
+	if len(want) == 0 && len(had) == 0 {
+		return nil // the overwhelmingly common case: no casks involved at all
+	}
+
+	dir, err := userApplicationsDir()
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+
+	var errs []string
+
+	for name := range had {
+		if _, stillWanted := want[name]; stillWanted {
+			continue
+		}
+		link := filepath.Join(dir, name)
+		if isHopManagedLink(l, link) {
+			_ = os.Remove(link)
+		}
+	}
+
+	for name, target := range want {
+		link := filepath.Join(dir, name)
+		if cur, err := os.Readlink(link); err == nil {
+			if cur == target {
+				continue // already correct
+			}
+			if !isHopManagedLink(l, link) {
+				errs = append(errs, fmt.Sprintf("%s already exists in %s and isn't managed by hop", name, dir))
+				continue
+			}
+			_ = os.Remove(link)
+		} else if _, statErr := os.Lstat(link); statErr == nil {
+			errs = append(errs, fmt.Sprintf("%s already exists in %s and isn't managed by hop", name, dir))
+			continue
+		}
+		if err := os.Symlink(target, link); err != nil {
+			errs = append(errs, fmt.Sprintf("linking %s: %v", name, err))
+		}
+	}
+
+	if len(errs) > 0 {
+		return fmt.Errorf("%s", strings.Join(errs, "; "))
+	}
+	return nil
+}
+
+// isHopManagedLink reports whether link is a symlink hop itself created —
+// specifically, one whose target resolves inside this layout's own store.
+// It is the only signal syncAppLinks trusts before touching anything in
+// ~/Applications, since that directory is shared with everything else on
+// the user's Mac.
+func isHopManagedLink(l *Layout, link string) bool {
+	target, err := filepath.EvalSymlinks(link)
+	if err != nil {
+		return false
+	}
+	// Resolve the store root through the same symlinks (macOS's /tmp is
+	// itself a symlink to /private/tmp, and nothing rules out HOP_ROOT
+	// living under one either) so the containment check below compares two
+	// paths on equal footing instead of failing on a difference that isn't
+	// really there.
+	store, err := filepath.EvalSymlinks(l.Store())
+	if err != nil {
+		store = l.Store()
+	}
+	rel, err := filepath.Rel(store, target)
+	return err == nil && !strings.HasPrefix(rel, "..")
 }
 
 // DropGeneration deletes a generation's profile directory. The store is left

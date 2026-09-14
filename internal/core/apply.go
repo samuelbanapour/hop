@@ -188,6 +188,7 @@ func Apply(ctx context.Context, l *Layout, cur *Generation, plan *Plan, opts App
 			want.StorePath = entry.Path
 			want.Bins = relativiseBins(entry.Path, entry.Bins)
 			want.Mans = relativise(entry.Path, entry.Mans)
+			want.App = entry.App
 			want.Size = entry.Size
 			want.Platform = entry.Platform
 			if f := byName[key]; f != nil {
@@ -336,6 +337,12 @@ func Verify(l *Layout, g *Generation) []VerifyIssue {
 		}
 		if !HaveStorePath(p.StorePath) {
 			issues = append(issues, VerifyIssue{p.Name, "store path is incomplete (no completion marker)"})
+			continue
+		}
+		if p.Kind == KindApp {
+			if p.App == "" || !exists(p.AppPath()) {
+				issues = append(issues, VerifyIssue{p.Name, "app bundle is missing from the store"})
+			}
 			continue
 		}
 		for _, b := range p.Bins {

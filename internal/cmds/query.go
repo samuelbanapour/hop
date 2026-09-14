@@ -116,10 +116,11 @@ func runList(a *App, args []string) error {
 			Platform string `json:"platform"`
 			Store    string `json:"store_path"`
 			Image    string `json:"image_path,omitempty"`
+			App      string `json:"app_path,omitempty"`
 		}
 		out := make([]row, 0, len(pkgs))
 		for _, p := range pkgs {
-			out = append(out, row{p.Name, p.Version, string(p.Kind), p.Explicit, p.Size, string(p.Platform), p.StorePath, p.ImagePath()})
+			out = append(out, row{p.Name, p.Version, string(p.Kind), p.Explicit, p.Size, string(p.Platform), p.StorePath, p.ImagePath(), p.AppPath()})
 		}
 		return a.emitJSON(out)
 	}
@@ -265,10 +266,13 @@ func runInfo(a *App, args []string) error {
 	if len(r.Deps) > 0 {
 		pairs = append(pairs, [2]string{"Depends on", strings.Join(r.Deps, ", ")})
 	}
-	if r.Kind == core.KindImage {
+	switch {
+	case r.Kind == core.KindImage:
 		pairs = append(pairs, [2]string{"Kind", ui.Yellow("image") + ui.Grey(" — verified and stored, never extracted or put on PATH")})
-	} else if cmds := r.BinNames(plat); len(cmds) > 0 {
-		pairs = append(pairs, [2]string{"Commands", strings.Join(cmds, ", ")})
+	case r.Kind == core.KindApp:
+		pairs = append(pairs, [2]string{"Kind", ui.Yellow("app") + ui.Grey(" — a GUI app (Homebrew cask); appears in ~/Applications, not on PATH")})
+	case len(r.BinNames(plat)) > 0:
+		pairs = append(pairs, [2]string{"Commands", strings.Join(r.BinNames(plat), ", ")})
 	}
 	pairs = append(pairs, [2]string{"Platforms", strings.Join(r.Platforms(), ", ")})
 
@@ -279,9 +283,14 @@ func runInfo(a *App, args []string) error {
 			status = ui.Yellow(fmt.Sprintf("installed %s, %s available", inst.Version, r.Version))
 		}
 		pairs = append(pairs, [2]string{"Status", status})
-		if img := inst.ImagePath(); img != "" {
-			pairs = append(pairs, [2]string{"Image file", ui.Grey(img)})
-		} else {
+		switch {
+		case inst.ImagePath() != "":
+			pairs = append(pairs, [2]string{"Image file", ui.Grey(inst.ImagePath())})
+		case inst.AppPath() != "":
+			home, _ := os.UserHomeDir()
+			pairs = append(pairs, [2]string{"Application", ui.Grey(filepath.Join(home, "Applications", inst.App))})
+			pairs = append(pairs, [2]string{"Store path", ui.Grey(inst.StorePath)})
+		default:
 			pairs = append(pairs, [2]string{"Store path", ui.Grey(inst.StorePath)})
 		}
 		pairs = append(pairs, [2]string{"Installed", ui.Ago(inst.At)})
@@ -351,12 +360,19 @@ func runWhich(a *App, args []string) error {
 		if p, err := lookPathOutsideHop(a, cmd); err == nil {
 			ui.Hint("your PATH resolves %s to %s (not managed by hop)", cmd, p)
 		}
-		// The argument might name an installed image, not a command — those
-		// are never on PATH by design, so "which" alone would just confuse.
+		// The argument might name an installed image or GUI app, not a
+		// command — neither is ever on PATH by design, so "which" alone
+		// would just confuse.
 		if gen, err := a.Current(); err == nil {
-			if p, ok := gen.Find(cmd); ok && p.Kind == core.KindImage {
-				ui.Hint("%s is installed as an image, not a command; see `hop info %s`", p.Name, p.Name)
-				return nil
+			if p, ok := gen.Find(cmd); ok {
+				switch p.Kind {
+				case core.KindImage:
+					ui.Hint("%s is installed as an image, not a command; see `hop info %s`", p.Name, p.Name)
+					return nil
+				case core.KindApp:
+					ui.Hint("%s is a GUI app in ~/Applications, not a command; see `hop info %s`", p.Name, p.Name)
+					return nil
+				}
 			}
 		}
 		ix, ierr := a.Index_()

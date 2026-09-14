@@ -56,7 +56,7 @@
 ==&gt; Homebrew at /opt/homebrew
 
   284 formulae installed  ·  68 you asked for yourself
-  11 casks <span class="t-dim">(GUI apps — hop manages command-line tools, so these stay with brew)</span>
+  11 casks <span class="t-dim">(GUI apps — hop can install these too, but migrate doesn't cross their names over yet)</span>
 
 hop can take these over
   +  flyctl      0.4.101 → 0.4.102
@@ -77,8 +77,8 @@ hop can take these over
         <li><strong>Brew's own dependencies</strong> — formulae brew pulled in automatically rather than you asking for directly. Left out by default since hop resolves its own dependency graph for whatever you do migrate; <code>--all</code> brings them into the migratable count too.</li>
       </ul>
 
-      <h2 id="casks">Casks aren't part of this</h2>
-      <p>Homebrew casks are GUI applications — hop manages command-line tools, so casks are reported (how many exist) but never migrated, installed, or touched in any way. If you have 11 casks, migrating your formulae changes nothing about them.</p>
+      <h2 id="casks">Casks aren't part of a migration — yet</h2>
+      <p>Homebrew casks are GUI applications, and hop can install those too — see <a href="architecture.html#store">how a cask lands in the store</a> and <a href="commands.html#install">install</a>. What migrate doesn't do yet is cross a Homebrew cask's name over to hop's own recipe for it automatically, so casks are reported (how many exist) but not migrated by this command. If hop already has a recipe for one of yours — <code>hop search &lt;name&gt;</code> will say — installing it directly with <code>hop install</code> works exactly like any other package.</p>
 
       <h2 id="cleanup">Retiring Homebrew's copies is your call</h2>
       <p>After a real (non-dry-run) migration, both copies of every migrated tool exist on the machine at once — Homebrew's original and hop's new one. Which one actually runs when you type its name depends on <code>PATH</code> order, which <code>hop doctor</code> can check. hop prints the exact <code>brew uninstall</code> command for everything it just took over, but it will not run that command for you under any circumstance — removing software installed by another tool is a decision for you to make deliberately, not something a package manager does as a side effect of a different command.</p>

@@ -159,6 +159,11 @@
             <td>brew updates itself as a side effect of <code>brew update</code>, bundled in with refreshing the formula index</td>
             <td class="win"><code>hop self-update</code> — its own command, checksum-verified against the release, atomic swap of the binary</td>
           </tr>
+          <tr>
+            <th>GUI apps</th>
+            <td>casks — a separate mechanism from formulae, with their own install path</td>
+            <td class="win">same <code>hop install</code>, same content-addressed store; a <code>.dmg</code>/<code>.zip</code>'s <code>.app</code> is verified and symlinked into <code>~/Applications</code></td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -241,7 +246,7 @@
     </div>
 
     <div class="catalog-meta">
-      <span class="catalog-count">284 recipes · 1,048 verified artifacts · darwin-arm64, darwin-amd64, linux-amd64, linux-arm64</span>
+      <span class="catalog-count">316 recipes · 1,146 verified artifacts · darwin-arm64, darwin-amd64, linux-amd64, linux-arm64</span>
       <a href="#install" class="btn btn-ghost" style="padding:7px 14px; font-size:12.5px;">hop search &lt;name&gt;</a>
     </div>
 

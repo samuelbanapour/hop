@@ -78,6 +78,12 @@ type Artifact struct {
 
 	// Man lists manpages to link into <profile>/share/man.
 	Man []string `json:"man,omitempty"`
+
+	// AppPath names the .app bundle inside a KindApp artifact: the
+	// mount-relative path inside a .dmg's volume, or the path inside a .zip.
+	// Empty means "the one top-level *.app directory", which is how almost
+	// every Homebrew cask actually ships.
+	AppPath string `json:"app_path,omitempty"`
 }
 
 // Kind distinguishes what an installed generation actually does with a
@@ -95,6 +101,15 @@ const (
 	// any other package, but is never extracted and never touches PATH. It is
 	// stored as-is and located afterward with `hop info`.
 	KindImage Kind = "image"
+
+	// KindApp is a macOS GUI application — what Homebrew calls a cask. Its
+	// artifact is a .dmg or .zip containing a .app bundle; hop verifies the
+	// download, copies the bundle into its store like anything else, and
+	// exposes it by symlinking into ~/Applications rather than onto PATH.
+	// Darwin-only: a recipe with this kind simply has no artifact for any
+	// other platform, so install fails with the normal "unsupported
+	// platform" error everywhere else.
+	KindApp Kind = "app"
 )
 
 // Recipe describes one installable package.
@@ -107,7 +122,8 @@ type Recipe struct {
 	Keywords    []string `json:"keywords,omitempty"`
 
 	// Kind selects how an artifact is handled after download. Empty (KindBin)
-	// for ordinary CLI tools; KindImage for OS/VM images and rootfs archives.
+	// for ordinary CLI tools; KindImage for OS/VM images and rootfs archives;
+	// KindApp for a macOS GUI application (a Homebrew cask).
 	Kind Kind `json:"kind,omitempty"`
 
 	// Aliases are other names this package answers to, including the name
@@ -192,7 +208,7 @@ func (ix *Index) build() error {
 		if r.Name == "" {
 			return fmt.Errorf("index contains a recipe with no name")
 		}
-		if r.Kind != KindBin && r.Kind != KindImage {
+		if r.Kind != KindBin && r.Kind != KindImage && r.Kind != KindApp {
 			return fmt.Errorf("%s: unknown kind %q", r.Name, r.Kind)
 		}
 		key := strings.ToLower(r.Name)

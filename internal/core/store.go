@@ -39,6 +39,7 @@ const (
 	FormatZip    Format = "zip"
 	FormatGz     Format = "gz"
 	FormatRaw    Format = "raw"
+	FormatDmg    Format = "dmg"
 )
 
 // DetectFormat resolves an artifact's format, preferring the explicit field
@@ -62,6 +63,8 @@ func DetectFormat(a *Artifact) Format {
 		return FormatTar
 	case strings.HasSuffix(u, ".zip"):
 		return FormatZip
+	case strings.HasSuffix(u, ".dmg"):
+		return FormatDmg
 	case strings.HasSuffix(u, ".gz"):
 		return FormatGz
 	default:
@@ -82,6 +85,7 @@ type StoreEntry struct {
 	Path     string    // absolute store directory
 	Bins     []BinLink // executables to expose
 	Mans     []string  // absolute paths to manpages
+	App      string    // KindApp only: the .app bundle's name, relative to Path
 	Size     int64
 	Reused   bool // already present; extraction was skipped
 	Platform Platform
@@ -110,14 +114,20 @@ func HaveStorePath(dir string) bool {
 func Materialise(l *Layout, r *Recipe, a *Artifact, plat Platform, archivePath, contentHash string, deps map[string]depLocation) (*StoreEntry, error) {
 	dir := l.StorePath(r.Name, r.Version, contentHash)
 	isImage := r.Kind == KindImage
+	isApp := r.Kind == KindApp
 
-	// resolve fills in Bins/Mans for a bin-kind package; an image-kind package
-	// carries neither, since it is never extracted and never touches PATH.
+	// resolve fills in Bins/Mans for a bin-kind package; an image-kind
+	// package carries neither, since it is never extracted and never touches
+	// PATH; an app-kind package carries only App, the copied .app's name.
 	resolve := func(e *StoreEntry) error {
-		if isImage {
+		switch {
+		case isImage:
 			return nil
+		case isApp:
+			return e.discoverApp()
+		default:
+			return e.discover(a)
 		}
-		return e.discover(a)
 	}
 
 	if HaveStorePath(dir) {
@@ -146,7 +156,8 @@ func Materialise(l *Layout, r *Recipe, a *Artifact, plat Platform, archivePath, 
 		}
 	}()
 
-	if isImage {
+	switch {
+	case isImage:
 		// An OS/VM image or rootfs tarball is verified and content-addressed
 		// like anything else hop installs, but it is never unpacked: the
 		// whole point is to hand the exact bytes to qemu, docker import, or
@@ -154,11 +165,21 @@ func Materialise(l *Layout, r *Recipe, a *Artifact, plat Platform, archivePath, 
 		if err := placeImageFile(archivePath, stage, a); err != nil {
 			return nil, fmt.Errorf("storing %s: %w", r.Name, err)
 		}
-	} else if err := extract(archivePath, stage, DetectFormat(a), a.Strip, defaultRawName(r, a)); err != nil {
-		return nil, fmt.Errorf("extracting %s: %w", r.Name, err)
+	case isApp:
+		// A cask's .app bundle is the only thing worth keeping; the rest of
+		// a DMG (background art, an Applications symlink for Finder's
+		// drag-to-install affordance) or a ZIP's wrapper directory is noise
+		// hop has no use for.
+		if err := placeAppBundle(archivePath, stage, DetectFormat(a), a.AppPath); err != nil {
+			return nil, fmt.Errorf("storing %s: %w", r.Name, err)
+		}
+	default:
+		if err := extract(archivePath, stage, DetectFormat(a), a.Strip, defaultRawName(r, a)); err != nil {
+			return nil, fmt.Errorf("extracting %s: %w", r.Name, err)
+		}
 	}
 
-	if !isImage {
+	if !isImage && !isApp {
 		// dir, not stage, is deliberate: a relocated binary's load commands
 		// must name the path the tree will actually live at once renamed
 		// into place below, not the temporary staging path it's sitting in
@@ -230,9 +251,137 @@ func placeImageFile(archivePath, stage string, a *Artifact) error {
 	return err
 }
 
+// placeAppBundle puts a cask's .app bundle into stage, discarding everything
+// else the artifact contained (a DMG's background art and Finder
+// drag-to-install Applications symlink, a ZIP's wrapper directory). DMG
+// mounting is platform-specific (see mountAndCopyApp); a ZIP is just
+// extracted and then adopted like any other tree.
+func placeAppBundle(archivePath, stage string, f Format, appPath string) error {
+	switch f {
+	case FormatDmg:
+		return mountAndCopyApp(archivePath, stage, appPath)
+	case FormatZip:
+		if err := unzip(archivePath, stage, 0); err != nil {
+			return err
+		}
+		_, err := adoptAppBundle(stage, appPath)
+		return err
+	default:
+		return fmt.Errorf("unsupported cask artifact format %q (expected dmg or zip)", f)
+	}
+}
+
+// adoptAppBundle locates the .app bundle already extracted somewhere under
+// root and makes it the only thing root contains, named exactly as upstream
+// shipped it. appPath, when set, names it explicitly (mount- or
+// archive-relative); otherwise root is searched for the one bundle in it.
+func adoptAppBundle(root, appPath string) (string, error) {
+	var src string
+	if appPath != "" {
+		src = filepath.Join(root, filepath.Clean(appPath))
+		if fi, err := os.Stat(src); err != nil || !fi.IsDir() || !strings.HasSuffix(src, ".app") {
+			return "", fmt.Errorf("app_path %q does not point at a .app bundle", appPath)
+		}
+	} else {
+		found, err := findAppBundle(root, 2)
+		if err != nil {
+			return "", err
+		}
+		src = found
+	}
+
+	name := filepath.Base(src)
+	dst := filepath.Join(root, name)
+	if src == dst {
+		return name, nil
+	}
+
+	// Move the bundle aside first, then clear every sibling extraction left
+	// behind, then move it into its final place — so a failure partway
+	// through never leaves root holding two different things at once.
+	tmp := dst + ".hop-adopting"
+	if err := os.Rename(src, tmp); err != nil {
+		return "", err
+	}
+	entries, err := os.ReadDir(root)
+	if err != nil {
+		return "", err
+	}
+	for _, e := range entries {
+		if e.Name() == filepath.Base(tmp) {
+			continue
+		}
+		_ = removeTree(filepath.Join(root, e.Name()))
+	}
+	if err := os.Rename(tmp, dst); err != nil {
+		return "", err
+	}
+	return name, nil
+}
+
+// findAppBundle searches dir, and up to maxDepth levels of plain wrapper
+// directories beneath it, for exactly one *.app bundle. It never looks
+// inside a bundle it has already found one — a real app can itself embed
+// helper .app bundles, which are no business of hop's.
+func findAppBundle(dir string, maxDepth int) (string, error) {
+	var matches []string
+	var walk func(d string, depth int) error
+	walk = func(d string, depth int) error {
+		entries, err := os.ReadDir(d)
+		if err != nil {
+			return err
+		}
+		for _, e := range entries {
+			if !e.IsDir() {
+				continue
+			}
+			p := filepath.Join(d, e.Name())
+			if strings.HasSuffix(e.Name(), ".app") {
+				matches = append(matches, p)
+				continue
+			}
+			if depth > 0 && !strings.HasPrefix(e.Name(), ".") {
+				if err := walk(p, depth-1); err != nil {
+					return err
+				}
+			}
+		}
+		return nil
+	}
+	if err := walk(dir, maxDepth); err != nil {
+		return "", err
+	}
+	switch len(matches) {
+	case 0:
+		return "", fmt.Errorf("no .app bundle found; the recipe needs an explicit \"app_path\"")
+	case 1:
+		return matches[0], nil
+	default:
+		return "", fmt.Errorf("more than one .app bundle found (%s); the recipe needs an explicit \"app_path\"", strings.Join(matches, ", "))
+	}
+}
+
 // discover locates the executables and manpages named by the artifact. A
 // recipe may name a path ("bin/rg") or a bare command ("rg"); bare names, and
 // paths that upstream has since moved, are searched for across the tree.
+// discoverApp records the name of the .app bundle placeAppBundle already
+// staged directly under e.Path — the store dir holds nothing else once a
+// cask is installed, so this is also what a reused store path resolves to.
+func (e *StoreEntry) discoverApp() error {
+	e.Bins, e.Mans = nil, nil
+	entries, err := os.ReadDir(e.Path)
+	if err != nil {
+		return err
+	}
+	for _, en := range entries {
+		if en.IsDir() && strings.HasSuffix(en.Name(), ".app") {
+			e.App = en.Name()
+			return nil
+		}
+	}
+	return fmt.Errorf("no .app bundle found in the store")
+}
+
 func (e *StoreEntry) discover(a *Artifact) error {
 	e.Bins, e.Mans = nil, nil
 

@@ -108,9 +108,12 @@ func renderResult(a *App, res *core.ApplyResult, gen *core.Generation) {
 		t := ui.NewTable()
 		for _, p := range append(append([]core.Installed{}, res.Added...), res.Changed...) {
 			note := ""
-			if p.Kind == core.KindImage {
+			switch p.Kind {
+			case core.KindImage:
 				note = ui.Yellow("image") + ui.Grey(" · "+ui.Bytes(p.Size))
-			} else {
+			case core.KindApp:
+				note = ui.Yellow("app") + ui.Grey(" · ~/Applications/"+p.App)
+			default:
 				cmds := make([]string, 0, len(p.Bins))
 				for _, b := range p.Bins {
 					cmds = append(cmds, b.Name)
