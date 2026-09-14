@@ -7,11 +7,12 @@ Every install, upgrade, or removal is one transaction: hop downloads and verifie
 ## Pages
 
 - [Home](https://hopcli-site.onrender.com/): what hop is, why it exists, how it compares to Homebrew, install instructions.
-- [Docs](https://hopcli-site.onrender.com/docs.html): hub linking the four pages below.
-- [Commands](https://hopcli-site.onrender.com/commands.html): every hop command (install, upgrade, rollback, migrate, self-update, and the rest) with usage and flags, transcribed directly from the CLI's own help output.
+- [Docs](https://hopcli-site.onrender.com/docs.html): hub linking the pages below.
+- [Commands](https://hopcli-site.onrender.com/commands.html): every hop command (install, upgrade, rollback, alias, migrate, self-update, and the rest) with usage and flags, transcribed directly from the CLI's own help output.
 - [Architecture](https://hopcli-site.onrender.com/architecture.html): how the content-addressed store, generations, and atomic transactions actually work.
 - [Homebrew relocation](https://hopcli-site.onrender.com/relocation.html): how hop rewrites a Homebrew bottle (built for a fixed system path) to run from hop's own arbitrary store location — placeholder tokens, RPATH/LC_RPATH patching, and the real bugs it took to get right.
 - [Migrating from Homebrew](https://hopcli-site.onrender.com/migrate.html): a full walkthrough of `hop migrate`.
+- [Changelog](https://hopcli-site.onrender.com/changelog.html): what changed in each tagged release.
 
 ## Source
 

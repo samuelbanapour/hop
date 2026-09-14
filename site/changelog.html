@@ -1,0 +1,128 @@
+<meta charset="utf-8">
+<title>Changelog — HopCLI</title>
+<meta name="description" content="What changed in each hop release, in plain terms — pulled straight from the tagged releases on GitHub.">
+<link rel="canonical" href="https://hopcli-site.onrender.com/changelog.html">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Source+Serif+4:opsz,wght@8..60,400;8..60,500;8..60,600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<script>document.documentElement.classList.add('js');</script>
+<link rel="stylesheet" href="shared.css">
+
+<nav>
+  <div class="nav-row">
+    <a class="brand" href="index.html"><span class="dot"></span>HopCLI</a>
+    <div class="nav-links">
+      <a href="docs.html">Docs</a>
+      <a href="commands.html">Commands</a>
+      <a href="architecture.html">Architecture</a>
+      <a href="relocation.html">Relocation</a>
+      <a href="migrate.html">Migrate guide</a>
+      <a href="changelog.html">Changelog</a>
+      <a class="gh" href="https://github.com/samuelbanapour/hopcli">on GitHub ↗</a>
+    </div>
+  </div>
+</nav>
+
+<div class="wrap">
+  <section class="doc-head" style="border-top:none;">
+    <span class="doc-eyebrow">Releases</span>
+    <h1>What changed, release by release</h1>
+    <p class="sub">Every tag here has a real GitHub release behind it, with binaries for macOS and Linux, Intel and ARM. <code>hop self-update</code> picks up whatever is newest; this page just explains what each one actually did.</p>
+  </section>
+
+  <div class="doc-layout">
+    <aside class="doc-toc">
+      <span class="toc-label">Jump to</span>
+      <ol>
+        <li><a href="#v0-1-5">v0.1.5</a></li>
+        <li><a href="#v0-1-4">v0.1.4</a></li>
+        <li><a href="#v0-1-3">v0.1.3</a></li>
+        <li><a href="#v0-1-2">v0.1.2</a></li>
+        <li><a href="#v0-1-1">v0.1.1</a></li>
+        <li><a href="#v0-1-0">v0.1.0</a></li>
+      </ol>
+    </aside>
+
+    <div class="doc-body">
+      <div class="cmd-card" id="v0-1-5">
+        <div class="cmd-card-head"><span class="cmd-name">v0.1.5</span><span class="cmd-group">2026-09-14</span></div>
+        <ul>
+          <li><strong>hop alias &lt;package&gt; [version]</strong> — hot-swap a single tool to a version you've had installed before, without touching the rest of the active set. Every version hop has installed stays in the store, so this is a symlink swap: instant, no download.</li>
+          <li><strong>hop gc</strong> gains <code>prune</code> and <code>clean</code> aliases, for anyone coming from Homebrew or npm.</li>
+          <li>A real <code>curl | sh</code> install script (<a href="https://github.com/samuelbanapour/hopcli/blob/master/scripts/install.sh">scripts/install.sh</a>), checksum-verified against each release's <code>SHA256SUMS</code>.</li>
+          <li>hop now greets a fresh install with a short first-run banner instead of jumping straight into output.</li>
+          <li><strong>hop self-update</strong> — checks GitHub in the background at most once a day and applies the update in one atomic swap when you ask.</li>
+          <li>Four new documentation pages — <a href="commands.html">Commands</a>, <a href="architecture.html">Architecture</a>, <a href="relocation.html">Relocation</a>, <a href="migrate.html">Migrate guide</a> — plus a real charset fix on the site.</li>
+        </ul>
+      </div>
+
+      <div class="cmd-card" id="v0-1-4">
+        <div class="cmd-card-head"><span class="cmd-name">v0.1.4</span><span class="cmd-group">2026-09-13</span></div>
+        <ul>
+          <li>Fixed a wide sweep of Homebrew bottle relocation bugs found by actually running installed packages on both platforms — including a Linux bug where relocated bottles never ran at all, and a Python <code>PYTHONHOME</code> fix.</li>
+          <li>Hardened the recipe index generators: each one previously kept its own duplicated struct, which could silently drop fields the others set. The index now preserves structure instead of manually re-syncing it.</li>
+          <li>Fixed a release workflow bug where a manually-triggered build could tag the wrong commit, producing a release whose checksums didn't match its own assets.</li>
+          <li>The built-in recipe index grew to 284 recipes and 1,048 verified artifacts across all four supported platforms.</li>
+        </ul>
+      </div>
+
+      <div class="cmd-card" id="v0-1-3">
+        <div class="cmd-card-head"><span class="cmd-name">v0.1.3</span><span class="cmd-group">2026-09-13</span></div>
+        <p class="cmd-desc">Added non-Linux, non-cloud image recipes: <code>freebsd-vm</code> and <code>raspios-lite</code>.</p>
+      </div>
+
+      <div class="cmd-card" id="v0-1-2">
+        <div class="cmd-card-head"><span class="cmd-name">v0.1.2</span><span class="cmd-group">2026-09-12</span></div>
+        <p class="cmd-desc">Added OS/VM image support — a new package kind hop can pull and verify, alongside ordinary CLI tools.</p>
+      </div>
+
+      <div class="cmd-card" id="v0-1-1">
+        <div class="cmd-card-head"><span class="cmd-name">v0.1.1</span><span class="cmd-group">2026-09-12</span></div>
+        <p class="cmd-desc">Expanded the recipe index from 32 to 62 packages (236 artifacts), and linked the live site from the README.</p>
+      </div>
+
+      <div class="cmd-card" id="v0-1-0">
+        <div class="cmd-card-head"><span class="cmd-name">v0.1.0</span><span class="cmd-group">2026-09-12</span></div>
+        <p class="cmd-desc">First public release: the content-addressed store, generations, atomic install/upgrade/remove, and instant rollback.</p>
+      </div>
+
+      <p style="margin-top:8px;"><a href="https://github.com/samuelbanapour/hopcli/releases">Every release on GitHub ↗</a></p>
+    </div>
+  </div>
+</div>
+
+<footer>
+  <div class="wrap-wide">
+    <div class="foot-row">
+      <div class="brand" style="font-size:16px;"><span class="dot"></span>HopCLI</div>
+      <div class="foot-links">
+        <a href="docs.html">Docs</a>
+        <a href="https://github.com/samuelbanapour/hopcli">GitHub</a>
+      </div>
+      <span class="foot-note">ships as one binary, hop — named for the jump between generations</span>
+    </div>
+  </div>
+</footer>
+
+<script>
+(function(){
+  var toc = document.querySelectorAll('.doc-toc a');
+  var sections = Array.prototype.map.call(toc, function(a){ return document.querySelector(a.getAttribute('href')); });
+  function onScroll(){
+    var y = window.scrollY + 100;
+    var active = 0;
+    sections.forEach(function(s, i){ if (s && s.offsetTop <= y) active = i; });
+    toc.forEach(function(a, i){ a.classList.toggle('active', i === active); });
+  }
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+
+  if ('IntersectionObserver' in window) {
+    var io = new IntersectionObserver(function(entries){
+      entries.forEach(function(entry){ if (entry.isIntersecting) { entry.target.classList.add('in-view'); io.unobserve(entry.target); } });
+    }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+    document.querySelectorAll('.reveal').forEach(function(el){ io.observe(el); });
+  } else {
+    document.querySelectorAll('.reveal').forEach(function(el){ el.classList.add('in-view'); });
+  }
+})();
+</script>
