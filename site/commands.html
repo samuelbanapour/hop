@@ -186,13 +186,19 @@
         <p class="cmd-desc">Restore a previous generation. With no argument, rollback goes to the generation before the active one. Because every version is still in the store, this is a single symlink swap — microseconds, no download, however large the change. Rolling back is itself just an activation, so running it again returns you to where you were.</p>
       </div>
 
+      <div class="cmd-card" id="alias">
+        <div class="cmd-card-head"><span class="cmd-name">alias</span><span class="cmd-group">History</span></div>
+        <div class="cmd-usage">hop alias &lt;package&gt; [version]</div>
+        <p class="cmd-desc">Hot-swap one tool to a version you've had installed before, without touching the rest of the active set. With no version, lists what that package has been at — every version hop has installed for you stays in the store, so switching to one is a symlink swap: instant, no download. This only reaches versions installed on this machine before; the recipe index tracks the current release only.</p>
+      </div>
+
       <h2 id="maintenance">Maintenance</h2>
       <p>Housekeeping: reclaiming disk, checking the installation is healthy, and keeping the index and hop itself current.</p>
 
       <div class="cmd-card" id="gc">
-        <div class="cmd-card-head"><span class="cmd-name">gc</span><span class="cmd-group">Maintenance</span></div>
+        <div class="cmd-card-head"><span class="cmd-name">gc</span><span class="cmd-alias">aliases: prune, clean</span><span class="cmd-group">Maintenance</span></div>
         <div class="cmd-usage">hop gc [flags]</div>
-        <p class="cmd-desc">Delete store paths and cached downloads that no generation needs — a real mark-and-sweep, not "delete anything old." By default every generation is kept, so only genuinely unreachable data is removed. The active generation is never deleted.</p>
+        <p class="cmd-desc">Delete store paths and cached downloads that no generation needs — a real mark-and-sweep, not "delete anything old." By default every generation is kept, so only genuinely unreachable data is removed. The active generation is never deleted. Coming from Homebrew, <code>hop prune</code> and <code>hop clean</code> are the same command under a different name — reach for whichever one your fingers already know.</p>
         <dl class="cmd-flags"><dt>--keep N</dt><dd>also discard all but the newest N generations</dd></dl>
       </div>
 

@@ -43,6 +43,14 @@ still hurt:
 ## Install
 
 ```bash
+curl -fsSL https://raw.githubusercontent.com/samuelbanapour/hopcli/master/scripts/install.sh | sh
+```
+
+Downloads the right release for your OS/arch, verifies it against the
+release's SHA256SUMS, and drops it into `~/.hop/bin` — nothing outside that
+directory is touched. Or build it yourself:
+
+```bash
 git clone https://github.com/samuelbanapour/hopcli.git
 cd hop
 make build
@@ -345,8 +353,9 @@ filesystem level. Every previous generation stays on disk, so:
   SHA-256 digest before extraction; extraction happens in the store before
   linking; the generation is written before it's activated. If any step
   fails, the previous generation is still live.
-- **`hop gc`** reclaims store paths that no generation references anymore —
-  a real mark-and-sweep, not "delete anything old."
+- **`hop gc`** (aliases: `prune`, `clean` — same command, for anyone coming
+  from Homebrew or npm) reclaims store paths that no generation references
+  anymore — a real mark-and-sweep, not "delete anything old."
 
 ## Extending the recipe index
 

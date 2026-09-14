@@ -45,10 +45,11 @@ returns you to where you were.`,
 	})
 
 	register(&Command{
-		Name:  "gc",
-		Group: "Maintenance",
-		Usage: "hop gc [flags]",
-		Short: "Reclaim disk from unreferenced store paths",
+		Name:    "gc",
+		Aliases: []string{"prune", "clean"},
+		Group:   "Maintenance",
+		Usage:   "hop gc [flags]",
+		Short:   "Reclaim disk from unreferenced store paths",
 		Long: `Delete store paths and cached downloads that no generation needs.
 
 By default every generation is kept, so only genuinely unreachable data is

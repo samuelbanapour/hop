@@ -504,6 +504,8 @@ func Main(argv []string) int {
 	}
 	app.Layout = layout
 
+	maybeShowWelcome(app)
+
 	// Started here, before the command's own work, so its network request
 	// (bounded to updateCheckTimeout, and throttled to once a day) overlaps
 	// with whatever the command does rather than adding to it — notifyUpdate
