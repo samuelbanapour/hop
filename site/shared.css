@@ -126,6 +126,16 @@
   .btn-ghost{ border-color:var(--line); color:var(--ink); }
   .btn-ghost:hover{ border-color:var(--ink-soft); }
 
+  .dl-buttons{ display:flex; flex-wrap:wrap; gap:10px; margin:8px 0 4px; }
+  .dl-btn{ font-size:13px; padding:9px 16px; position:relative; }
+  .dl-btn .tick{ opacity:0.55; }
+  .dl-btn.detected{ border-color:var(--accent); color:var(--accent-ink); }
+  .dl-btn.detected::after{
+    content:"detected"; position:absolute; top:-9px; right:8px;
+    font-size:9.5px; letter-spacing:.05em; text-transform:uppercase;
+    background:var(--accent); color:var(--bg-raise); padding:1px 6px; border-radius:3px;
+  }
+
   .hero-grid{
     display:grid; grid-template-columns:1.05fr 1fr; gap:56px; align-items:start;
   }

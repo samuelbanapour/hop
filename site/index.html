@@ -301,6 +301,15 @@
     </div>
     <p style="font-family:var(--mono-code); font-size:12.5px; color:var(--ink-soft); margin:10px 0 0;">Downloads the right build for your OS/arch, verifies it against the release's SHA256SUMS, and installs to <code>~/.hop/bin</code> — nothing else on your machine is touched.</p>
 
+    <p style="font-family:var(--mono-code); font-size:13px; color:var(--ink-soft); margin:22px 0 6px;">or, download the binary directly — no terminal command to copy</p>
+    <div class="dl-buttons reveal" id="dlButtons">
+      <a class="btn btn-ghost dl-btn" data-os="darwin" data-arch="arm64" href="https://github.com/samuelbanapour/hopcli/releases/latest">macOS (Apple Silicon)</a>
+      <a class="btn btn-ghost dl-btn" data-os="darwin" data-arch="amd64" href="https://github.com/samuelbanapour/hopcli/releases/latest">macOS (Intel)</a>
+      <a class="btn btn-ghost dl-btn" data-os="linux" data-arch="amd64" href="https://github.com/samuelbanapour/hopcli/releases/latest">Linux (x86_64)</a>
+      <a class="btn btn-ghost dl-btn" data-os="linux" data-arch="arm64" href="https://github.com/samuelbanapour/hopcli/releases/latest">Linux (ARM64)</a>
+    </div>
+    <p style="font-family:var(--mono-code); font-size:12.5px; color:var(--ink-soft); margin:6px 0 0;">A plain <code>.tar.gz</code> — extract it and move <code>hop</code> onto your PATH yourself. The button we highlight is a guess based on your browser; pick whichever one is actually right if we guessed wrong.</p>
+
     <p style="font-family:var(--mono-code); font-size:13px; color:var(--ink-soft); margin:22px 0 6px;">or, clone and build</p>
     <div class="install-line reveal">
       <code><span class="t-prompt">$</span> git clone https://github.com/samuelbanapour/hopcli &amp;&amp; cd hop &amp;&amp; make build</code>
@@ -458,6 +467,39 @@
       }
     });
   });
+
+  // Wire the direct-download buttons to whatever the latest release
+  // actually published, so the site never hardcodes a version number that
+  // goes stale the next time hop ships. Falls back to linking the releases
+  // page (already the href on every button) if the fetch fails for any
+  // reason — offline, rate-limited, GitHub having a bad day.
+  fetch('https://api.github.com/repos/samuelbanapour/hopcli/releases/latest')
+    .then(function(r){ return r.json(); })
+    .then(function(rel){
+      var assets = rel.assets || [];
+      document.querySelectorAll('.dl-btn').forEach(function(btn){
+        var os = btn.getAttribute('data-os'), arch = btn.getAttribute('data-arch');
+        var want = '-' + os + '-' + arch + '.tar.gz';
+        var match = assets.filter(function(a){ return a.name.indexOf(want) !== -1; })[0];
+        if (match) { btn.href = match.browser_download_url; }
+      });
+    })
+    .catch(function(){ /* buttons keep their releases-page fallback href */ });
+
+  // Best-effort OS/arch guess to highlight one button — never hidden or
+  // gated on it, since browsers don't reliably expose CPU architecture
+  // (a Mac reports "Intel" in its user agent regardless of chip).
+  (function(){
+    var ua = navigator.userAgent || '';
+    var os = /Mac/.test(ua) ? 'darwin' : (/Linux/.test(ua) ? 'linux' : null);
+    if (!os) return;
+    var arch = 'arm64';
+    if (os === 'linux') {
+      arch = /aarch64|arm64/i.test(ua) ? 'arm64' : 'amd64';
+    }
+    var btn = document.querySelector('.dl-btn[data-os="' + os + '"][data-arch="' + arch + '"]');
+    if (btn) { btn.classList.add('detected'); }
+  })();
 
   // Reveal sections as they enter view. Elements are fully visible by
   // default (see the .reveal CSS) — this only adds the class that animates
