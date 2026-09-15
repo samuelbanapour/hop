@@ -372,11 +372,42 @@ func BuiltinIndex() (*Index, error) {
 // LoadIndex returns the cached index if present and usable, else the built-in
 // one. It never fails merely because the cache is stale or damaged: a broken
 // cache falls back with a warning so hop stays usable.
+//
+// The on-disk cache is scoped to whatever HOP_INDEX_URL currently points at
+// — it is only ever written by `hop update`, and only when that variable is
+// set (see UpdateIndex). So when it is not set right now, any cache file
+// still sitting in Cache() is leftover from an HOP_INDEX_URL that no longer
+// applies, never authoritative, and ignored entirely; when it is set but
+// points somewhere the cache was not actually fetched from (the variable
+// changed since), the same applies until `hop update` catches up.
+//
+// This used to be a size comparison instead — take whichever index has more
+// recipes — which was wrong in both directions: it could keep serving a
+// stale cache indefinitely across any number of hop binary upgrades (a
+// disk-cached index installed from a since-unset HOP_INDEX_URL was
+// preferred purely for having more recipes than that day's built-in one,
+// with no way for a newer binary to ever supersede it), and it could
+// second-guess a deliberately configured custom index just because it
+// happened to be smaller than the built-in one.
 func LoadIndex(l *Layout) (*Index, error) {
+	url := IndexURL()
+	if url == "" {
+		return BuiltinIndex()
+	}
+
 	b, err := os.ReadFile(l.IndexPath())
 	if err != nil {
 		return BuiltinIndex()
 	}
+
+	var meta indexMeta
+	if mb, err := os.ReadFile(l.IndexMetaPath()); err == nil {
+		_ = json.Unmarshal(mb, &meta)
+	}
+	if meta.URL != url {
+		return BuiltinIndex()
+	}
+
 	ix := &Index{}
 	if err := json.Unmarshal(b, ix); err != nil {
 		return BuiltinIndex()
@@ -386,12 +417,6 @@ func LoadIndex(l *Layout) (*Index, error) {
 	}
 	if st, err := os.Stat(l.IndexPath()); err == nil {
 		ix.fetched = st.ModTime()
-	}
-	// A cache with fewer recipes than the built-in index is a downgrade; take
-	// whichever knows more so `hop install` does not mysteriously regress.
-	bi, berr := BuiltinIndex()
-	if berr == nil && bi.Len() > ix.Len() && ix.Source == "" {
-		return bi, nil
 	}
 	return ix, nil
 }
