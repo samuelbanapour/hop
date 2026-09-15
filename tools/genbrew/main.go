@@ -421,7 +421,7 @@ func buildRecipe(f *brewFormula) (*recipe, error) {
 		arts[plat] = &artifact{
 			URL:           url,
 			SHA256:        sha,
-			OCITokenURL:   ociTokenURL(f.Name),
+			OCITokenURL:   ociTokenURL(url),
 			Format:        "tar.gz",
 			Bin:           f.Executables,
 			NoExecutables: isLibrary,
@@ -487,14 +487,29 @@ func pkgVersion(f *brewFormula) string {
 // homebrew/core repository. Requesting it needs no credentials: anyone can
 // obtain a read-only token for a public repository, which is what lets hop
 // fetch a public bottle without an account of its own.
-func ociTokenURL(formula string) string {
-	// A versioned formula name like "openssl@3" is not the real ghcr.io
-	// repository path — Homebrew publishes it as "homebrew/core/openssl/3"
-	// (the "@" becomes a path separator), since "@" isn't valid in an OCI
-	// repository name at all. Requesting a token for the literal formula
-	// name gets a 400 from the registry; this has to match the actual
-	// artifact URL's own repository path.
-	repo := strings.Replace(formula, "@", "/", 1)
+//
+// blobURL is the bottle's own artifact URL — the token's scope has to name
+// the exact same ghcr.io repository path that URL points at, or the
+// registry returns 400 Bad Request. That path is not always the plain
+// formula name: "@" isn't valid in an OCI repository name, so Homebrew
+// publishes "openssl@3" as ".../openssl/3"; "+" isn't valid either, so
+// "gtk+3" is published as ".../gtkx3". Reading the real path out of the URL
+// Homebrew already published, rather than re-deriving it from the formula
+// name via ad-hoc substitution rules, means a naming convention this file
+// doesn't already know about can't reintroduce the same class of bug —
+// found for real when gtk+3 (added as a transitive dependency, not
+// something explicitly seeded) got a 400 from a scope built off its literal
+// name, which nobody had reason to notice until it happened.
+func ociTokenURL(blobURL string) string {
+	const marker = "/homebrew/core/"
+	i := strings.Index(blobURL, marker)
+	repo := "unknown"
+	if i >= 0 {
+		rest := blobURL[i+len(marker):]
+		if j := strings.Index(rest, "/blobs/"); j >= 0 {
+			repo = rest[:j]
+		}
+	}
 	return fmt.Sprintf("https://ghcr.io/token?scope=repository:homebrew/core/%s:pull&service=ghcr.io", repo)
 }
 

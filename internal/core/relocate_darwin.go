@@ -535,7 +535,33 @@ func relocateOne(path, root, selfFormula, selfVersion, selfStorePath string, dep
 
 	args = append(args, path)
 	if out, err := exec.Command("install_name_tool", args...).CombinedOutput(); err != nil {
-		return fmt.Errorf("install_name_tool: %w: %s", err, strings.TrimSpace(string(out)))
+		msg := strings.TrimSpace(string(out))
+		if strings.Contains(msg, "do not fit") {
+			// install_name_tool refuses to grow load commands past whatever
+			// headerpad slack the binary was originally built with — not a
+			// transient failure, retrying the same command changes nothing.
+			//
+			// Making room retroactively means shifting every segment after
+			// the header, in both file position AND virtual address — and
+			// the latter means every pointer anywhere in the binary's own
+			// __DATA that happens to target something past the shift point
+			// (a rebase/bind chain entry, part of ordinary ObjC/Swift
+			// metadata, not something specific to this one binary) is now
+			// wrong and needs its own fixup. That is a real, and by
+			// verified, working attempt at this in the field:
+			// install_name_tool, codesign and otool all accepted a version
+			// of the rewrite that turned out to still be broken — only
+			// dyld's own loader caught it, as a segfault. Getting this
+			// fully right means reimplementing a meaningful slice of a
+			// linker's relocation pass, which is a substantially bigger
+			// and higher-risk undertaking than this function's job of
+			// rewriting a handful of known-offset header fields — so hop
+			// reports the failure clearly instead, exactly as
+			// install_name_tool itself does, rather than risk shipping a
+			// binary that looks installed but silently misbehaves.
+			return fmt.Errorf("install_name_tool: %w: %s (this bottle was not built with enough header room for hop's store path, and safely retrofitting more requires rewriting internal pointers hop does not currently support)", err, msg)
+		}
+		return fmt.Errorf("install_name_tool: %w: %s", err, msg)
 	}
 
 	// install_name_tool invalidates any existing code signature; an
