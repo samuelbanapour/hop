@@ -93,6 +93,10 @@ hop self-update             # update hop itself (not your packages — see below
 hop uninstall-self          # remove every package, the store, and hop itself
 ```
 
+Don't remember a command's name? Run `hop` with no arguments (or `hop menu`)
+at a real terminal and pick what you want from a numbered list instead —
+it builds and runs the exact same command line either way.
+
 `hop upgrade` and `hop self-update` are deliberately separate: the first
 moves installed *packages* to their newest indexed version, the second
 replaces the `hop` binary itself with the newest GitHub release. Neither
@@ -114,6 +118,16 @@ formulae hop doesn't have a recipe for yet (so the two coexist fine on
 whatever it can't cover), and it never runs `brew uninstall` for you: once
 you're happy, it prints the exact command to remove the Homebrew copies
 yourself.
+
+A big migration is one transaction by default — if a single package fails
+partway (out of disk space, a bottle that can't relocate), nothing installs
+and you start over from zero. `hop migrate --batch N` installs N packages at
+a time instead, each its own transaction, so one bad or oversized package
+only costs that batch: everything else already committed stays installed.
+
+```bash
+hop migrate --all --batch 20   # 20 packages per transaction instead of one big one
+```
 
 ### Legacy formulae Homebrew has dropped
 

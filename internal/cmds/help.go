@@ -307,7 +307,7 @@ func init() {
 // -------------------------------------------------------------------- help ----
 
 // groupOrder is the order help sections appear in.
-var groupOrder = []string{"Packages", "Inspect", "Projects", "History", "Maintenance", "Shell"}
+var groupOrder = []string{"General", "Packages", "Inspect", "Projects", "History", "Maintenance", "Shell"}
 
 func printRootHelp() {
 	ui.Blank()

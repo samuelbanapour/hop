@@ -32,11 +32,19 @@ you, because that is your call, not a package manager's.
 
 Casks (GUI applications) are counted but not migrated automatically — hop
 can install and manage GUI apps (see ` + "`hop install`" + `), but migrate
-does not yet cross Homebrew's cask names over to hop's own recipes.`,
+does not yet cross Homebrew's cask names over to hop's own recipes.
+
+A migration with many formulae is one big transaction by default: if any
+single package fails partway (out of disk space, a bad bottle, ...) nothing
+is installed and you start over from zero. ` + "`--batch N`" + ` splits the
+migration into transactions of N packages each, so a failure only costs that
+batch — everything already committed stays installed, and you can free up
+space or skip the offending package and pick up where you left off.`,
 		Flags: []Flag{
 			{Long: "all", Kind: 'b', Help: "include brew's auto-installed dependencies too"},
 			{Long: "write-hopfile", Kind: 'b', Help: "also record the migrated set in a hopfile"},
 			{Long: "prefix", Kind: 's', Arg: "DIR", Help: "Homebrew prefix (default: auto-detect)"},
+			{Long: "batch", Kind: 'i', Arg: "N", Help: "install N packages per transaction instead of all at once"},
 		},
 		Run: runMigrate,
 	})
@@ -320,55 +328,168 @@ func runMigrate(a *App, args []string) error {
 		names = append(names, r.recipe.Name)
 	}
 
+	batchSize := a.intFlag("batch")
+	if batchSize <= 0 || batchSize >= len(migratable) {
+		installed, err := migrateAll(a, ix, names)
+		if err != nil {
+			return err
+		}
+		writeMigrateHopfile(a, installed)
+		printBrewCleanup(migratableNames(migratable), prefix)
+		return nil
+	}
+
+	installed, brewInstalled, failed := migrateInBatches(a, ix, migratable, batchSize)
+	writeMigrateHopfile(a, installed)
+	printBrewCleanup(brewInstalled, prefix)
+	if len(failed) > 0 {
+		return fmt.Errorf("%s failed to migrate: %s", ui.Count(len(failed), "package", "packages"), strings.Join(failed, ", "))
+	}
+	return nil
+}
+
+// migrateAll installs every migratable package as a single transaction, the
+// original (pre-batch) behavior. Returns the brew names actually migrated.
+func migrateAll(a *App, ix *core.Index, names []string) ([]string, error) {
 	cur, err := a.Current()
 	if err != nil {
-		return err
+		return nil, err
 	}
 	plan, err := core.NewResolver(ix, cur, core.CurrentPlatform()).PlanInstall(names, false)
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	renderPlan(plan, "hop will")
 	if ok, err := legacyGate(a, plan); err != nil {
-		return err
+		return nil, err
 	} else if !ok {
 		ui.Info("cancelled")
-		return nil
+		return nil, nil
 	}
 	if a.DryRun {
 		ui.Info("dry run: nothing was changed")
-		printBrewCleanup(migratableNames(migratable), prefix)
-		return nil
+		return names, nil
 	}
 	if !a.confirm("Install these under hop?") {
 		ui.Info("cancelled")
-		return nil
+		return nil, nil
 	}
 
 	if err := execute(a, plan, cur, fmt.Sprintf("Migrating %s", ui.Count(len(plan.Downloads()), "package", "packages"))); err != nil {
-		return err
+		return nil, err
+	}
+	return names, nil
+}
+
+// migrateInBatches installs the migratable set N packages at a time, each
+// batch its own transaction. A failed batch (out of disk space, a bottle
+// that can't relocate, ...) does not undo batches that already committed,
+// and does not stop later batches from being attempted — so one blocked
+// package never costs you everything else. Returns the recipe names and
+// brew names that migrated successfully, and the brew names that failed.
+func migrateInBatches(a *App, ix *core.Index, migratable []migrateRow, batchSize int) (installed, brewInstalled, failed []string) {
+	chunks := chunkRows(migratable, batchSize)
+	ui.Blank()
+	ui.Info("migrating in %s of up to %d packages each", ui.Count(len(chunks), "batch", "batches"), batchSize)
+
+	if !a.DryRun && !a.confirm(fmt.Sprintf("Install %s under hop across %d batches?", ui.Count(len(migratable), "package", "packages"), len(chunks))) {
+		ui.Info("cancelled")
+		return nil, nil, nil
 	}
 
-	if a.boolFlag("write-hopfile") {
-		cwd, _ := os.Getwd()
-		path := filepath.Join(cwd, core.HopfileName)
-		pkgs := map[string]string{}
+	for i, chunk := range chunks {
+		names := make([]string, 0, len(chunk))
+		brewNames := make([]string, 0, len(chunk))
+		for _, r := range chunk {
+			names = append(names, r.recipe.Name)
+			brewNames = append(brewNames, r.f.Name)
+		}
+
+		ui.Blank()
+		ui.Step("Batch %d/%d: %s", i+1, len(chunks), strings.Join(names, ", "))
+
+		cur, err := a.Current()
+		if err != nil {
+			ui.Warn("batch %d: %v", i+1, err)
+			failed = append(failed, brewNames...)
+			continue
+		}
+		plan, err := core.NewResolver(ix, cur, core.CurrentPlatform()).PlanInstall(names, false)
+		if err != nil {
+			ui.Warn("batch %d: %v", i+1, err)
+			failed = append(failed, brewNames...)
+			continue
+		}
+		if plan.Empty() {
+			installed = append(installed, names...)
+			brewInstalled = append(brewInstalled, brewNames...)
+			continue
+		}
+
+		renderPlan(plan, "hop will")
+		if ok, err := legacyGate(a, plan); err != nil {
+			ui.Warn("batch %d: %v", i+1, err)
+			failed = append(failed, brewNames...)
+			continue
+		} else if !ok {
+			ui.Info("batch %d: skipped", i+1)
+			failed = append(failed, brewNames...)
+			continue
+		}
+		if a.DryRun {
+			installed = append(installed, names...)
+			brewInstalled = append(brewInstalled, brewNames...)
+			continue
+		}
+
+		if err := execute(a, plan, cur, fmt.Sprintf("Migrating %s", ui.Count(len(plan.Downloads()), "package", "packages"))); err != nil {
+			ui.Warn("batch %d failed: %v", i+1, err)
+			failed = append(failed, brewNames...)
+			continue
+		}
+		installed = append(installed, names...)
+		brewInstalled = append(brewInstalled, brewNames...)
+	}
+
+	ui.Blank()
+	if a.DryRun {
+		ui.Info("dry run: nothing was changed")
+	} else {
+		ui.Ok("%s migrated, %s failed", ui.Count(len(installed), "package", "packages"), ui.Count(len(failed), "package", "packages"))
+	}
+	return installed, brewInstalled, failed
+}
+
+func chunkRows(rows []migrateRow, size int) [][]migrateRow {
+	var chunks [][]migrateRow
+	for size < len(rows) {
+		rows, chunks = rows[size:], append(chunks, rows[:size:size])
+	}
+	if len(rows) > 0 {
+		chunks = append(chunks, rows)
+	}
+	return chunks
+}
+
+func writeMigrateHopfile(a *App, names []string) {
+	if len(names) == 0 || !a.boolFlag("write-hopfile") {
+		return
+	}
+	cwd, _ := os.Getwd()
+	path := filepath.Join(cwd, core.HopfileName)
+	pkgs := map[string]string{}
+	for _, n := range names {
+		pkgs[n] = "*"
+	}
+	if _, err := os.Stat(path); err == nil {
 		for _, n := range names {
-			pkgs[n] = "*"
+			_ = core.UpsertPackage(path, n, "*")
 		}
-		if _, err := os.Stat(path); err == nil {
-			for _, n := range names {
-				_ = core.UpsertPackage(path, n, "*")
-			}
-		} else if err := core.WriteHopfile(path, pkgs); err != nil {
-			ui.Warn("could not write %s: %v", core.HopfileName, err)
-		}
-		ui.Line("%s", ui.Grey("recorded the migrated set in "+core.HopfileName))
+	} else if err := core.WriteHopfile(path, pkgs); err != nil {
+		ui.Warn("could not write %s: %v", core.HopfileName, err)
 	}
-
-	printBrewCleanup(migratableNames(migratable), prefix)
-	return nil
+	ui.Line("%s", ui.Grey("recorded the migrated set in "+core.HopfileName))
 }
 
 func migratableNames(rows []migrateRow) []string {

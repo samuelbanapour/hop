@@ -167,6 +167,12 @@ func Line(format string, a ...any) { Printf(format+"\n", a...) }
 // Blank writes an empty separator line.
 func Blank() { Printf("\n") }
 
+// Prompt writes text with no trailing newline, for a menu or question the
+// caller will read an answer for on the same line.
+func Prompt(format string, a ...any) {
+	write(out, fmt.Sprintf(format, a...))
+}
+
 // Step reports forward progress, e.g. "==> Resolving 3 packages".
 func Step(format string, a ...any) {
 	if level < Normal {
@@ -507,6 +513,13 @@ func min(a, b int) int {
 }
 
 // ------------------------------------------------------------- interaction ----
+
+// Interactive reports whether both stdin and stdout are real terminals, i.e.
+// whether it is safe to show a menu and wait for someone to pick from it
+// rather than piped/scripted input that will never answer.
+func Interactive() bool {
+	return isTerminal(os.Stdin) && isTerminal(os.Stdout)
+}
 
 // Confirm asks a yes/no question. It returns def when stdin is not a terminal,
 // so scripted use never hangs waiting for an answer nobody will type.

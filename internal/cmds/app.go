@@ -399,8 +399,14 @@ func unknownFlag(given string, allowed []Flag) error {
 // Main is the process entry point. It returns an exit code rather than
 // calling os.Exit, so deferred cleanup always runs.
 func Main(argv []string) int {
-	// A bare `hop` is a request for help, not an error.
+	// A bare `hop` at an interactive terminal opens the choice-driven menu
+	// instead of dumping help text nobody asked to read; anywhere else
+	// (scripts, pipes, CI) it stays exactly the help-text request it always
+	// was, since there is nobody there to answer a menu prompt.
 	if len(argv) == 0 {
+		if ui.Interactive() {
+			return runArgv([]string{"menu"})
+		}
 		ui.Init(false, false, ui.Normal)
 		printRootHelp()
 		return ExitOK
@@ -426,6 +432,16 @@ func Main(argv []string) int {
 		return ExitOK
 	}
 
+	return runArgv(argv)
+}
+
+// runArgv resolves and runs one command line — argv[0] is the command name,
+// the rest its flags and positional arguments. It is the shared tail of
+// Main, factored out so the interactive menu (menu.go) can dispatch each
+// choice through the exact same flag-parsing, App-construction, and error
+// handling as a directly-typed `hop <command> ...` gets, instead of a second
+// parallel implementation that could drift from it.
+func runArgv(argv []string) int {
 	name := argv[0]
 	cmd, ok := lookup(name)
 	if !ok {
