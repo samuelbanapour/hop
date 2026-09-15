@@ -445,4 +445,9 @@ nothing in it is guessed. Add a package by adding one entry to
 
 ## License
 
-MIT
+Use requires the copyright holder's prior consent — see [LICENSE](LICENSE)
+for the exact terms. Government entities are exempt from that requirement.
+
+Versions through v0.1.10 were released under the MIT License and remain
+available under those original terms; this consent requirement applies to
+this version and any released after it.
