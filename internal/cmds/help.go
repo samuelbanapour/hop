@@ -79,20 +79,39 @@ func runShellenv(a *App, args []string) error {
 	bin := a.Layout.CurrentBin()
 	man := filepath.Join(a.Layout.Current(), "share", "man")
 
+	// hop's own binary is not necessarily anywhere Layout manages — the
+	// install script drops it at <root>/bin, a plain sibling of
+	// store/profiles/current that nothing else here ever creates or
+	// writes to, specifically so it can be found and put on PATH here
+	// too. Without this, shellenv only ever exposed *installed packages*
+	// (current/bin): someone who installed via the script needed hop's
+	// full path just to run this command in the first place, and this
+	// would never fix that for next time — confirmed for real, it just
+	// silently left `hop` itself unreachable by name forever.
+	pathDirs := []string{bin}
+	if exe, err := os.Executable(); err == nil {
+		if resolved, err := filepath.EvalSymlinks(exe); err == nil {
+			exe = resolved
+		}
+		if selfDir := filepath.Dir(exe); selfDir != bin {
+			pathDirs = append(pathDirs, selfDir)
+		}
+	}
+
 	// Output goes to stdout unadorned: it is meant to be eval'd, so a stray
 	// decoration would end up executed.
 	switch shell {
 	case "fish":
 		fmt.Printf("set -gx HOP_ROOT %s;\n", shellQuote(a.Layout.Root))
-		fmt.Printf("fish_add_path -gP %s;\n", shellQuote(bin))
+		fmt.Printf("fish_add_path -gP %s;\n", strings.Join(shellQuoteAll(pathDirs), " "))
 		fmt.Printf("set -q MANPATH; or set -gx MANPATH '';\n")
 		fmt.Printf("set -gx MANPATH %s $MANPATH;\n", shellQuote(man))
 	case "csh", "tcsh":
 		fmt.Printf("setenv HOP_ROOT %s;\n", shellQuote(a.Layout.Root))
-		fmt.Printf("setenv PATH %s:$PATH;\n", shellQuote(bin))
+		fmt.Printf("setenv PATH %s:$PATH;\n", strings.Join(shellQuoteAll(pathDirs), ":"))
 	default: // bash, zsh, sh, ksh
 		fmt.Printf("export HOP_ROOT=%s;\n", shellQuote(a.Layout.Root))
-		fmt.Printf("export PATH=%s:$PATH;\n", shellQuote(bin))
+		fmt.Printf("export PATH=%s:$PATH;\n", strings.Join(shellQuoteAll(pathDirs), ":"))
 		fmt.Printf("export MANPATH=%s:${MANPATH:-};\n", shellQuote(man))
 	}
 	return nil
@@ -101,6 +120,15 @@ func runShellenv(a *App, args []string) error {
 // shellQuote single-quotes a path safely for POSIX shells.
 func shellQuote(s string) string {
 	return "'" + strings.ReplaceAll(s, "'", `'\''`) + "'"
+}
+
+// shellQuoteAll applies shellQuote to every element.
+func shellQuoteAll(ss []string) []string {
+	out := make([]string, len(ss))
+	for i, s := range ss {
+		out[i] = shellQuote(s)
+	}
+	return out
 }
 
 func runCompletions(a *App, args []string) error {
