@@ -355,6 +355,13 @@ func userApplicationsDir() (string, error) {
 	return filepath.Join(home, "Applications"), nil
 }
 
+// UnlinkApps removes gen's GUI apps from ~/Applications, touching nothing
+// else — the courtesy cleanup step `hop uninstall-self` runs before deleting
+// the store those symlinks point into, so nothing is left dangling.
+func UnlinkApps(l *Layout, gen *Generation) error {
+	return syncAppLinks(l, gen, nil)
+}
+
 // syncAppLinks reconciles ~/Applications with next's set of GUI apps. This is
 // the one place hop ever writes outside its own Root, which is why it is
 // deliberately narrow: it only ever touches a symlink it can prove is its

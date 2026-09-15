@@ -233,6 +233,13 @@
         </div>
       </div>
 
+      <div class="cmd-card" id="uninstall-self">
+        <div class="cmd-card-head"><span class="cmd-name">uninstall-self</span><span class="cmd-group">Maintenance</span></div>
+        <div class="cmd-usage">hop uninstall-self</div>
+        <p class="cmd-desc">Remove hop completely: every generation, every store path, the download cache, and finally hop's own binary. The one command in hop that isn't reversible — there's no <code>hop rollback</code> afterward, because there's no hop left to run it. A GUI app gets one courtesy step first: its symlink in <code>~/Applications</code> is removed, so nothing is left pointing at a store that's about to disappear.</p>
+        <div class="note">hop never touches your shell configuration, so this doesn't either — if you added <code>eval "$(hop shellenv)"</code> to <code>~/.zshrc</code> or similar, this prints the line to remove yourself, the same way <a href="#migrate">migrate</a> prints <code>brew uninstall</code> commands rather than running them.</div>
+      </div>
+
       <h2 id="shell">Shell</h2>
       <p>Getting hop itself onto your PATH, and shell integration.</p>
 

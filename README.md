@@ -90,6 +90,7 @@ hop rollback                # undo the last change — instantly, no download
 hop generations             # see every past state of your install
 hop doctor                  # check PATH, disk, symlinks, integrity
 hop self-update             # update hop itself (not your packages — see below)
+hop uninstall-self          # remove every package, the store, and hop itself
 ```
 
 `hop upgrade` and `hop self-update` are deliberately separate: the first
