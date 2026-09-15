@@ -523,6 +523,10 @@ func runArgv(argv []string) int {
 	}
 	app.Layout = layout
 
+	if !enforceGate(app, cmd.Name) {
+		return ExitError
+	}
+
 	maybeShowWelcome(app)
 
 	// Started here, before the command's own work, so its network request

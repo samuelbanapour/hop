@@ -6,3 +6,6 @@
 /bin/
 /dist/
 /genindex
+
+# hop consent-token signing key — never commit this (see tools/hoplicense)
+hoplicense.key

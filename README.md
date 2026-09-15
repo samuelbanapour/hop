@@ -448,6 +448,20 @@ nothing in it is guessed. Add a package by adding one entry to
 Use requires the copyright holder's prior consent — see [LICENSE](LICENSE)
 for the exact terms. Government entities are exempt from that requirement.
 
-Versions through v0.1.10 were released under the MIT License and remain
-available under those original terms; this consent requirement applies to
-this version and any released after it.
+This isn't just stated in text: hop itself enforces it. Every command
+except `hop license`, `hop self-update`, and `hop version` checks for a
+signed consent token before running, and refuses to continue without one.
+`hop` also refuses to run at all on an out-of-date build — it requires
+self-updating to the current release first, so an old copy can't be used to
+route around a token requirement added after it was published.
+
+```bash
+hop license              # how to request a token
+hop license install <t>  # install one you've been issued
+hop license status       # see whose consent token is installed, and until when
+```
+
+Versions through v0.1.9 were released under the MIT License and remain
+available under those original terms — a grant already made publicly can't
+be revoked retroactively. This consent requirement applies to v0.1.10 and
+every version released after it.
