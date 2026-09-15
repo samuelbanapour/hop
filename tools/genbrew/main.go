@@ -185,17 +185,19 @@ type artifact struct {
 }
 
 type recipe struct {
-	Name        string               `json:"name"`
-	Version     string               `json:"version"`
-	Description string               `json:"description,omitempty"`
-	Homepage    string               `json:"homepage,omitempty"`
-	License     string               `json:"license,omitempty"`
-	Keywords    []string             `json:"keywords,omitempty"`
-	Kind        string               `json:"kind,omitempty"`
-	Aliases     []string             `json:"aliases,omitempty"`
-	Deps        []string             `json:"deps,omitempty"`
-	Artifacts   map[string]*artifact `json:"artifacts"`
-	Caveats     string               `json:"caveats,omitempty"`
+	Name         string               `json:"name"`
+	Version      string               `json:"version"`
+	Description  string               `json:"description,omitempty"`
+	Homepage     string               `json:"homepage,omitempty"`
+	License      string               `json:"license,omitempty"`
+	Keywords     []string             `json:"keywords,omitempty"`
+	Kind         string               `json:"kind,omitempty"`
+	Aliases      []string             `json:"aliases,omitempty"`
+	Deps         []string             `json:"deps,omitempty"`
+	Artifacts    map[string]*artifact `json:"artifacts"`
+	Caveats      string               `json:"caveats,omitempty"`
+	Legacy       bool                 `json:"legacy,omitempty"`
+	LegacyReason string               `json:"legacy_reason,omitempty"`
 }
 
 func main() {
@@ -438,25 +440,28 @@ func buildRecipe(f *brewFormula) (*recipe, error) {
 
 	caveats := "Installed from Homebrew's own bottle (the same binary `brew install` " +
 		f.Name + " would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+	legacyReason := ""
 	if f.Deprecated {
 		keywords = append(keywords, "legacy", "deprecated")
-		reason := f.DeprecationReason
-		if reason == "" {
-			reason = "no longer supported"
+		legacyReason = f.DeprecationReason
+		if legacyReason == "" {
+			legacyReason = "no longer supported"
 		}
-		caveats += fmt.Sprintf(" Homebrew itself has deprecated this formula (%s) and will eventually remove it; hop keeps it installable as a legacy version regardless, since an old version staying available after upstream retires it is exactly what hop's store is for.", reason)
+		caveats += fmt.Sprintf(" Homebrew itself has deprecated this formula (%s) and will eventually remove it; hop keeps it installable as a legacy version regardless, since an old version staying available after upstream retires it is exactly what hop's store is for.", legacyReason)
 	}
 
 	return &recipe{
-		Name:        f.Name,
-		Version:     pkgVersion(f),
-		Description: desc,
-		Homepage:    f.Homepage,
-		License:     f.License,
-		Keywords:    keywords,
-		Deps:        f.allDependencies(),
-		Artifacts:   arts,
-		Caveats:     caveats,
+		Name:         f.Name,
+		Version:      pkgVersion(f),
+		Description:  desc,
+		Homepage:     f.Homepage,
+		License:      f.License,
+		Keywords:     keywords,
+		Deps:         f.allDependencies(),
+		Artifacts:    arts,
+		Caveats:      caveats,
+		Legacy:       f.Deprecated,
+		LegacyReason: legacyReason,
 	}, nil
 }
 

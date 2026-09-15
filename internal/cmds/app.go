@@ -37,16 +37,17 @@ type App struct {
 	Ctx    context.Context
 
 	// Global options.
-	Root    string
-	Jobs    int
-	DryRun  bool
-	Yes     bool
-	JSON    bool
-	Quiet   bool
-	Verbose bool
-	NoColor bool
-	Force   bool
-	Help    bool
+	Root        string
+	Jobs        int
+	DryRun      bool
+	Yes         bool
+	JSON        bool
+	Quiet       bool
+	Verbose     bool
+	NoColor     bool
+	Force       bool
+	AllowLegacy bool
+	Help        bool
 
 	// Command-scoped options.
 	Keep        int
@@ -161,6 +162,7 @@ var globalFlags = []Flag{
 	{Long: "no-color", Kind: 'b', Help: "disable colour output"},
 	{Long: "jobs", Short: "j", Kind: 'i', Arg: "N", Help: "parallel downloads (default: CPU count, max 8)"},
 	{Long: "root", Kind: 's', Arg: "DIR", Help: "hop prefix (default: $HOP_ROOT or ~/.hop)"},
+	{Long: "allow-legacy", Kind: 'b', Help: "skip the confirmation prompt for deprecated packages"},
 }
 
 // registry is every command, in the order help lists them.
@@ -457,6 +459,7 @@ func Main(argv []string) int {
 		Verbose:     p.bools["verbose"],
 		NoColor:     p.bools["no-color"],
 		Force:       p.bools["force"],
+		AllowLegacy: p.bools["allow-legacy"],
 		Help:        p.bools["help"],
 		All:         p.bools["all"],
 		Explicit:    p.bools["explicit"],

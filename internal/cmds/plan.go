@@ -98,6 +98,61 @@ func renderPlan(p *core.Plan, title string) {
 	}
 }
 
+// legacyGate looks for any package in the plan that Homebrew has deprecated
+// and makes sure the user has actually seen and acknowledged that before
+// anything installs. Deliberately not something --yes alone satisfies: a
+// blanket "skip the routine prompts" flag shouldn't also silently wave
+// through something Homebrew itself flagged unsupported — sometimes for an
+// unpatched CVE or an unmaintained fork, not just "nobody uses it anymore."
+//
+// Returns (proceed, err). proceed=false, err=nil means the user declined —
+// callers should print "cancelled" and return nil, matching every other
+// declined-confirmation path in the CLI. err is only set for a hard refusal
+// (JSON/scripted use without --allow-legacy), which callers should return
+// as a real failure.
+func legacyGate(a *App, plan *core.Plan) (bool, error) {
+	var legacy []core.Step
+	for _, s := range plan.Steps {
+		if s.Recipe == nil || !s.Recipe.Legacy {
+			continue
+		}
+		switch s.Action {
+		case core.ActionInstall, core.ActionUpgrade, core.ActionDowngrade, core.ActionReinstall:
+			legacy = append(legacy, s)
+		}
+	}
+	if len(legacy) == 0 {
+		return true, nil
+	}
+
+	ui.Blank()
+	ui.Warn("%s deprecated by Homebrew, not just older:", ui.Count(len(legacy), "package below is", "packages below are"))
+	for _, s := range legacy {
+		reason := s.Recipe.LegacyReason
+		if reason == "" {
+			reason = "no longer supported"
+		}
+		ui.Line("    %s  %s", ui.Pkg(s.Name), ui.Grey(reason))
+	}
+	ui.Hint("hop keeps a deprecated formula installable as a legacy version, but upstream has moved on — an unpatched CVE or an unmaintained fork is exactly as likely a reason as \"nobody uses it anymore.\"")
+	ui.Blank()
+
+	if a.AllowLegacy || a.DryRun {
+		return true, nil
+	}
+	if a.JSON {
+		names := make([]string, len(legacy))
+		for i, s := range legacy {
+			names[i] = s.Name
+		}
+		return false, fmt.Errorf("refusing to install deprecated packages without --allow-legacy: %s", strings.Join(names, ", "))
+	}
+	if !ui.Confirm("Install the deprecated package(s) anyway?", false) {
+		return false, nil
+	}
+	return true, nil
+}
+
 // renderResult prints what a completed transaction did.
 func renderResult(a *App, res *core.ApplyResult, gen *core.Generation) {
 	ui.Blank()
@@ -209,13 +264,15 @@ type planJSON struct {
 }
 
 type planStepJSON struct {
-	Action   string `json:"action"`
-	Name     string `json:"name"`
-	Version  string `json:"version,omitempty"`
-	From     string `json:"from,omitempty"`
-	Size     int64  `json:"size,omitempty"`
-	Reason   string `json:"reason,omitempty"`
-	Platform string `json:"platform,omitempty"`
+	Action       string `json:"action"`
+	Name         string `json:"name"`
+	Version      string `json:"version,omitempty"`
+	From         string `json:"from,omitempty"`
+	Size         int64  `json:"size,omitempty"`
+	Reason       string `json:"reason,omitempty"`
+	Platform     string `json:"platform,omitempty"`
+	Legacy       bool   `json:"legacy,omitempty"`
+	LegacyReason string `json:"legacy_reason,omitempty"`
 }
 
 func toPlanJSON(p *core.Plan, dryRun bool) planJSON {
@@ -227,6 +284,10 @@ func toPlanJSON(p *core.Plan, dryRun bool) planJSON {
 		}
 		if s.Artifact != nil {
 			j.Size = s.Artifact.Size
+		}
+		if s.Recipe != nil && s.Recipe.Legacy {
+			j.Legacy = true
+			j.LegacyReason = s.Recipe.LegacyReason
 		}
 		out.Steps = append(out.Steps, j)
 	}

@@ -330,6 +330,12 @@ func runMigrate(a *App, args []string) error {
 	}
 
 	renderPlan(plan, "hop will")
+	if ok, err := legacyGate(a, plan); err != nil {
+		return err
+	} else if !ok {
+		ui.Info("cancelled")
+		return nil
+	}
 	if a.DryRun {
 		ui.Info("dry run: nothing was changed")
 		printBrewCleanup(migratableNames(migratable), prefix)

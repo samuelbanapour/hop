@@ -139,6 +139,14 @@ type Recipe struct {
 
 	// Caveats is shown after install, for packages needing a shell hook.
 	Caveats string `json:"caveats,omitempty"`
+
+	// Legacy marks a recipe upstream has deprecated (but not disabled) —
+	// hop keeps it installable anyway, since that's exactly what its
+	// content-addressed store is for, but every install of one surfaces
+	// LegacyReason up front and asks the user to confirm explicitly, since
+	// "deprecated" sometimes means "known-insecure, use something else."
+	Legacy       bool   `json:"legacy,omitempty"`
+	LegacyReason string `json:"legacy_reason,omitempty"`
 }
 
 // Artifact selects the best artifact for p, reporting which platform matched

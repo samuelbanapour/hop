@@ -129,10 +129,23 @@ hop install <name>          # installs the last version Homebrew ever published
 ```
 
 A legacy recipe says so explicitly — in `hop search`, `hop info`, and the
-caveat printed after install — so nobody installs one by accident. hop still
-draws a line: a formula Homebrew formally *disabled* (rather than merely
-deprecated) is left out regardless, since that usually means a license or
-security reason, not just age.
+caveat printed after install. Installing one also stops for a real
+confirmation naming the specific reason:
+
+```
+⚠ warning 1 package below is deprecated by Homebrew, not just older:
+    icu4c@77  versioned_formula
+Install the deprecated package(s) anyway? [y/N]
+```
+
+`--yes` deliberately does not skip this — a blanket "don't ask me the usual
+questions" flag shouldn't also silently wave through something Homebrew
+flagged unsupported, sometimes for an unpatched CVE rather than just age.
+Scripted or CI use gets a real way through instead: `--allow-legacy`.
+
+hop still draws a line of its own: a formula Homebrew formally *disabled*
+(rather than merely deprecated) is left out of the index entirely, with no
+override — that usually means a license or security reason, not just age.
 
 ## OS and VM images
 
