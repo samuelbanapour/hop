@@ -1,7 +1,7 @@
 {
   "schema": 1,
   "source": "builtin",
-  "generated": "2026-09-15T02:43:52Z",
+  "generated": "2026-09-15T03:24:40Z",
   "recipes": [
     {
       "name": "acl",
@@ -6468,6 +6468,62 @@
       "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` gdk-pixbuf would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
     },
     {
+      "name": "gemini-cli",
+      "version": "0.46.0",
+      "description": "Interact with Google Gemini AI models from the command-line",
+      "homepage": "https://geminicli.com",
+      "license": "Apache-2.0",
+      "keywords": [
+        "homebrew",
+        "legacy",
+        "deprecated"
+      ],
+      "deps": [
+        "node",
+        "glib",
+        "libsecret"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/gemini-cli/blobs/sha256:7761e9a7fb0ffa6188f8cd22e56e6662c90ae97d2eb6355c7315b4d0fe4d885f",
+          "sha256": "7761e9a7fb0ffa6188f8cd22e56e6662c90ae97d2eb6355c7315b4d0fe4d885f",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/gemini-cli:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "gemini"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/gemini-cli/blobs/sha256:ab4579d9e4f4a14229c56f639e1197a79a1bda96ff41e1a3f4fa79c84a380747",
+          "sha256": "ab4579d9e4f4a14229c56f639e1197a79a1bda96ff41e1a3f4fa79c84a380747",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/gemini-cli:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "gemini"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/gemini-cli/blobs/sha256:b8235dc511bb2ded3b6272e0f018cdac02938f12637cd5549cc0e0ef2f88f640",
+          "sha256": "b8235dc511bb2ded3b6272e0f018cdac02938f12637cd5549cc0e0ef2f88f640",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/gemini-cli:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "gemini"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/gemini-cli/blobs/sha256:3702ce81a5cdc24c327e994939d33b5c0bdcaefc484e7018d3ab813c7d294e00",
+          "sha256": "3702ce81a5cdc24c327e994939d33b5c0bdcaefc484e7018d3ab813c7d294e00",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/gemini-cli:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "gemini"
+          ]
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` gemini-cli would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes. Homebrew itself has deprecated this formula (unsupported) and will eventually remove it; hop keeps it installable as a legacy version regardless, since an old version staying available after upstream retires it is exactly what hop's store is for."
+    },
+    {
       "name": "gettext",
       "version": "1.0",
       "description": "GNU internationalization (i18n) and localization (l10n) library",
@@ -10033,6 +10089,125 @@
           "format": "tar.gz"
         }
       }
+    },
+    {
+      "name": "icu4c@77",
+      "version": "77.1_1",
+      "description": "C/C++ and Java libraries for Unicode and globalization",
+      "homepage": "https://icu.unicode.org/home",
+      "license": "Unicode-3.0",
+      "keywords": [
+        "homebrew",
+        "legacy",
+        "deprecated"
+      ],
+      "artifacts": {
+        "darwin-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/icu4c/77/blobs/sha256:919cc9bb093792d0a37354eb95974feec4d36c89b422484ac1b83f142a8780c1",
+          "sha256": "919cc9bb093792d0a37354eb95974feec4d36c89b422484ac1b83f142a8780c1",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/icu4c/77:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "derb",
+            "escapesrc",
+            "genbrk",
+            "genccode",
+            "gencfu",
+            "gencmn",
+            "gencnval",
+            "gendict",
+            "gennorm2",
+            "genrb",
+            "gensprep",
+            "icu-config",
+            "icuexportdata",
+            "icuinfo",
+            "icupkg",
+            "makeconv",
+            "pkgdata",
+            "uconv"
+          ]
+        },
+        "darwin-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/icu4c/77/blobs/sha256:d73fe5188310be0e801aeca1c378dfac770aaf67051de499e1b7f03fd10ab750",
+          "sha256": "d73fe5188310be0e801aeca1c378dfac770aaf67051de499e1b7f03fd10ab750",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/icu4c/77:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "derb",
+            "escapesrc",
+            "genbrk",
+            "genccode",
+            "gencfu",
+            "gencmn",
+            "gencnval",
+            "gendict",
+            "gennorm2",
+            "genrb",
+            "gensprep",
+            "icu-config",
+            "icuexportdata",
+            "icuinfo",
+            "icupkg",
+            "makeconv",
+            "pkgdata",
+            "uconv"
+          ]
+        },
+        "linux-amd64": {
+          "url": "https://ghcr.io/v2/homebrew/core/icu4c/77/blobs/sha256:ab9144b3d86a3f6ddee00e53aa7d0aa6ea6d0037f454078f6dd1b336057679ee",
+          "sha256": "ab9144b3d86a3f6ddee00e53aa7d0aa6ea6d0037f454078f6dd1b336057679ee",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/icu4c/77:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "derb",
+            "escapesrc",
+            "genbrk",
+            "genccode",
+            "gencfu",
+            "gencmn",
+            "gencnval",
+            "gendict",
+            "gennorm2",
+            "genrb",
+            "gensprep",
+            "icu-config",
+            "icuexportdata",
+            "icuinfo",
+            "icupkg",
+            "makeconv",
+            "pkgdata",
+            "uconv"
+          ]
+        },
+        "linux-arm64": {
+          "url": "https://ghcr.io/v2/homebrew/core/icu4c/77/blobs/sha256:7cb1b29d05dbb75baf6068403a8b04131e5d0eb5ac0d36da8453506908ee6a46",
+          "sha256": "7cb1b29d05dbb75baf6068403a8b04131e5d0eb5ac0d36da8453506908ee6a46",
+          "oci_token_url": "https://ghcr.io/token?scope=repository:homebrew/core/icu4c/77:pull\u0026service=ghcr.io",
+          "format": "tar.gz",
+          "bin": [
+            "derb",
+            "escapesrc",
+            "genbrk",
+            "genccode",
+            "gencfu",
+            "gencmn",
+            "gencnval",
+            "gendict",
+            "gennorm2",
+            "genrb",
+            "gensprep",
+            "icu-config",
+            "icuexportdata",
+            "icuinfo",
+            "icupkg",
+            "makeconv",
+            "pkgdata",
+            "uconv"
+          ]
+        }
+      },
+      "caveats": "Installed from Homebrew's own bottle (the same binary `brew install` icu4c@77 would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes. Homebrew itself has deprecated this formula (versioned_formula) and will eventually remove it; hop keeps it installable as a legacy version regardless, since an old version staying available after upstream retires it is exactly what hop's store is for."
     },
     {
       "name": "icu4c@78",

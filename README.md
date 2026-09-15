@@ -72,7 +72,7 @@ eval "$(hop shellenv)"          # add this to ~/.zshrc, ~/.bashrc, etc.
 
 hop ships with a recipe index compiled into the binary, so this works with no
 network access and no separate "update" step on a fresh machine. That index
-currently carries **515 recipes and 1,859 verified artifacts** across
+currently carries **517 recipes and 1,867 verified artifacts** across
 `darwin-arm64`, `darwin-amd64`, `linux-amd64` and `linux-arm64` — standalone
 CLI tools, well over 300 Homebrew formulae with their real dependency graphs,
 28 OS/VM images spanning Linux, BSD, and macOS from Lion through Tahoe, and a

@@ -43,15 +43,16 @@ const bulkURL = "https://formulae.brew.sh/api/formula.json"
 
 // brewFormula is the slice of Homebrew's JSON API this tool needs.
 type brewFormula struct {
-	Name        string   `json:"name"`
-	Desc        string   `json:"desc"`
-	License     string   `json:"license"`
-	Homepage    string   `json:"homepage"`
-	Executables []string `json:"executables"`
-	Deprecated  bool     `json:"deprecated"`
-	Disabled    bool     `json:"disabled"`
-	Revision    int      `json:"revision"`
-	Versions    struct {
+	Name              string   `json:"name"`
+	Desc              string   `json:"desc"`
+	License           string   `json:"license"`
+	Homepage          string   `json:"homepage"`
+	Executables       []string `json:"executables"`
+	Deprecated        bool     `json:"deprecated"`
+	DeprecationReason string   `json:"deprecation_reason,omitempty"`
+	Disabled          bool     `json:"disabled"`
+	Revision          int      `json:"revision"`
+	Versions          struct {
 		Stable string `json:"stable"`
 		Bottle bool   `json:"bottle"`
 	} `json:"versions"`
@@ -296,6 +297,10 @@ func fetchAllFormulae() ([]brewFormula, error) {
 // order for anyone reading it by eye.
 func transitiveClosure(byName map[string]*brewFormula, seeds []string) (order, missing []string, err error) {
 	seen := map[string]bool{}
+	seedSet := map[string]bool{}
+	for _, s := range seeds {
+		seedSet[s] = true
+	}
 	var visiting []string // cycle detection path, for a clear error rather than infinite recursion
 
 	var visit func(name string) error
@@ -313,11 +318,21 @@ func transitiveClosure(byName map[string]*brewFormula, seeds []string) (order, m
 				return fmt.Errorf("dependency cycle: %s -> %s", strings.Join(visiting, " -> "), name)
 			}
 		}
-		if f.Deprecated || f.Disabled {
-			// A deprecated *dependency* would break everything that needs
-			// it; a deprecated *seed* is simply not worth adding. Either
-			// way, skip rather than silently ship something Homebrew itself
-			// no longer supports.
+		if f.Disabled {
+			// Disabled means Homebrew itself refuses to build this at all —
+			// often a license or safety reason (fdk-aac: patent-encumbered,
+			// "does not meet the license policy"), never something to
+			// carry forward regardless of intent.
+			return nil
+		}
+		if f.Deprecated && !seedSet[name] {
+			// A deprecated *dependency*, pulled in only because something
+			// else needs it, would break everything relying on it the
+			// moment Homebrew actually removes it — skip. A deprecated
+			// formula named directly is a deliberate "give me the legacy
+			// version" request and is let through: hop keeping an old
+			// version installable after Homebrew itself retires it is
+			// exactly the kind of thing hop's own architecture is good at.
 			return nil
 		}
 		visiting = append(visiting, name)
@@ -421,6 +436,17 @@ func buildRecipe(f *brewFormula) (*recipe, error) {
 		desc += " (library — pulled in only as a dependency; nothing on PATH)"
 	}
 
+	caveats := "Installed from Homebrew's own bottle (the same binary `brew install` " +
+		f.Name + " would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes."
+	if f.Deprecated {
+		keywords = append(keywords, "legacy", "deprecated")
+		reason := f.DeprecationReason
+		if reason == "" {
+			reason = "no longer supported"
+		}
+		caveats += fmt.Sprintf(" Homebrew itself has deprecated this formula (%s) and will eventually remove it; hop keeps it installable as a legacy version regardless, since an old version staying available after upstream retires it is exactly what hop's store is for.", reason)
+	}
+
 	return &recipe{
 		Name:        f.Name,
 		Version:     pkgVersion(f),
@@ -430,8 +456,7 @@ func buildRecipe(f *brewFormula) (*recipe, error) {
 		Keywords:    keywords,
 		Deps:        f.allDependencies(),
 		Artifacts:   arts,
-		Caveats: "Installed from Homebrew's own bottle (the same binary `brew install` " +
-			f.Name + " would fetch), via ghcr.io/homebrew/core — not built or verified by hop itself beyond the checksum Homebrew publishes.",
+		Caveats:     caveats,
 	}, nil
 }
 
