@@ -457,9 +457,18 @@ route around a token requirement added after it was published.
 
 ```bash
 hop license              # how to request a token
+hop license accept       # self-service: read the terms, give your info, get a token
 hop license install <t>  # install one you've been issued
 hop license status       # see whose consent token is installed, and until when
 ```
+
+`hop license accept` records your acceptance (name, email, exact terms
+version, timestamp — see [service/license](service/license)) and emails a
+confirmation link. That link shows a one-time code; entering it on the
+service's `/redeem` webpage is the only place your token is ever shown, and
+it only works once — the code stops working the moment it's redeemed, so
+the acceptance record and the token it produced can't quietly be reused or
+handed off.
 
 Versions through v0.1.9 were released under the MIT License and remain
 available under those original terms — a grant already made publicly can't

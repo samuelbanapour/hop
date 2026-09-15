@@ -1,0 +1,36 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "hop-license",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-09-01",
+  "compatibility_flags": ["nodejs_compat"],
+  "observability": { "enabled": true },
+
+  // Set with: wrangler d1 create hop-license
+  // then paste the printed database_id below.
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "hop-license",
+      "database_id": "REPLACE_WITH_D1_DATABASE_ID",
+      "migrations_dir": "./migrations"
+    }
+  ],
+
+  // Requires: wrangler email sending enable <your-domain>
+  // FROM_EMAIL below must be an address at that domain.
+  "send_email": [{ "name": "EMAIL" }],
+
+  "vars": {
+    // The address verification links point back to. Update after your
+    // first `wrangler deploy` (or set a custom domain / route instead).
+    "SERVICE_URL": "https://hop-license.<your-subdomain>.workers.dev",
+    "FROM_EMAIL": "consent@yourdomain.com",
+    "FROM_NAME": "hop"
+  }
+
+  // Secrets (never in this file — set with `wrangler secret put <NAME>`):
+  //   HOP_LICENSE_SEED   base64 of the Ed25519 signing key's 32-byte seed
+  //                      (the first 32 bytes of hoplicense.key — see
+  //                      tools/hoplicense's `seed` subcommand)
+}

@@ -1,16 +1,34 @@
 package core
 
 import (
+	"bytes"
+	"context"
 	"crypto/ed25519"
 	"encoding/base64"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"io"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 )
+
+// LicenseServiceURL is where `hop license accept` requests a consent token
+// from — the self-service counterpart to a manually issued one. Empty by
+// default; override with HOP_LICENSE_SERVICE_URL, or set a compiled-in
+// default here once the service (see service/license) is deployed.
+const licenseServiceURLDefault = ""
+
+// LicenseServiceURL resolves the configured service base URL, if any.
+func LicenseServiceURL() string {
+	if v := os.Getenv("HOP_LICENSE_SERVICE_URL"); v != "" {
+		return strings.TrimRight(v, "/")
+	}
+	return licenseServiceURLDefault
+}
 
 // LicensePublicKeyB64 is the Ed25519 public key hop verifies consent tokens
 // against, standard-base64-encoded. The matching private key is held only
@@ -106,4 +124,102 @@ func InstallLicenseToken(l *Layout, raw string) (*LicenseToken, error) {
 		return nil, fmt.Errorf("writing %s: %w", l.LicenseTokenPath(), err)
 	}
 	return tok, nil
+}
+
+// LicenseTerms is what the self-service license service's GET /terms
+// returns: the exact text an acceptance record is hashed against.
+type LicenseTerms struct {
+	Version string `json:"version"`
+	Text    string `json:"text"`
+	Hash    string `json:"hash"`
+}
+
+// LicenseAcceptResult is what POST /accept returns.
+type LicenseAcceptResult struct {
+	RequestID string `json:"request_id"`
+	IsGov     bool   `json:"is_gov"`
+}
+
+// LicenseStatus is what GET /status returns. It never carries the token
+// itself — that is only ever disclosed once, through the service's /redeem
+// webpage, not through any API this client calls.
+type LicenseStatus struct {
+	Status string `json:"status"` // "pending", "verified", or "redeemed"
+	IsGov  bool   `json:"is_gov"`
+}
+
+func licenseGet(ctx context.Context, client *http.Client, path string, out any) error {
+	base := LicenseServiceURL()
+	if base == "" {
+		return errors.New("no license service configured (set HOP_LICENSE_SERVICE_URL)")
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, base+path, nil)
+	if err != nil {
+		return err
+	}
+	return doLicenseRequest(client, req, out)
+}
+
+// FetchLicenseTerms fetches the terms text to show before accepting.
+func FetchLicenseTerms(ctx context.Context, client *http.Client) (*LicenseTerms, error) {
+	var t LicenseTerms
+	if err := licenseGet(ctx, client, "/terms", &t); err != nil {
+		return nil, err
+	}
+	return &t, nil
+}
+
+// SubmitLicenseAcceptance records that name/email agreed to the terms and
+// triggers a verification email. It does not return a token — see
+// LicenseAcceptResult and the service's /redeem flow.
+func SubmitLicenseAcceptance(ctx context.Context, client *http.Client, name, email string) (*LicenseAcceptResult, error) {
+	base := LicenseServiceURL()
+	if base == "" {
+		return nil, errors.New("no license service configured (set HOP_LICENSE_SERVICE_URL)")
+	}
+	body, err := json.Marshal(map[string]string{"name": name, "email": email})
+	if err != nil {
+		return nil, err
+	}
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, base+"/accept", bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+	req.Header.Set("content-type", "application/json")
+	var res LicenseAcceptResult
+	if err := doLicenseRequest(client, req, &res); err != nil {
+		return nil, err
+	}
+	return &res, nil
+}
+
+// CheckLicenseStatus polls how far a request_id has gotten.
+func CheckLicenseStatus(ctx context.Context, client *http.Client, requestID string) (*LicenseStatus, error) {
+	var s LicenseStatus
+	if err := licenseGet(ctx, client, "/status?req="+requestID, &s); err != nil {
+		return nil, err
+	}
+	return &s, nil
+}
+
+func doLicenseRequest(client *http.Client, req *http.Request, out any) error {
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+	if resp.StatusCode >= 300 {
+		var e struct {
+			Error string `json:"error"`
+		}
+		if json.Unmarshal(b, &e) == nil && e.Error != "" {
+			return errors.New(e.Error)
+		}
+		return fmt.Errorf("license service returned %s", resp.Status)
+	}
+	return json.Unmarshal(b, out)
 }

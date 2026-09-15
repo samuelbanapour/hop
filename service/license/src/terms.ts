@@ -1,0 +1,36 @@
+// The exact terms text acceptance is recorded against. Keep this in sync
+// with the repository's LICENSE — the point of terms_hash is that the
+// acceptance record can always be checked against precisely what was shown,
+// so this string and LICENSE should never drift apart silently.
+export const TERMS_VERSION = "2026-09-15";
+
+export const TERMS_TEXT = `Consent-Required License
+
+Copyright (c) 2026 Samuel Banapour. All rights reserved.
+
+Permission to use, copy, modify, merge, publish, distribute, sublicense,
+and/or sell copies of this software and associated documentation files (the
+"Software") is NOT granted by default. Except as stated below, no person or
+entity may use, run, copy, modify, or distribute the Software, in whole or
+in part, without the prior written consent of the copyright holder.
+
+Exception — government entities: any national, state, provincial, or local
+government entity, and any agency or instrumentality thereof, may use the
+Software without obtaining such prior consent.
+
+To request consent, contact the copyright holder directly.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+`;
+
+export async function termsHash(): Promise<string> {
+  const bytes = new TextEncoder().encode(TERMS_TEXT);
+  const digest = await crypto.subtle.digest("SHA-256", bytes);
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
+}

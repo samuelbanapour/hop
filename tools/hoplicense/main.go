@@ -38,6 +38,8 @@ func main() {
 		keygen()
 	case "issue":
 		issue(os.Args[2:])
+	case "seed":
+		seed(os.Args[2:])
 	default:
 		usage()
 		os.Exit(2)
@@ -57,7 +59,14 @@ usage:
   hoplicense issue -subject "name or email" [-expires 8760h] [-gov] [-key hoplicense.key]
       Issue a signed consent token for one person or entity. Print it and
       hand it to them; they install it with:
-          hop license install <token>`)
+          hop license install <token>
+
+  hoplicense seed [-key hoplicense.key]
+      Print the base64 seed (the key's first 32 bytes) for the self-service
+      license service's HOP_LICENSE_SEED secret:
+          hoplicense seed | wrangler secret put HOP_LICENSE_SEED
+      This is the same signing key as issue uses — a token the service
+      signs and one you issue by hand verify against the same public key.`)
 }
 
 func keygen() {
@@ -115,6 +124,22 @@ func issue(args []string) {
 	raw := base64.RawURLEncoding.EncodeToString(payload) + "." + base64.RawURLEncoding.EncodeToString(sig)
 
 	fmt.Println(raw)
+}
+
+func seed(args []string) {
+	fs := flag.NewFlagSet("seed", flag.ExitOnError)
+	keyFile := fs.String("key", "hoplicense.key", "path to the private key from `hoplicense keygen`")
+	_ = fs.Parse(args)
+
+	priv, err := os.ReadFile(*keyFile)
+	must(err)
+	if len(priv) != ed25519.PrivateKeySize {
+		fmt.Fprintf(os.Stderr, "%s is not a valid Ed25519 private key (run `hoplicense keygen` first)\n", *keyFile)
+		os.Exit(1)
+	}
+	// Go's ed25519.PrivateKey is seed(32) || publicKey(32); the seed alone
+	// is enough to re-derive everything, which is all the Worker needs.
+	fmt.Println(base64.StdEncoding.EncodeToString(priv[:32]))
 }
 
 func must(err error) {
