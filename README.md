@@ -72,9 +72,9 @@ eval "$(hop shellenv)"          # add this to ~/.zshrc, ~/.bashrc, etc.
 
 hop ships with a recipe index compiled into the binary, so this works with no
 network access and no separate "update" step on a fresh machine. That index
-currently carries **517 recipes and 1,867 verified artifacts** across
+currently carries **1,017 recipes and 3,738 verified artifacts** across
 `darwin-arm64`, `darwin-amd64`, `linux-amd64` and `linux-arm64` — standalone
-CLI tools, well over 300 Homebrew formulae with their real dependency graphs,
+CLI tools, well over 750 Homebrew formulae with their real dependency graphs,
 28 OS/VM images spanning Linux, BSD, and macOS from Lion through Tahoe, and a
 handful of GUI apps (Homebrew casks) that land in `~/Applications`.
 
@@ -113,6 +113,26 @@ formulae hop doesn't have a recipe for yet (so the two coexist fine on
 whatever it can't cover), and it never runs `brew uninstall` for you: once
 you're happy, it prints the exact command to remove the Homebrew copies
 yourself.
+
+### Legacy formulae Homebrew has dropped
+
+Homebrew periodically deprecates and eventually removes formulae — a version
+manager superseded by a newer one, a tool nobody maintains anymore, a project
+whose repo got archived. Once that happens, `brew install` stops offering it
+at all. hop keeps a formula like that installable on purpose: an old version
+staying available after upstream retires it is exactly what a content-addressed
+store, where nothing is ever deleted out from under you, is for.
+
+```bash
+hop search legacy           # every formula Homebrew has deprecated, still here
+hop install <name>          # installs the last version Homebrew ever published
+```
+
+A legacy recipe says so explicitly — in `hop search`, `hop info`, and the
+caveat printed after install — so nobody installs one by accident. hop still
+draws a line: a formula Homebrew formally *disabled* (rather than merely
+deprecated) is left out regardless, since that usually means a license or
+security reason, not just age.
 
 ## OS and VM images
 
